@@ -1,0 +1,84 @@
+name: ci
+
+# Provenance: livetennisapi-oss/livetennisapi-js/.github/workflows/ci.yml (2026-10-28), actions pinned by SHA.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  truthcheck:
+    name: truth pins
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: sh scripts/truthcheck.sh
+
+  test:
+    name: test on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - name: VERSION matches package.json
+        run: |
+          SRC=$(node -p "require('fs').readFileSync('src/version.ts','utf8').match(/'([^']+)'/)[1]")
+          PKG=$(node -p "require('./package.json').version")
+          echo "version.ts=$SRC package.json=$PKG"
+          [ "$SRC" = "$PKG" ]
+      - name: src/schema.d.ts matches spec/openapi.yaml
+        run: |
+          cp src/schema.d.ts /tmp/schema.before.d.ts
+          sh scripts/gen-types.sh
+          diff -u /tmp/schema.before.d.ts src/schema.d.ts || { echo "src/schema.d.ts is stale: run scripts/gen-types.sh" >&2; exit 1; }
+      - run: npm test
+      - run: npm run build
+
+  node18:
+    name: the built package runs on node 18
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "18"
+      - name: Import the ESM and CJS builds and verify a signature
+        run: |
+          node -e "import('./dist/index.js').then(async (m) => { const h = await m.signatureHeaders(['whsec_a2tra2tra2tra2tra2tra2tra2tra2tra2s='], 'evt_1', '{}'); const id = await m.verifyWebhook('whsec_a2tra2tra2tra2tra2tra2tra2tra2tra2s=', h, '{}'); if (id !== 'evt_1') process.exit(1); console.log('esm ok', m.VERSION); })"
+          node -e "const m = require('./dist/index.cjs'); new m.FaxForAgents({ apiKey: 'ffa_test_x' }); console.log('cjs ok', m.VERSION)"
+
+  live:
+    name: sandbox send against api.faxforagents.com (needs the secret)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Live test (skips when FAXFORAGENTS_API_KEY is not configured)
+        env:
+          FAXFORAGENTS_API_KEY: ${{ secrets.FAXFORAGENTS_TEST_KEY }}
+        run: npm run test:live

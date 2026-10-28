@@ -1,0 +1,76 @@
+{
+  "name": "faxforagents",
+  "version": "0.1.0",
+  "description": "TypeScript and JavaScript client for Fax for Agents: a fax API, a hosted MCP server and SDKs built so AI agents can send and receive faxes.",
+  "keywords": [
+    "fax",
+    "fax-api",
+    "ai-agents",
+    "agents",
+    "mcp",
+    "api-client",
+    "sdk",
+    "typescript",
+    "webhooks"
+  ],
+  "homepage": "https://faxforagents.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/faxforagents/sdk-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/faxforagents/sdk-typescript/issues"
+  },
+  "license": "MIT",
+  "author": "Fax for Agents <hello@faxforagents.com>",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --exclude test/live.test.ts",
+    "test:live": "vitest run test/live.test.ts",
+    "gen:types": "sh scripts/gen-types.sh",
+    "sync-version": "node scripts/sync-version.mjs",
+    "version": "node scripts/sync-version.mjs && git add src/version.ts",
+    "prepublishOnly": "node scripts/sync-version.mjs && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "esbuild": "^0.28.2",
+    "msw": "^2.15.0",
+    "openapi-typescript": "^7.13.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.5.0",
+    "vitest": "^5.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
