@@ -1,6 +1,6 @@
 {
   "name": "faxforagents",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript and JavaScript client for Fax for Agents: a fax API, a hosted MCP server and SDKs built so AI agents can send and receive faxes.",
   "keywords": [
     "fax",
@@ -58,6 +58,7 @@
     "gen:types": "sh scripts/gen-types.sh",
     "sync-version": "node scripts/sync-version.mjs",
     "version": "node scripts/sync-version.mjs && git add src/version.ts",
+    "prepare": "node scripts/sync-version.mjs && npm run build",
     "prepublishOnly": "node scripts/sync-version.mjs && npm run build"
   },
   "devDependencies": {

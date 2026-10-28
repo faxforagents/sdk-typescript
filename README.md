@@ -48,8 +48,11 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
 - 429 and 5xx answers are retried up to three times. `Retry-After` is honoured. Network errors and
   timeouts are retried the same way.
 - Every list has an `iter` twin that follows `next_cursor`, as an async iterator.
-- `documents.upload(bytes, { filename })` runs the whole PDF path: the upload session, the signed PUT,
-  the sha256 check, the document.
+- `documents.create({ text })`, `{ markdown }` or `{ html }` renders on the server. HTML prints with
+  scripts off and no network, inline CSS and `data:` images only, at most 2 MiB.
+- `documents.upload(bytes, { filename })` runs the whole upload path for a PDF or an image (PNG, JPG,
+  TIFF): the upload session, the signed PUT with the content type read from the filename, the sha256
+  check, the document. An image becomes gray letter pages.
 - `faxes.wait(faxId)` and `approvals.wait(approvalId)` poll with a timeout.
 - `verifyWebhook(secret, headers, body)` checks the Standard Webhooks signature on a delivery.
 - Types are generated from the public OpenAPI document with openapi-typescript. Money is an integer
@@ -75,7 +78,11 @@ names the scope each call needs.
 | `ffa.approvals` | `request`, `requestHelp`, `list`, `iter`, `get`, `wait`, `approve`, `reject`, `revoke` |
 | `ffa.policies` | `list`, `create`, `effective`, `get`, `update`, `listVersions`, `evaluate` |
 | `ffa.agents` | `list`, `create`, `get`, `update`, `createKey`, `activity` |
-| `ffa.inbox` | `list`, `iter`, `get` |
+| `ffa.inbox` | `list`, `iter`, `get`, `update`, `delete`, `getDownload`, `download` |
+| `ffa.numbers` | `coverage`, `inventory`, `createOrder`, `getOrder`, `list`, `get`, `update`, `release`, `checkPortability`, `listPortOrders`, `createPortOrder`, `getPortOrder`, `createPortOutRequest`, `verifySender` |
+| `ffa.extractions` | `create`, `list`, `iter`, `get`, `correct`, `classify`, `listClassifications`, `iterClassifications`, `getClassification`, `summarize`, `listSummaries`, `iterSummaries`, `getSummary`, `listSchemas`, `createSchema`, `getSchema` |
+| `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion` |
+| `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `revokeInvitation` |
 
 `ffa.request('GET', '/v1/anything')` reaches an operation the resources do not cover yet.
 
@@ -159,7 +166,8 @@ sh scripts/truthcheck.sh
 ```
 
 `spec/openapi.yaml` is a copy of the public document. To take a new one, copy it over and run
-`npm run gen:types`.
+`npm run gen:types`. `npm install` from a git URL builds the package on install (the `prepare` script),
+so `npm install github:faxforagents/sdk-typescript` works before the package is on npm.
 
 ## Licence
 

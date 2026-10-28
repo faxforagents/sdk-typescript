@@ -235,6 +235,43 @@ describe('documents', () => {
     expect(seen.doc).toEqual({ upload_id: session.id, filename: 'letter.pdf' });
   });
 
+  it('upload names the image type from the filename', async () => {
+    const data = new TextEncoder().encode('\x89PNG fake');
+    const session = {
+      id: 'upl_' + '5'.repeat(32),
+      status: 'open',
+      filename: 'scan.png',
+      content_type: 'image/png',
+      declared_size: data.byteLength,
+      received_size: 0,
+      sha256: null,
+      created_at: '2026-10-28T00:00:00Z',
+      expires_at: '2026-10-28T01:00:00Z',
+      completed_at: null,
+      upload_url: `${BASE}/v1/uploads/upl_5555/content?exp=1&sig=abc`,
+      upload_method: 'PUT',
+      upload_url_expires_at: '2026-10-28T00:10:00Z',
+    };
+    const seen: Record<string, unknown> = {};
+    server.use(
+      http.post(`${BASE}/v1/uploads`, async ({ request }) => {
+        seen.create = await request.json();
+        return HttpResponse.json(session, { status: 201 });
+      }),
+      http.put(`${BASE}/v1/uploads/upl_5555/content`, ({ request }) => {
+        seen.putType = request.headers.get('content-type');
+        return HttpResponse.json({ ...session, received_size: data.byteLength });
+      }),
+      http.post(`${BASE}/v1/uploads/${session.id}/complete`, () => HttpResponse.json({ ...session, status: 'completed' })),
+      http.post(`${BASE}/v1/documents`, () =>
+        HttpResponse.json(document({ source: 'upload', upload_id: session.id }), { status: 201 }),
+      ),
+    );
+    await client().documents.upload(data, { filename: 'scan.png' });
+    expect((seen.create as { content_type: string }).content_type).toBe('image/png');
+    expect(seen.putType).toBe('image/png');
+  });
+
   it('download follows the signed URL', async () => {
     server.use(
       http.get(`${BASE}/v1/documents/doc_1/download`, () =>

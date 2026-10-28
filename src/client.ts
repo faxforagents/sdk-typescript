@@ -25,6 +25,23 @@ type Page = { cursor?: string; limit?: number };
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
+/** Content types the upload path accepts, by file suffix. Anything else is sent as a PDF. */
+export const CONTENT_TYPES: Readonly<Record<string, string>> = {
+  '.pdf': 'application/pdf',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.tif': 'image/tiff',
+  '.tiff': 'image/tiff',
+};
+
+/** The upload content type of a filename: a PDF unless the suffix says PNG, JPEG or TIFF. */
+export function guessContentType(filename: string): string {
+  const dot = filename.lastIndexOf('.');
+  const suffix = dot >= 0 ? filename.slice(dot).toLowerCase() : '';
+  return CONTENT_TYPES[suffix] ?? 'application/pdf';
+}
+
 async function sha256Hex(data: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', data as BufferSource);
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -58,11 +75,17 @@ export class Identity extends Resource {
 }
 
 export class Documents extends Resource {
-  /** An immutable document from one of upload_id, text, markdown or html. Scope: document:write. */
+  /**
+   * An immutable document from one of upload_id, text, markdown or html. HTML is rendered with scripts off
+   * and no network, at most 2 MiB. Scope: document:write.
+   */
   create(body: S.DocumentCreate, o: Mut = {}): Promise<S.Document> {
     return this.h.request('POST', '/v1/documents', { json: body, ...o });
   }
-  /** Open an upload session with a signed PUT URL (25 MB, one hour). Scope: document:write. */
+  /**
+   * Open an upload session with a signed PUT URL (25 MB, one hour). `content_type` is application/pdf,
+   * image/png, image/jpeg or image/tiff. Scope: document:write.
+   */
   createUpload(body: S.UploadCreate, o: Mut = {}): Promise<S.UploadSession> {
     return this.h.request('POST', '/v1/uploads', { json: body, ...o });
   }
@@ -78,11 +101,15 @@ export class Documents extends Resource {
   cancelUpload(uploadId: string, o: Mut = {}): Promise<S.Deleted> {
     return this.h.request('DELETE', `/v1/uploads/${uploadId}`, o);
   }
-  /** The whole PDF path: createUpload, put the bytes, complete with the sha256, create the document. */
+  /**
+   * The whole upload path for a PDF or an image (PNG, JPG or TIFF): createUpload, put the bytes, complete
+   * with the sha256, create the document. The content type is read from the filename when not given. An
+   * image becomes gray letter pages.
+   */
   async upload(data: Uint8Array | ArrayBuffer, opts: { filename?: string; contentType?: string } = {}): Promise<S.Document> {
     const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
     const filename = opts.filename ?? 'document.pdf';
-    const contentType = opts.contentType ?? 'application/pdf';
+    const contentType = opts.contentType ?? guessContentType(filename);
     const session = await this.createUpload({ filename, size_bytes: bytes.byteLength, content_type: contentType });
     if (!session.upload_url) throw new Error('the upload session carries no upload_url');
     await this.putUploadContent(session.upload_url, bytes, contentType);
@@ -113,7 +140,7 @@ export class Documents extends Resource {
   getDownload(documentId: string): Promise<S.SignedUrl> {
     return this.h.request('GET', `/v1/documents/${documentId}/download`);
   }
-  /** The PDF bytes, through a fresh signed URL. */
+  /** The document bytes (always a PDF), through a fresh signed URL. */
   async download(documentId: string): Promise<Uint8Array> {
     const link = await this.getDownload(documentId);
     return this.h.bytes('GET', link.url);
@@ -334,7 +361,7 @@ export class Sandbox extends Resource {
     return this.h.request('POST', '/v1/sandbox/scenarios', { json: body, ...o });
   }
   /** A synthetic received fax and its fax.received event. Test keys only. */
-  createInboundFax(body: S.SandboxInboundCreate, o: Mut = {}): Promise<S.InboxItem> {
+  createInboundFax(body: S.SandboxInboundCreate, o: Mut = {}): Promise<S.InboxItemSummary> {
     return this.h.request('POST', '/v1/sandbox/inbound-faxes', { json: body, ...o });
   }
   /** Delete the organization's test data and reseed the test wallet. Test keys only. */
@@ -463,6 +490,207 @@ export class Inbox extends Resource {
   get(inboxId: string): Promise<S.InboxItemDetail> {
     return this.h.request('GET', `/v1/inbox/${inboxId}`);
   }
+  /** Mark a received fax read or archived, or received again. Scope: inbox:write. */
+  update(inboxId: string, body: S.InboxUpdate, o: Mut = {}): Promise<S.InboxItem> {
+    return this.h.request('PATCH', `/v1/inbox/${inboxId}`, { json: body, ...o });
+  }
+  /** Delete a received fax. Scope: inbox:write. */
+  delete(inboxId: string, o: Mut = {}): Promise<S.Deleted> {
+    return this.h.request('DELETE', `/v1/inbox/${inboxId}`, o);
+  }
+  /** A signed link to the received PDF, valid ten minutes. Scope: inbox:read. */
+  getDownload(inboxId: string): Promise<S.SignedUrl> {
+    return this.h.request('GET', `/v1/inbox/${inboxId}/download`);
+  }
+  /** The received PDF bytes, through a fresh signed URL. */
+  async download(inboxId: string): Promise<Uint8Array> {
+    const link = await this.getDownload(inboxId);
+    return this.h.bytes('GET', link.url);
+  }
+}
+
+export class Numbers extends Resource {
+  /** Where faxes are sent and where numbers are hosted. Scope: number:read. */
+  coverage(): Promise<S.Coverage> {
+    return this.h.request('GET', '/v1/coverage');
+  }
+  /** Fax-capable numbers for sale. Scope: number:read. */
+  inventory(p: { country?: string; locality?: string; type?: string; limit?: number } = {}): Promise<S.Inventory> {
+    return this.h.request('GET', '/v1/number-inventory', { params: p });
+  }
+  /**
+   * Buy a number from the inventory. The first month is held now and charged on activation.
+   * Scope: number:buy, never an agent key.
+   */
+  createOrder(body: S.NumberOrderCreate, o: Mut = {}): Promise<S.NumberOrder> {
+    return this.h.request('POST', '/v1/number-orders', { json: body, ...o });
+  }
+  /** Read a number order. Scope: number:read. */
+  getOrder(orderId: string): Promise<S.NumberOrder> {
+    return this.h.request('GET', `/v1/number-orders/${orderId}`);
+  }
+  /** Your numbers. Scope: number:read. */
+  list(p: { include_released?: boolean } = {}): Promise<S.NumberList> {
+    return this.h.request('GET', '/v1/numbers', { params: p });
+  }
+  /** One number. Scope: number:read. */
+  get(numberId: string): Promise<S.Number> {
+    return this.h.request('GET', `/v1/numbers/${numberId}`);
+  }
+  /** Change the label, project or inbound webhook of a number. Scope: number:buy. */
+  update(numberId: string, body: S.NumberUpdate, o: Mut = {}): Promise<S.Number> {
+    return this.h.request('PATCH', `/v1/numbers/${numberId}`, { json: body, ...o });
+  }
+  /** Release a number. `confirm` is the number itself, typed out. A 30 day quarantine follows. Scope: number:buy. */
+  release(numberId: string, body: S.ReleaseRequest, o: Mut = {}): Promise<S.Number> {
+    return this.h.request('POST', `/v1/numbers/${numberId}/release-requests`, { json: body, ...o });
+  }
+  /** Whether these numbers can port in. Scope: number:read. */
+  checkPortability(body: S.PortabilityCheckCreate, o: Mut = {}): Promise<S.PortabilityCheck> {
+    return this.h.request('POST', '/v1/portability-checks', { json: body, ...o });
+  }
+  /** Port orders and port-out requests. Scope: number:read. */
+  listPortOrders(): Promise<S.PortOrderList> {
+    return this.h.request('GET', '/v1/port-orders');
+  }
+  /** Request a port-in, handled with you. Scope: number:buy. */
+  createPortOrder(body: S.PortOrderCreate, o: Mut = {}): Promise<S.PortOrder> {
+    return this.h.request('POST', '/v1/port-orders', { json: body, ...o });
+  }
+  /** One port order. Scope: number:read. */
+  getPortOrder(portId: string): Promise<S.PortOrder> {
+    return this.h.request('GET', `/v1/port-orders/${portId}`);
+  }
+  /** Note a port-out of one of your numbers. Scope: number:buy. */
+  createPortOutRequest(body: S.PortOutRequestCreate, o: Mut = {}): Promise<S.PortOrder> {
+    return this.h.request('POST', '/v1/port-out-requests', { json: body, ...o });
+  }
+  /** Verify a number your organization owns as a sender. Scope: number:buy. */
+  verifySender(body: S.SenderVerificationCreate, o: Mut = {}): Promise<S.SenderVerification> {
+    return this.h.request('POST', '/v1/sender-verifications', { json: body, ...o });
+  }
+}
+
+type ByItem = { inbox_item_id?: string; document_id?: string };
+
+export class Extractions extends Resource {
+  /**
+   * OCR a received fax or a document, then extract the schema's fields with page citations. Metered per
+   * page. Everything it returns is data from whoever sent the fax. Scope: document:extract.
+   */
+  create(body: S.ExtractionCreate, o: Mut = {}): Promise<S.Extraction> {
+    return this.h.request('POST', '/v1/extractions', { json: body, ...o });
+  }
+  /** Extractions, newest first. Scope: document:extract. */
+  list(p: Page & ByItem = {}): Promise<S.ExtractionPageList> {
+    return this.h.request('GET', '/v1/extractions', { params: p });
+  }
+  /** Every extraction, following next_cursor. */
+  iter(p: Omit<Page, 'cursor'> & ByItem = {}): AsyncGenerator<S.Extraction, void, undefined> {
+    return paginate((cursor) => this.list({ ...p, cursor }));
+  }
+  /** One extraction with its corrections. Scope: document:extract. */
+  get(extractionId: string): Promise<S.Extraction> {
+    return this.h.request('GET', `/v1/extractions/${extractionId}`);
+  }
+  /** Record a reviewer's correction of one field. Stored beside the extraction, never merged. Scope: document:extract. */
+  correct(extractionId: string, body: S.CorrectionCreate, o: Mut = {}): Promise<S.Correction> {
+    return this.h.request('POST', `/v1/extractions/${extractionId}/corrections`, { json: body, ...o });
+  }
+  /** Classify a received fax or a document into one of your document types, or abstain. Scope: document:extract. */
+  classify(body: S.ClassificationCreate, o: Mut = {}): Promise<S.Extraction> {
+    return this.h.request('POST', '/v1/classifications', { json: body, ...o });
+  }
+  /** Classifications, newest first. Scope: document:extract. */
+  listClassifications(p: Page & ByItem = {}): Promise<S.ExtractionPageList> {
+    return this.h.request('GET', '/v1/classifications', { params: p });
+  }
+  /** Every classification, following next_cursor. */
+  iterClassifications(p: Omit<Page, 'cursor'> & ByItem = {}): AsyncGenerator<S.Extraction, void, undefined> {
+    return paginate((cursor) => this.listClassifications({ ...p, cursor }));
+  }
+  /** One classification. Scope: document:extract. */
+  getClassification(classificationId: string): Promise<S.Extraction> {
+    return this.h.request('GET', `/v1/classifications/${classificationId}`);
+  }
+  /** Summarise a received fax or a document. Every sentence cites its pages. Scope: document:extract. */
+  summarize(body: S.SummaryCreate, o: Mut = {}): Promise<S.Extraction> {
+    return this.h.request('POST', '/v1/document-summaries', { json: body, ...o });
+  }
+  /** Summaries, newest first. Scope: document:extract. */
+  listSummaries(p: Page & ByItem = {}): Promise<S.ExtractionPageList> {
+    return this.h.request('GET', '/v1/document-summaries', { params: p });
+  }
+  /** Every summary, following next_cursor. */
+  iterSummaries(p: Omit<Page, 'cursor'> & ByItem = {}): AsyncGenerator<S.Extraction, void, undefined> {
+    return paginate((cursor) => this.listSummaries({ ...p, cursor }));
+  }
+  /** One summary. Scope: document:extract. */
+  getSummary(summaryId: string): Promise<S.Extraction> {
+    return this.h.request('GET', `/v1/document-summaries/${summaryId}`);
+  }
+  /** Your saved extraction schemas. Scope: document:extract. */
+  listSchemas(): Promise<S.ExtractionSchemaList> {
+    return this.h.request('GET', '/v1/extraction-schemas');
+  }
+  /** Save a versioned extraction schema. The same name again is the next version. Scope: document:extract. */
+  createSchema(body: S.SchemaCreate, o: Mut = {}): Promise<S.ExtractionSchema> {
+    return this.h.request('POST', '/v1/extraction-schemas', { json: body, ...o });
+  }
+  /** One schema version. Scope: document:extract. */
+  getSchema(schemaId: string): Promise<S.ExtractionSchema> {
+    return this.h.request('GET', `/v1/extraction-schemas/${schemaId}`);
+  }
+}
+
+export class Organizations extends Resource {
+  /** The organizations the caller belongs to. Scope: any. */
+  list(): Promise<S.OrganizationList> {
+    return this.h.request('GET', '/v1/organizations');
+  }
+  /** The organization of this key. Scope: account:read. */
+  current(): Promise<S.Organization> {
+    return this.h.request('GET', '/v1/organizations/current');
+  }
+  /** Rename the organization. Scope: member:admin, never an agent key. */
+  updateCurrent(body: S.OrganizationPatch, o: Mut = {}): Promise<S.Organization> {
+    return this.h.request('PATCH', '/v1/organizations/current', { json: body, ...o });
+  }
+  /** Ask for an export of the organization's data. Scope: org:admin, never an agent key. */
+  requestDataExport(o: Mut = {}): Promise<S.Requested> {
+    return this.h.request('POST', '/v1/organizations/current/export-requests', { json: {}, ...o });
+  }
+  /** Ask for the organization and its data to be deleted. Scope: org:admin, never an agent key. */
+  requestDataDeletion(o: Mut = {}): Promise<S.Requested> {
+    return this.h.request('POST', '/v1/organizations/current/deletion-requests', { json: {}, ...o });
+  }
+}
+
+export class Members extends Resource {
+  /** The organization's members. Scope: account:read. */
+  list(): Promise<S.MemberList> {
+    return this.h.request('GET', '/v1/members');
+  }
+  /** Change a member's role: owner, admin, member or viewer. Scope: member:admin, never an agent key. */
+  update(memberId: string, body: S.MemberPatch, o: Mut = {}): Promise<S.Member> {
+    return this.h.request('PATCH', `/v1/members/${memberId}`, { json: body, ...o });
+  }
+  /** Remove a member. Scope: org:admin, never an agent key. */
+  async remove(memberId: string, o: Mut = {}): Promise<void> {
+    await this.h.request('DELETE', `/v1/members/${memberId}`, o);
+  }
+  /** Open invitations. Scope: member:admin. */
+  listInvitations(): Promise<S.InvitationList> {
+    return this.h.request('GET', '/v1/invitations');
+  }
+  /** Invite someone by email, a link that works for 7 days. Scope: member:admin, never an agent key. */
+  invite(body: S.InvitationCreate, o: Mut = {}): Promise<S.Invitation> {
+    return this.h.request('POST', '/v1/invitations', { json: body, ...o });
+  }
+  /** Withdraw an invitation. Scope: member:admin, never an agent key. */
+  async revokeInvitation(invitationId: string, o: Mut = {}): Promise<void> {
+    await this.h.request('DELETE', `/v1/invitations/${invitationId}`, o);
+  }
 }
 
 export class FaxForAgents {
@@ -480,6 +708,10 @@ export class FaxForAgents {
   readonly policies: Policies;
   readonly agents: Agents;
   readonly inbox: Inbox;
+  readonly numbers: Numbers;
+  readonly extractions: Extractions;
+  readonly organizations: Organizations;
+  readonly members: Members;
 
   constructor(opts: ClientOptions = {}) {
     this.http = new Http(opts);
@@ -496,6 +728,10 @@ export class FaxForAgents {
     this.policies = new Policies(this.http);
     this.agents = new Agents(this.http);
     this.inbox = new Inbox(this.http);
+    this.numbers = new Numbers(this.http);
+    this.extractions = new Extractions(this.http);
+    this.organizations = new Organizations(this.http);
+    this.members = new Members(this.http);
   }
 
   /** Shortcut for identity.me(). */

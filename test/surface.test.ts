@@ -91,12 +91,54 @@ const COVERED: Record<string, string> = {
   get_agent_activity: 'agents.activity',
   list_inbox: 'inbox.list',
   get_inbox_item: 'inbox.get',
+  update_inbox_item: 'inbox.update',
+  delete_inbox_item: 'inbox.delete',
+  get_inbox_download: 'inbox.getDownload',
+  get_inbox_content: 'inbox.download',
+  get_coverage: 'numbers.coverage',
+  get_number_inventory: 'numbers.inventory',
+  create_number_order: 'numbers.createOrder',
+  get_number_order: 'numbers.getOrder',
+  list_numbers: 'numbers.list',
+  get_number: 'numbers.get',
+  update_number: 'numbers.update',
+  create_release_request: 'numbers.release',
+  create_portability_check: 'numbers.checkPortability',
+  list_port_orders: 'numbers.listPortOrders',
+  create_port_order: 'numbers.createPortOrder',
+  get_port_order: 'numbers.getPortOrder',
+  create_port_out_request: 'numbers.createPortOutRequest',
+  create_sender_verification: 'numbers.verifySender',
+  create_extraction: 'extractions.create',
+  list_extractions: 'extractions.list',
+  get_extraction: 'extractions.get',
+  create_correction: 'extractions.correct',
+  create_classification: 'extractions.classify',
+  list_classifications: 'extractions.listClassifications',
+  get_classification: 'extractions.getClassification',
+  create_document_summary: 'extractions.summarize',
+  list_document_summaries: 'extractions.listSummaries',
+  get_document_summary: 'extractions.getSummary',
+  list_extraction_schemas: 'extractions.listSchemas',
+  create_extraction_schema: 'extractions.createSchema',
+  get_extraction_schema: 'extractions.getSchema',
+  list_organizations: 'organizations.list',
+  get_current_organization: 'organizations.current',
+  update_current_organization: 'organizations.updateCurrent',
+  request_data_export: 'organizations.requestDataExport',
+  request_data_deletion: 'organizations.requestDataDeletion',
+  list_members: 'members.list',
+  update_member: 'members.update',
+  remove_member: 'members.remove',
+  list_invitations: 'members.listInvitations',
+  create_invitation: 'members.invite',
+  revoke_invitation: 'members.revokeInvitation',
 };
 
 it('covers every operationId of the spec', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const ids = new Set([...yaml.matchAll(/^\s+operationId: (\w+)$/gm)].map((m) => m[1]!));
-  expect(ids.size).toBe(85);
+  expect(ids.size).toBe(127);
   expect([...ids].sort()).toEqual(Object.keys(COVERED).sort());
   const c = new FaxForAgents({ apiKey: 'ffa_test_x' }) as unknown as Record<string, Record<string, unknown>>;
   for (const target of Object.values(COVERED)) {

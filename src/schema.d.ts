@@ -11,16 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List agent identities
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** List agent identities */
         get: operations["list_agents"];
         put?: never;
-        /**
-         * Register an agent identity
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Register an agent identity */
         post: operations["create_agent"];
         delete?: never;
         options?: never;
@@ -35,20 +29,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read an agent with its keys and budgets
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read an agent with its keys and budgets */
         get: operations["get_agent"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Change an agent. Disabling revokes its keys
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Change an agent. Disabling revokes its keys */
         patch: operations["update_agent"];
         trace?: never;
     };
@@ -59,10 +47,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * The agent's audit trail
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** The agent's audit trail */
         get: operations["get_agent_activity"];
         put?: never;
         post?: never;
@@ -81,10 +66,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Mint a key for the agent (bounded scopes, secret shown once)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Mint a key for the agent (bounded scopes, secret shown once) */
         post: operations["create_agent_key"];
         delete?: never;
         options?: never;
@@ -99,16 +81,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List API keys (metadata only)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** List API keys (metadata only) */
         get: operations["list_api_keys"];
         put?: never;
-        /**
-         * Create an API key (the secret is shown once)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Create an API key (the secret is shown once) */
         post: operations["create_api_key"];
         delete?: never;
         options?: never;
@@ -126,10 +102,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Revoke a key
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Revoke a key */
         delete: operations["revoke_api_key"];
         options?: never;
         head?: never;
@@ -145,10 +118,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Rotate a key: a new secret, the old one works for 24 more hours
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Rotate a key: a new secret, the old one works for 24 more hours */
         post: operations["rotate_api_key"];
         delete?: never;
         options?: never;
@@ -163,16 +133,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Approval requests, pending first
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Approval requests, pending first */
         get: operations["list_approval_requests"];
         put?: never;
-        /**
-         * Ask a human to approve a quoted send, or ask for help (grants nothing)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Ask a human to approve a quoted send, or ask for help (grants nothing) */
         post: operations["create_approval_request"];
         delete?: never;
         options?: never;
@@ -187,10 +151,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read one request
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read one request */
         get: operations["get_approval_request"];
         put?: never;
         post?: never;
@@ -209,10 +170,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Approve the bound quote (a human with approval:decide, never the requester)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Approve the bound quote (a human with approval:decide, never the requester) */
         post: operations["approve_request"];
         delete?: never;
         options?: never;
@@ -229,10 +187,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Reject with a reason
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Reject with a reason */
         post: operations["reject_request"];
         delete?: never;
         options?: never;
@@ -249,10 +204,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Revoke an approval nobody has used yet
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Revoke an approval nobody has used yet */
         post: operations["revoke_approval"];
         delete?: never;
         options?: never;
@@ -267,16 +219,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Auto top-up settings
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Auto top-up settings */
         get: operations["list_auto_topups"];
         put?: never;
-        /**
-         * Opt in to auto top-up (threshold, amount, daily cap). The card is saved at the first payment
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Opt in to auto top-up (threshold, amount, daily cap). The card is saved at the first payment */
         post: operations["create_auto_topup"];
         delete?: never;
         options?: never;
@@ -294,10 +240,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Turn auto top-up off
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Turn auto top-up off */
         delete: operations["delete_auto_topup"];
         options?: never;
         head?: never;
@@ -311,10 +254,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Available and held balance
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Available and held balance */
         get: operations["get_balance"];
         put?: never;
         post?: never;
@@ -333,10 +273,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Open the Stripe customer portal (cards, invoices, the subscription)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Open the Stripe customer portal (cards, invoices, the subscription) */
         post: operations["create_portal_session"];
         delete?: never;
         options?: never;
@@ -351,20 +288,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Billing settings of the organization
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Billing settings of the organization */
         get: operations["get_billing_settings"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Change the billing email or the low-balance threshold
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Change the billing email or the low-balance threshold */
         patch: operations["patch_billing_settings"];
         trace?: never;
     };
@@ -375,16 +306,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Spending caps of this environment
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Spending caps of this environment */
         get: operations["list_budgets"];
         put?: never;
-        /**
-         * Create a daily or monthly cap for the organization, a project or an agent
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Create a daily or monthly cap for the organization, a project or an agent */
         post: operations["create_budget"];
         delete?: never;
         options?: never;
@@ -405,10 +330,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Change a cap's limit or status
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Change a cap's limit or status */
         patch: operations["patch_budget"];
         trace?: never;
     };
@@ -419,11 +341,95 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Limits and features in force
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Limits and features in force */
         get: operations["get_capabilities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/classifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Classifications, newest first */
+        get: operations["list_classifications"];
+        put?: never;
+        /** Classify a received fax or a document into one of your document types, or abstain */
+        post: operations["create_classification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/classifications/{classification_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One classification */
+        get: operations["get_classification"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Where we send and where we host numbers */
+        get: operations["get_coverage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/document-summaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Summaries, newest first */
+        get: operations["list_document_summaries"];
+        put?: never;
+        /** Summarise a received fax or a document. Every sentence cites its pages */
+        post: operations["create_document_summary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/document-summaries/{summary_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One summary */
+        get: operations["get_document_summary"];
         put?: never;
         post?: never;
         delete?: never;
@@ -439,16 +445,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List documents, newest first
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** List documents, newest first */
         get: operations["list_documents"];
         put?: never;
-        /**
-         * Create an immutable document from an upload or from text
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Create an immutable document from an upload or from text */
         post: operations["create_document"];
         delete?: never;
         options?: never;
@@ -463,17 +463,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read a document's hash, pages and validation state
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read a document's hash, pages and validation state */
         get: operations["get_document"];
         put?: never;
         post?: never;
-        /**
-         * Delete a document (its bytes and previews)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Delete a document (its bytes and previews) */
         delete: operations["delete_document"];
         options?: never;
         head?: never;
@@ -487,7 +481,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The PDF bytes behind a signed URL (no API key) */
+        /**
+         * The PDF bytes behind a signed URL (no API key)
+         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
+         */
         get: operations["get_document_content"];
         put?: never;
         post?: never;
@@ -504,10 +501,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * A short-lived signed download URL
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** A short-lived signed download URL */
         get: operations["get_document_download"];
         put?: never;
         post?: never;
@@ -524,10 +518,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Rendered pages with signed preview URLs
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Rendered pages with signed preview URLs */
         get: operations["list_document_pages"];
         put?: never;
         post?: never;
@@ -544,7 +535,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** A page PNG behind a signed URL (no API key) */
+        /**
+         * A page PNG behind a signed URL (no API key)
+         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
+         */
         get: operations["get_document_page_content"];
         put?: never;
         post?: never;
@@ -561,10 +555,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Validation warnings
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Validation warnings */
         get: operations["get_document_validation"];
         put?: never;
         post?: never;
@@ -581,13 +572,97 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Events for reconciliation, oldest first from the cursor
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Events for reconciliation, oldest first from the cursor */
         get: operations["list_events"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/extraction-schemas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your extraction schemas */
+        get: operations["list_extraction_schemas"];
+        put?: never;
+        /** Save a versioned extraction schema (the same name again is the next version) */
+        post: operations["create_extraction_schema"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/extraction-schemas/{schema_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One schema version */
+        get: operations["get_extraction_schema"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/extractions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Extractions, newest first */
+        get: operations["list_extractions"];
+        put?: never;
+        /** Read a received fax or a document: OCR per page, then fields against a schema */
+        post: operations["create_extraction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/extractions/{extraction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One extraction with its corrections */
+        get: operations["get_extraction"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/extractions/{extraction_id}/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a reviewer's correction of one field (stored beside the extraction, never merged) */
+        post: operations["create_correction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -603,10 +678,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Price an exact document to one destination
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Price an exact document to one destination */
         post: operations["create_fax_quote"];
         delete?: never;
         options?: never;
@@ -621,10 +693,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read a quote
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read a quote */
         get: operations["get_fax_quote"];
         put?: never;
         post?: never;
@@ -641,16 +710,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List fax jobs, newest first
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** List fax jobs, newest first */
         get: operations["list_faxes"];
         put?: never;
-        /**
-         * Send a quoted fax. Pass an Idempotency-Key.
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Send a quoted fax. Pass an Idempotency-Key. */
         post: operations["create_fax"];
         delete?: never;
         options?: never;
@@ -665,10 +728,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read a fax job (with evidence once delivered)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read a fax job (with evidence once delivered) */
         get: operations["get_fax"];
         put?: never;
         post?: never;
@@ -685,10 +745,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Attempt history
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Attempt history */
         get: operations["list_fax_attempts"];
         put?: never;
         post?: never;
@@ -707,10 +764,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Cancel if still possible (best effort once sending)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Cancel if still possible (best effort once sending) */
         post: operations["cancel_fax"];
         delete?: never;
         options?: never;
@@ -725,10 +779,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Ordered events of one fax
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Ordered events of one fax */
         get: operations["list_fax_events"];
         put?: never;
         post?: never;
@@ -745,10 +796,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Delivery evidence as a receipt (JSON)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Delivery evidence as a receipt (JSON) */
         get: operations["get_fax_receipt"];
         put?: never;
         post?: never;
@@ -765,10 +813,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Received faxes, newest first (metadata only)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Received faxes, newest first (metadata only) */
         get: operations["list_inbox"];
         put?: never;
         post?: never;
@@ -785,14 +830,85 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * One received fax with its text as data
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** One received fax with its text as data */
         get: operations["get_inbox_item"];
         put?: never;
         post?: never;
+        /** Delete a received fax */
+        delete: operations["delete_inbox_item"];
+        options?: never;
+        head?: never;
+        /** Mark a received fax read or archived */
+        patch: operations["update_inbox_item"];
+        trace?: never;
+    };
+    "/v1/inbox/{inbox_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The received PDF behind a signed URL (no API key)
+         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
+         */
+        get: operations["get_inbox_content"];
+        put?: never;
+        post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inbox/{inbox_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A short-lived signed link to the received PDF */
+        get: operations["get_inbox_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Open invitations */
+        get: operations["list_invitations"];
+        put?: never;
+        /** Invite someone by email (a link that works for 7 days) */
+        post: operations["create_invitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invitations/{invitation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Withdraw an invitation */
+        delete: operations["revoke_invitation"];
         options?: never;
         head?: never;
         patch?: never;
@@ -805,10 +921,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Stripe invoices and receipts (hosted links)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Stripe invoices and receipts (hosted links) */
         get: operations["list_invoices"];
         put?: never;
         post?: never;
@@ -825,10 +938,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * One Stripe invoice
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** One Stripe invoice */
         get: operations["get_invoice"];
         put?: never;
         post?: never;
@@ -845,10 +955,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Wallet transactions, newest first
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Wallet transactions, newest first */
         get: operations["list_ledger"];
         put?: never;
         post?: never;
@@ -865,13 +972,217 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Who am I
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Who am I */
         get: operations["get_me"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The organization's members */
+        get: operations["list_members"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/members/{member_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a member (owner) */
+        delete: operations["remove_member"];
+        options?: never;
+        head?: never;
+        /** Change a member's role */
+        patch: operations["update_member"];
+        trace?: never;
+    };
+    "/v1/number-inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fax-capable numbers for sale */
+        get: operations["get_number_inventory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/number-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Buy a number (the first month is held now, charged on activation) */
+        post: operations["create_number_order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/number-orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a number order */
+        get: operations["get_number_order"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/numbers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your numbers */
+        get: operations["list_numbers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/numbers/{number_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One number */
+        get: operations["get_number"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Label and inbound route of a number */
+        patch: operations["update_number"];
+        trace?: never;
+    };
+    "/v1/numbers/{number_id}/release-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Release a number (confirm with the number itself. 30-day quarantine follows) */
+        post: operations["create_release_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The organizations you belong to */
+        get: operations["list_organizations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The organization you are looking at */
+        get: operations["get_current_organization"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename the organization */
+        patch: operations["update_current_organization"];
+        trace?: never;
+    };
+    "/v1/organizations/current/deletion-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask for the organization and its data to be deleted (owner) */
+        post: operations["request_data_deletion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/current/export-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask for an export of the organization's data (owner) */
+        post: operations["request_data_export"];
         delete?: never;
         options?: never;
         head?: never;
@@ -885,16 +1196,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List the organization's policies
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** List the organization's policies */
         get: operations["list_policies"];
         put?: never;
-        /**
-         * Create a delegated policy (version 1)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Create a delegated policy (version 1) */
         post: operations["create_policy"];
         delete?: never;
         options?: never;
@@ -909,20 +1214,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read a policy (its current version)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read a policy (its current version) */
         get: operations["get_policy"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Change a policy: a new immutable version
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Change a policy: a new immutable version */
         patch: operations["update_policy"];
         trace?: never;
     };
@@ -933,10 +1232,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Every version, oldest first
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Every version, oldest first */
         get: operations["list_policy_versions"];
         put?: never;
         post?: never;
@@ -953,10 +1249,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * What the calling API key is allowed to do alone, and whether a human is needed otherwise
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** What the calling API key is allowed to do alone, and whether a human is needed otherwise */
         get: operations["get_effective_policies"];
         put?: never;
         post?: never;
@@ -975,11 +1268,77 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Dry run: would the calling key's policies allow this send? Never executes
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Dry run: would the calling key's policies allow this send? Never executes */
         post: operations["create_policy_evaluation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/port-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Port orders and port-out requests */
+        get: operations["list_port_orders"];
+        put?: never;
+        /** Request a port-in (handled with you) */
+        post: operations["create_port_order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/port-orders/{port_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One port order */
+        get: operations["get_port_order"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/port-out-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Note a port-out of one of your numbers */
+        post: operations["create_port_out_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/portability-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Can these numbers port in */
+        post: operations["create_portability_check"];
         delete?: never;
         options?: never;
         head?: never;
@@ -996,10 +1355,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Reset this organization's test data
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Reset this organization's test data */
         delete: operations["reset_sandbox_data"];
         options?: never;
         head?: never;
@@ -1016,8 +1372,9 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create a synthetic inbound fax (stub until the inbox lands)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
+         * Create a synthetic inbound fax (the same pipeline as a real one)
+         * @description A synthetic PDF goes through ``inbox.service.receive_now``: the private document, the inbox item,
+         *     the ``fax.received`` event with its download reference, exactly as a carrier delivery (M8).
          */
         post: operations["create_sandbox_inbound_fax"];
         delete?: never;
@@ -1033,17 +1390,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * The scenario catalog and active fixtures
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** The scenario catalog and active fixtures */
         get: operations["list_sandbox_scenarios"];
         put?: never;
-        /**
-         * Select the outcome of the next sends
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Select the outcome of the next sends */
         post: operations["create_sandbox_scenario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sender-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify a number of yours as a sender (only numbers you own) */
+        post: operations["create_sender_verification"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1057,10 +1425,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Customer-safe availability
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Customer-safe availability */
         get: operations["get_service_status"];
         put?: never;
         post?: never;
@@ -1077,10 +1442,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Subscriptions and the workspace entitlement
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Subscriptions and the workspace entitlement */
         get: operations["list_subscriptions"];
         put?: never;
         post?: never;
@@ -1099,10 +1461,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Open a hosted Checkout for the Agent workspace subscription
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Open a hosted Checkout for the Agent workspace subscription */
         post: operations["create_subscription_checkout"];
         delete?: never;
         options?: never;
@@ -1117,16 +1476,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Top-up sessions, newest first
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Top-up sessions, newest first */
         get: operations["list_topup_sessions"];
         put?: never;
-        /**
-         * Open a hosted Checkout to fund the live wallet (10 to 1000 USD)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Open a hosted Checkout to fund the live wallet (10 to 1000 USD) */
         post: operations["create_topup_session"];
         delete?: never;
         options?: never;
@@ -1141,10 +1494,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read a top-up session
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read a top-up session */
         get: operations["get_topup_session"];
         put?: never;
         post?: never;
@@ -1163,10 +1513,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Create a bounded upload session
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Create a bounded upload session */
         post: operations["create_upload"];
         delete?: never;
         options?: never;
@@ -1184,10 +1531,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Cancel an incomplete upload
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Cancel an incomplete upload */
         delete: operations["cancel_upload"];
         options?: never;
         head?: never;
@@ -1203,10 +1547,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Finalize an upload (size and hash checked)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Finalize an upload (size and hash checked) */
         post: operations["complete_upload"];
         delete?: never;
         options?: never;
@@ -1222,7 +1563,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Send the bytes to a signed upload URL (no API key) */
+        /**
+         * Send the bytes to a signed upload URL (no API key)
+         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
+         */
         put: operations["put_upload_content"];
         post?: never;
         delete?: never;
@@ -1238,10 +1582,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Usage rollups by day, direction, destination and project
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Usage rollups by day, direction, destination and project */
         get: operations["get_usage"];
         put?: never;
         post?: never;
@@ -1260,10 +1601,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Export usage as CSV behind a signed download
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Export usage as CSV behind a signed download */
         post: operations["create_usage_export"];
         delete?: never;
         options?: never;
@@ -1278,10 +1616,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Read a usage export (fresh link)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Read a usage export (fresh link) */
         get: operations["get_usage_export"];
         put?: never;
         post?: never;
@@ -1298,7 +1633,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The CSV behind a signed URL (no API key) */
+        /**
+         * The CSV behind a signed URL (no API key)
+         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
+         */
         get: operations["get_usage_export_content"];
         put?: never;
         post?: never;
@@ -1315,10 +1653,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Delivery attempts (no payload secrets)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Delivery attempts (no payload secrets) */
         get: operations["list_webhook_deliveries"];
         put?: never;
         post?: never;
@@ -1337,10 +1672,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Replay the event with the same event id
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Replay the event with the same event id */
         post: operations["replay_webhook_delivery"];
         delete?: never;
         options?: never;
@@ -1355,16 +1687,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * List webhooks
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** List webhooks */
         get: operations["list_webhooks"];
         put?: never;
-        /**
-         * Register a destination (secret shown once)
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Register a destination (secret shown once) */
         post: operations["create_webhook"];
         delete?: never;
         options?: never;
@@ -1382,17 +1708,11 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Remove a destination
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Remove a destination */
         delete: operations["delete_webhook"];
         options?: never;
         head?: never;
-        /**
-         * Change url, filters or pause
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Change url, filters or pause */
         patch: operations["update_webhook"];
         trace?: never;
     };
@@ -1405,10 +1725,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * New secret. The old one signs too for 24 hours
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** New secret. The old one signs too for 24 hours */
         post: operations["rotate_webhook_secret"];
         delete?: never;
         options?: never;
@@ -1425,10 +1742,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Send a signed webhook.test event to this destination
-         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives ten minutes.
-         */
+        /** Send a signed webhook.test event to this destination */
         post: operations["test_webhook"];
         delete?: never;
         options?: never;
@@ -1694,6 +2008,11 @@ export interface components {
             kind: "send" | "help";
             /** Message */
             message: string | null;
+            /**
+             * Notified
+             * @description On creation: whether the organization was mailed. false when the request repeats a pending one or the organization's daily cap of request mails is reached; the request is still shown in the dashboard.
+             */
+            notified?: boolean | null;
             /** Quote Id */
             quote_id: string | null;
             /** Reason */
@@ -2000,6 +2319,86 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ClassificationCreate */
+        ClassificationCreate: {
+            /**
+             * Abstain Below
+             * @default 0.6
+             */
+            abstain_below: number;
+            /** Document Id */
+            document_id?: string | null;
+            /** Document Types */
+            document_types: string[];
+            /** Inbox Item Id */
+            inbox_item_id?: string | null;
+            /** Max Pages */
+            max_pages?: number | null;
+            /**
+             * Strict
+             * @description Refuse with page_limit_exceeded when the document has more pages than would be read, instead of reading the first ones and warning.
+             * @default false
+             */
+            strict: boolean;
+            /**
+             * Strong Model If Below
+             * @default 0.75
+             */
+            strong_model_if_below: number;
+        };
+        /** Correction */
+        Correction: {
+            /** Created At */
+            created_at: string;
+            /** Created By */
+            created_by: string;
+            /** Extraction Id */
+            extraction_id: string;
+            /** Field */
+            field: string;
+            /** Id */
+            id: string;
+            /** Note */
+            note: string | null;
+            /** Value */
+            value: unknown;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorrectionCreate */
+        CorrectionCreate: {
+            /** Field */
+            field?: string | null;
+            /** Note */
+            note?: string | null;
+            /** Value */
+            value?: unknown;
+        };
+        /** Coverage */
+        Coverage: {
+            /** Coverage Version */
+            coverage_version: string | null;
+            /** Excluded */
+            excluded: {
+                [key: string]: unknown;
+            };
+            /** Generated At */
+            generated_at: string | null;
+            /** Inbound */
+            inbound: {
+                [key: string]: unknown;
+            };
+            /** Note */
+            note: string | null;
+            /** Orderable Now */
+            orderable_now: string[];
+            /** Outbound */
+            outbound: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
+        };
         /** Deleted */
         Deleted: {
             /**
@@ -2102,7 +2501,7 @@ export interface components {
             filename?: string | null;
             /**
              * Html
-             * @description HTML; rendered in a locked Chromium once that image ships.
+             * @description HTML rendered to PDF by a headless browser with scripts off and no network: inline CSS and data: images print, external resources are counted as blocked. US letter unless @page says otherwise. At most 2 MiB.
              */
             html?: string | null;
             /**
@@ -2240,6 +2639,180 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** Extraction */
+        Extraction: {
+            /** Completed At */
+            completed_at: string | null;
+            /** Confidence */
+            confidence: number | null;
+            /** Corrections */
+            corrections?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Created At */
+            created_at: string;
+            /** Created By */
+            created_by: string;
+            /** Currency */
+            currency: string;
+            /** Document Id */
+            document_id: string;
+            /**
+             * Document Pages
+             * @description The document's page count. Above pages_processed on a completed row means the cap left pages unread; output.truncated and a warning say so.
+             */
+            document_pages: number;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Error Code */
+            error_code: string | null;
+            /** Id */
+            id: string;
+            /** Inbox Item Id */
+            inbox_item_id: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "extract" | "classify" | "summarize";
+            /** Models */
+            models: {
+                [key: string]: unknown;
+            };
+            /** Options */
+            options: {
+                [key: string]: unknown;
+            };
+            /** Output */
+            output: {
+                [key: string]: unknown;
+            } | null;
+            /** Pages */
+            pages: components["schemas"]["ExtractionPage"][];
+            /** Pages Escalated */
+            pages_escalated: number;
+            /** Pages Processed */
+            pages_processed: number;
+            /** Pages Requested */
+            pages_requested: number;
+            /** Price Micro */
+            price_micro: number;
+            /** Provider Cost Micro */
+            provider_cost_micro: number;
+            /** Schema */
+            schema?: {
+                [key: string]: unknown;
+            } | null;
+            /** Schema Id */
+            schema_id: string | null;
+            /** Started At */
+            started_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "queued" | "running" | "completed" | "failed";
+        } & {
+            [key: string]: unknown;
+        };
+        /** ExtractionCreate */
+        ExtractionCreate: {
+            /** Document Id */
+            document_id?: string | null;
+            /** Inbox Item Id */
+            inbox_item_id?: string | null;
+            /** Max Pages */
+            max_pages?: number | null;
+            /**
+             * Schema
+             * @description A JSON Schema object of string, number, boolean or date fields with descriptions.
+             */
+            schema?: {
+                [key: string]: unknown;
+            } | null;
+            /** Schema Id */
+            schema_id?: string | null;
+            /**
+             * Strict
+             * @description Refuse with page_limit_exceeded when the document has more pages than would be read, instead of reading the first ones and warning.
+             * @default false
+             */
+            strict: boolean;
+            /**
+             * Strong Model If Below
+             * @default 0.75
+             */
+            strong_model_if_below: number;
+        };
+        /** ExtractionPage */
+        ExtractionPage: {
+            /** Confidence */
+            confidence: number;
+            /**
+             * Escalated
+             * @default false
+             */
+            escalated: boolean;
+            /** Language */
+            language?: string | null;
+            /** Model */
+            model: string;
+            /** Page */
+            page: number;
+            /** Status */
+            status: string;
+            /** Text */
+            text: string;
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** ExtractionPageList */
+        ExtractionPageList: {
+            /** Items */
+            items: components["schemas"]["Extraction"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ExtractionSchema */
+        ExtractionSchema: {
+            /** Created At */
+            created_at: string;
+            /** Created By */
+            created_by: string;
+            /** Description */
+            description: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Schema */
+            schema: {
+                [key: string]: unknown;
+            };
+            /** Status */
+            status: string;
+            /** Version */
+            version: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ExtractionSchemaList */
+        ExtractionSchemaList: {
+            /** Items */
+            items: components["schemas"]["ExtractionSchema"][];
+        } & {
+            [key: string]: unknown;
+        };
         /**
          * FaxCreate
          * @description M9: an approved request authorizes the send; without one a quote that needs authorization is
@@ -2342,16 +2915,52 @@ export interface components {
         };
         /** InboxItem */
         InboxItem: {
+            /**
+             * Amount Micro
+             * @default 0
+             */
+            amount_micro: number;
             /** Document Id */
             document_id: string | null;
+            /** Duration Secs */
+            duration_secs?: number | null;
+            /**
+             * Environment
+             * @default live
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Expires At */
+            expires_at?: string | null;
             /** From */
             from?: string | null;
             /** Id */
             id: string;
+            /**
+             * Media Status
+             * @default stored
+             */
+            media_status: string;
             /** Note */
             note?: string | null;
+            /** Number Id */
+            number_id?: string | null;
             /** Pages */
             pages: number;
+            /**
+             * Partial Content
+             * @default false
+             */
+            partial_content: boolean;
+            /** Project Id */
+            project_id?: string | null;
+            /**
+             * Provider
+             * @default
+             */
+            provider: string;
+            /** Read At */
+            read_at?: string | null;
             /** Received At */
             received_at: string;
             /** Status */
@@ -2363,24 +2972,58 @@ export interface components {
         };
         /** InboxItemDetail */
         InboxItemDetail: {
+            /**
+             * Amount Micro
+             * @default 0
+             */
+            amount_micro: number;
             /** Document */
             document?: {
                 [key: string]: unknown;
             } | null;
             /** Document Id */
             document_id: string | null;
+            /** Duration Secs */
+            duration_secs?: number | null;
+            /**
+             * Environment
+             * @default live
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Expires At */
+            expires_at?: string | null;
             /** Extraction Id */
             extraction_id?: string | null;
             /** From */
             from?: string | null;
             /** Id */
             id: string;
+            /**
+             * Media Status
+             * @default stored
+             */
+            media_status: string;
             /** Note */
             note?: string | null;
+            /** Number Id */
+            number_id?: string | null;
             /** Pages */
             pages: number;
-            /** Provider */
+            /**
+             * Partial Content
+             * @default false
+             */
+            partial_content: boolean;
+            /** Project Id */
+            project_id?: string | null;
+            /**
+             * Provider
+             * @default
+             */
             provider: string;
+            /** Read At */
+            read_at?: string | null;
             /** Received At */
             received_at: string;
             /** Status */
@@ -2392,12 +3035,122 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** InboxItem */
+        InboxItemSummary: {
+            /**
+             * Amount Micro
+             * @default 0
+             */
+            amount_micro: number;
+            /** Document Id */
+            document_id: string | null;
+            /** From */
+            from?: string | null;
+            /** Id */
+            id: string;
+            /** Note */
+            note?: string | null;
+            /** Pages */
+            pages: number;
+            /** Received At */
+            received_at: string;
+            /** Status */
+            status: string;
+            /** To */
+            to: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** InboxPage */
         InboxPage: {
             /** Items */
             items: components["schemas"]["InboxItem"][];
             /** Next Cursor */
             next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** InboxUpdate */
+        InboxUpdate: {
+            /** Status */
+            status?: ("received" | "read" | "archived") | null;
+        };
+        /** Inventory */
+        Inventory: {
+            /** Country */
+            country: string;
+            /** Items */
+            items: components["schemas"]["InventoryNumber"][];
+            /** Locality */
+            locality: string | null;
+            /** Note */
+            note: string;
+            /** Number Type */
+            number_type: string;
+            /** Recurring Period */
+            recurring_period: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** InventoryNumber */
+        InventoryNumber: {
+            /** Country */
+            country: string;
+            /** Currency */
+            currency: string;
+            /** E164 */
+            e164: string;
+            /** Locality */
+            locality: string | null;
+            /** Monthly Micro */
+            monthly_micro: number;
+            /** Number Type */
+            number_type: string;
+            /** Setup Micro */
+            setup_micro: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** Invitation */
+        Invitation: {
+            /** Accepted At */
+            accepted_at: string | null;
+            /** Created At */
+            created_at: string;
+            /** Email */
+            email: string;
+            /** Expires At */
+            expires_at: string;
+            /** Id */
+            id: string;
+            /** Invited By */
+            invited_by: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "owner" | "admin" | "member" | "viewer";
+        } & {
+            [key: string]: unknown;
+        };
+        /** InvitationCreate */
+        InvitationCreate: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Role
+             * @default member
+             * @enum {string}
+             */
+            role: "owner" | "admin" | "member" | "viewer";
+        };
+        /** InvitationList */
+        InvitationList: {
+            /** Items */
+            items: components["schemas"]["Invitation"][];
         } & {
             [key: string]: unknown;
         };
@@ -2486,6 +3239,209 @@ export interface components {
             project_id: string;
             /** Scopes */
             scopes: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** Member */
+        Member: {
+            /** Created At */
+            created_at: string;
+            /** Email */
+            email: string;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string | null;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "owner" | "admin" | "member" | "viewer";
+            /** User Id */
+            user_id: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** MemberList */
+        MemberList: {
+            /** Items */
+            items: components["schemas"]["Member"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** MemberPatch */
+        MemberPatch: {
+            /**
+             * Role
+             * @description Required. Optional in the schema so a foreign id is a 404 first.
+             */
+            role?: ("owner" | "admin" | "member" | "viewer") | null;
+        };
+        /** Number */
+        Number: {
+            /** Activated At */
+            activated_at: string | null;
+            /** Country */
+            country: string;
+            /** Created At */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** E164 */
+            e164: string;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Id */
+            id: string;
+            /** Inbound Status */
+            inbound_status: string;
+            /** Inbound Webhook Id */
+            inbound_webhook_id: string | null;
+            /** Label */
+            label: string | null;
+            /** Locality */
+            locality: string | null;
+            /** Monthly Micro */
+            monthly_micro: number;
+            /** Number Type */
+            number_type: string;
+            /** Order Id */
+            order_id: string | null;
+            /** Project Id */
+            project_id: string | null;
+            /** Provider */
+            provider: string;
+            /** Released At */
+            released_at: string | null;
+            /** Renews At */
+            renews_at: string | null;
+            /** Status */
+            status: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** NumberList */
+        NumberList: {
+            /** Items */
+            items: components["schemas"]["Number"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** NumberOrder */
+        NumberOrder: {
+            /** Completed At */
+            completed_at: string | null;
+            /** Country */
+            country: string | null;
+            /** Created At */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** E164 */
+            e164: string | null;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Error */
+            error: string | null;
+            /**
+             * First Month Hold Micro
+             * @description Held now, captured when the number activates.
+             */
+            first_month_hold_micro: number;
+            /** Id */
+            id: string;
+            number: components["schemas"]["Number"] | null;
+            /** Number Id */
+            number_id: string | null;
+            /** Number Type */
+            number_type: string | null;
+            /** Provider */
+            provider: string;
+            /**
+             * Recurring Charge Micro
+             * @description Charged every month on the activation day.
+             */
+            recurring_charge_micro: number;
+            /** Recurring Period */
+            recurring_period: string;
+            /** Status */
+            status: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** NumberOrderCreate */
+        NumberOrderCreate: {
+            /**
+             * E164
+             * @description A number from GET /v1/number-inventory, E.164.
+             */
+            e164: string;
+            /**
+             * Inbound Webhook Id
+             * @description The webhook that receives fax.received for this number (default: all).
+             */
+            inbound_webhook_id?: string | null;
+            /** Label */
+            label?: string | null;
+            /**
+             * Project Id
+             * @description Inbound faxes are filed under this project.
+             */
+            project_id?: string | null;
+        };
+        /** NumberUpdate */
+        NumberUpdate: {
+            /** Inbound Webhook Id */
+            inbound_webhook_id?: string | null;
+            /** Label */
+            label?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+        };
+        /** Organization */
+        Organization: {
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            /** Members */
+            members: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: ("owner" | "admin" | "member" | "viewer") | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OrganizationList */
+        OrganizationList: {
+            /** Items */
+            items: components["schemas"]["OrganizationSummary"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** OrganizationPatch */
+        OrganizationPatch: {
+            /** Name */
+            name: string;
+        };
+        /** OrganizationSummary */
+        OrganizationSummary: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "owner" | "admin" | "member" | "viewer";
         } & {
             [key: string]: unknown;
         };
@@ -2655,6 +3611,22 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** PortabilityCheck */
+        PortabilityCheck: {
+            /** Checked At */
+            checked_at: string;
+            /** Items */
+            items: {
+                [key: string]: unknown;
+            }[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** PortabilityCheckCreate */
+        PortabilityCheckCreate: {
+            /** Numbers */
+            numbers: string[];
+        };
         /** PortalSession */
         PortalSession: {
             /** Expires At */
@@ -2663,6 +3635,59 @@ export interface components {
             url: string;
         } & {
             [key: string]: unknown;
+        };
+        /** PortOrder */
+        PortOrder: {
+            /** Created At */
+            created_at: string;
+            /** Direction */
+            direction: string;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Id */
+            id: string;
+            /** Milestones */
+            milestones: {
+                [key: string]: unknown;
+            }[];
+            /** Numbers */
+            numbers: string[];
+            /** Provider */
+            provider: string;
+            /** Request */
+            request: {
+                [key: string]: unknown;
+            };
+            /** Status */
+            status: string;
+            /** Updated At */
+            updated_at: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** PortOrderCreate */
+        PortOrderCreate: {
+            /** Note */
+            note?: string | null;
+            /** Numbers */
+            numbers: string[];
+        };
+        /** PortOrderList */
+        PortOrderList: {
+            /** Items */
+            items: components["schemas"]["PortOrder"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** PortOutRequestCreate */
+        PortOutRequestCreate: {
+            /** Note */
+            note?: string | null;
+            /** Number Id */
+            number_id: string;
         };
         /** Quote */
         Quote: {
@@ -2703,10 +3728,20 @@ export interface components {
             from?: string | null;
             /** Id */
             id: string;
+            /**
+             * Per Page Micro
+             * @default 0
+             */
+            per_page_micro: number;
             /** Price Version */
             price_version: string;
             /** Route */
             route: string;
+            /**
+             * Route Label
+             * @default
+             */
+            route_label: string;
             /** To */
             to: string;
             /** Warnings */
@@ -2783,6 +3818,28 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ReleaseRequest */
+        ReleaseRequest: {
+            /**
+             * Confirm
+             * @description The number itself, typed out, to confirm.
+             */
+            confirm?: string | null;
+        };
+        /** Requested */
+        Requested: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "export" | "deletion";
+            /** Message */
+            message: string;
+            /** Requested */
+            requested: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** SandboxFixture */
         SandboxFixture: {
             /** Created At */
@@ -2807,6 +3864,12 @@ export interface components {
              * @default 1
              */
             pages: number;
+            /**
+             * Partial Content
+             * @description Rehearse a cut-off transmission.
+             * @default false
+             */
+            partial_content: boolean;
             /** To */
             to: string;
         };
@@ -2847,6 +3910,49 @@ export interface components {
             }[];
         } & {
             [key: string]: unknown;
+        };
+        /** SchemaCreate */
+        SchemaCreate: {
+            /** Description */
+            description?: string | null;
+            /** Name */
+            name: string;
+            /** Schema */
+            schema: {
+                [key: string]: unknown;
+            };
+        };
+        /** SenderVerification */
+        SenderVerification: {
+            /** Created At */
+            created_at: string;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** From */
+            from: string;
+            /** Id */
+            id: string;
+            /** Method */
+            method: string;
+            /** Number Id */
+            number_id: string | null;
+            /** Status */
+            status: string;
+            /** Verified At */
+            verified_at: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** SenderVerificationCreate */
+        SenderVerificationCreate: {
+            /**
+             * From
+             * @description A number your organization owns, E.164.
+             */
+            from: string;
         };
         /** ServiceStatus */
         ServiceStatus: {
@@ -2933,6 +4039,26 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** SummaryCreate */
+        SummaryCreate: {
+            /** Document Id */
+            document_id?: string | null;
+            /** Inbox Item Id */
+            inbox_item_id?: string | null;
+            /** Max Pages */
+            max_pages?: number | null;
+            /**
+             * Strict
+             * @description Refuse with page_limit_exceeded when the document has more pages than would be read, instead of reading the first ones and warning.
+             * @default false
+             */
+            strict: boolean;
+            /**
+             * Strong Model If Below
+             * @default 0.75
+             */
+            strong_model_if_below: number;
+        };
         /** TopupCreate */
         TopupCreate: {
             /**
@@ -3007,6 +4133,7 @@ export interface components {
         UploadCreate: {
             /**
              * Content Type
+             * @description application/pdf, image/png, image/jpeg or image/tiff. An image becomes 8-bit gray letter pages, since fax is monochrome. A frame wider than it is tall is rotated. A frame above 300 dpi letter is downsampled. Every TIFF frame is a page. PNG and JPEG take the first frame. The bytes must be the declared type.
              * @default application/pdf
              */
             content_type: string;
@@ -3260,6 +4387,10 @@ export type BudgetCreate = components['schemas']['BudgetCreate'];
 export type BudgetList = components['schemas']['BudgetList'];
 export type BudgetPatch = components['schemas']['BudgetPatch'];
 export type Capabilities = components['schemas']['Capabilities'];
+export type ClassificationCreate = components['schemas']['ClassificationCreate'];
+export type Correction = components['schemas']['Correction'];
+export type CorrectionCreate = components['schemas']['CorrectionCreate'];
+export type Coverage = components['schemas']['Coverage'];
 export type Deleted = components['schemas']['Deleted'];
 export type Delivery = components['schemas']['Delivery'];
 export type DeliveryPage = components['schemas']['DeliveryPage'];
@@ -3272,18 +4403,43 @@ export type EffectivePolicies = components['schemas']['EffectivePolicies'];
 export type ErrorEnvelope = components['schemas']['ErrorEnvelope'];
 export type Event = components['schemas']['Event'];
 export type EventPage = components['schemas']['EventPage'];
+export type Extraction = components['schemas']['Extraction'];
+export type ExtractionCreate = components['schemas']['ExtractionCreate'];
+export type ExtractionPage = components['schemas']['ExtractionPage'];
+export type ExtractionPageList = components['schemas']['ExtractionPageList'];
+export type ExtractionSchema = components['schemas']['ExtractionSchema'];
+export type ExtractionSchemaList = components['schemas']['ExtractionSchemaList'];
 export type FaxCreate = components['schemas']['FaxCreate'];
 export type FaxJob = components['schemas']['FaxJob'];
 export type FaxJobPage = components['schemas']['FaxJobPage'];
 export type HttpValidationError = components['schemas']['HTTPValidationError'];
 export type InboxItem = components['schemas']['InboxItem'];
 export type InboxItemDetail = components['schemas']['InboxItemDetail'];
+export type InboxItemSummary = components['schemas']['InboxItemSummary'];
 export type InboxPage = components['schemas']['InboxPage'];
+export type InboxUpdate = components['schemas']['InboxUpdate'];
+export type Inventory = components['schemas']['Inventory'];
+export type InventoryNumber = components['schemas']['InventoryNumber'];
+export type Invitation = components['schemas']['Invitation'];
+export type InvitationCreate = components['schemas']['InvitationCreate'];
+export type InvitationList = components['schemas']['InvitationList'];
 export type Invoice = components['schemas']['Invoice'];
 export type InvoicePage = components['schemas']['InvoicePage'];
 export type LedgerEntry = components['schemas']['LedgerEntry'];
 export type LedgerPage = components['schemas']['LedgerPage'];
 export type Me = components['schemas']['Me'];
+export type Member = components['schemas']['Member'];
+export type MemberList = components['schemas']['MemberList'];
+export type MemberPatch = components['schemas']['MemberPatch'];
+export type Number = components['schemas']['Number'];
+export type NumberList = components['schemas']['NumberList'];
+export type NumberOrder = components['schemas']['NumberOrder'];
+export type NumberOrderCreate = components['schemas']['NumberOrderCreate'];
+export type NumberUpdate = components['schemas']['NumberUpdate'];
+export type Organization = components['schemas']['Organization'];
+export type OrganizationList = components['schemas']['OrganizationList'];
+export type OrganizationPatch = components['schemas']['OrganizationPatch'];
+export type OrganizationSummary = components['schemas']['OrganizationSummary'];
 export type PagePreview = components['schemas']['PagePreview'];
 export type Policy = components['schemas']['Policy'];
 export type PolicyCreate = components['schemas']['PolicyCreate'];
@@ -3293,20 +4449,32 @@ export type PolicyList = components['schemas']['PolicyList'];
 export type PolicyUpdate = components['schemas']['PolicyUpdate'];
 export type PolicyVersion = components['schemas']['PolicyVersion'];
 export type PolicyVersionList = components['schemas']['PolicyVersionList'];
+export type PortabilityCheck = components['schemas']['PortabilityCheck'];
+export type PortabilityCheckCreate = components['schemas']['PortabilityCheckCreate'];
 export type PortalSession = components['schemas']['PortalSession'];
+export type PortOrder = components['schemas']['PortOrder'];
+export type PortOrderCreate = components['schemas']['PortOrderCreate'];
+export type PortOrderList = components['schemas']['PortOrderList'];
+export type PortOutRequestCreate = components['schemas']['PortOutRequestCreate'];
 export type Quote = components['schemas']['Quote'];
 export type QuoteCreate = components['schemas']['QuoteCreate'];
 export type Receipt = components['schemas']['Receipt'];
+export type ReleaseRequest = components['schemas']['ReleaseRequest'];
+export type Requested = components['schemas']['Requested'];
 export type SandboxFixture = components['schemas']['SandboxFixture'];
 export type SandboxInboundCreate = components['schemas']['SandboxInboundCreate'];
 export type SandboxReset = components['schemas']['SandboxReset'];
 export type SandboxScenarioCreate = components['schemas']['SandboxScenarioCreate'];
 export type SandboxScenarios = components['schemas']['SandboxScenarios'];
+export type SchemaCreate = components['schemas']['SchemaCreate'];
+export type SenderVerification = components['schemas']['SenderVerification'];
+export type SenderVerificationCreate = components['schemas']['SenderVerificationCreate'];
 export type ServiceStatus = components['schemas']['ServiceStatus'];
 export type SignedUrl = components['schemas']['SignedUrl'];
 export type Subscription = components['schemas']['Subscription'];
 export type SubscriptionCheckout = components['schemas']['SubscriptionCheckout'];
 export type SubscriptionList = components['schemas']['SubscriptionList'];
+export type SummaryCreate = components['schemas']['SummaryCreate'];
 export type TopupCreate = components['schemas']['TopupCreate'];
 export type TopupSession = components['schemas']['TopupSession'];
 export type TopupSessionPage = components['schemas']['TopupSessionPage'];
@@ -5078,6 +6246,474 @@ export interface operations {
             };
         };
     };
+    list_classifications: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                document_id?: string | null;
+                inbox_item_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionPageList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_classification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassificationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extraction"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_classification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                classification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extraction"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_coverage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Coverage"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_document_summaries: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                document_id?: string | null;
+                inbox_item_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionPageList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_document_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SummaryCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extraction"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_document_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                summary_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extraction"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_documents: {
         parameters: {
             query?: {
@@ -5666,6 +7302,475 @@ export interface operations {
                 };
             };
             /** @description The key lacks the scope fax:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_extraction_schemas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionSchemaList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_extraction_schema: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchemaCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionSchema"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_extraction_schema: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schema_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionSchema"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_extractions: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                document_id?: string | null;
+                inbox_item_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionPageList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_extraction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtractionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extraction"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_extraction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                extraction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extraction"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                extraction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Correction"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope document:extract (scope_missing). */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6317,6 +8422,7 @@ export interface operations {
             query?: {
                 cursor?: string | null;
                 limit?: number;
+                status?: ("received" | "read" | "archived") | null;
             };
             header?: never;
             path?: never;
@@ -6410,6 +8516,442 @@ export interface operations {
                 };
             };
             /** @description The key lacks the scope inbox:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    delete_inbox_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inbox_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Deleted"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope inbox:write (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_inbox_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inbox_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboxUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboxItem"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope inbox:write (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_inbox_content: {
+        parameters: {
+            query?: {
+                exp?: string | null;
+                sig?: string | null;
+            };
+            header?: never;
+            path: {
+                inbox_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No such resource, or the signed link expired. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_inbox_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inbox_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignedUrl"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope inbox:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_invitations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope member:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_invitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Invitation"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope member:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    revoke_invitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invitation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope member:admin (scope_missing). */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6670,6 +9212,964 @@ export interface operations {
             };
             /** @description No key, or a key that was revoked or expired (invalid_token). */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_members: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope account:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    remove_member: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope org:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_member: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Member"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope member:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_number_inventory: {
+        parameters: {
+            query?: {
+                country?: string;
+                limit?: number;
+                locality?: string | null;
+                type?: "local" | "toll_free";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Inventory"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_number_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NumberOrderCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NumberOrder"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:buy (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_number_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NumberOrder"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_numbers: {
+        parameters: {
+            query?: {
+                include_released?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NumberList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_number: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Number"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_number: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NumberUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Number"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:buy (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_release_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReleaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Number"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:buy (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_organizations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_current_organization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Organization"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope account:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_current_organization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Organization"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope member:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    request_data_deletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Requested"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope org:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    request_data_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Requested"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope org:admin (scope_missing). */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7152,6 +10652,336 @@ export interface operations {
             };
         };
     };
+    list_port_orders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortOrderList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_port_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortOrderCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortOrder"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:buy (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_port_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                port_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortOrder"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_port_out_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortOutRequestCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortOrder"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:buy (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_portability_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortabilityCheckCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortabilityCheck"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     reset_sandbox_data: {
         parameters: {
             query?: never;
@@ -7227,7 +11057,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InboxItem"];
+                    "application/json": components["schemas"]["InboxItemSummary"];
                 };
             };
             /** @description No key, or a key that was revoked or expired (invalid_token). */
@@ -7365,6 +11195,75 @@ export interface operations {
                 };
             };
             /** @description The key lacks the scope sandbox:write (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_sender_verification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SenderVerificationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenderVerification"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:buy (scope_missing). */
             403: {
                 headers: {
                     [name: string]: unknown;

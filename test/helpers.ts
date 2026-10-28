@@ -74,6 +74,8 @@ export const quote = (over: Partial<Quote> = {}): Quote => ({
   amount_micro: 0,
   currency: 'USD',
   price_version: 'launch-v1',
+  per_page_micro: 0,
+  route_label: 'US and Canada',
   cover: null,
   authorization_required: false,
   warnings: [],
