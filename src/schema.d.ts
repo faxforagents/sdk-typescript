@@ -2583,7 +2583,7 @@ export interface components {
         /** ErrorEnvelope */
         ErrorEnvelope: {
             error: {
-                /** @description A stable code such as invalid_token, scope_missing, not_found, quote_expired, insufficient_balance, approval_required, rate_limited. */
+                /** @description A stable code such as invalid_token, scope_missing, not_found, quote_expired, insufficient_balance, approval_required, rate_limited, live_provider_unavailable. */
                 code: string;
                 /** @description The X-Request-Id of the request. Quote it when you write to hello@faxforagents.com. */
                 correlation_id: string;
@@ -7875,6 +7875,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     get_fax_quote: {
@@ -8080,6 +8089,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     get_fax: {
@@ -8274,6 +8292,15 @@ export interface operations {
             };
             /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9499,6 +9526,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     create_number_order: {
@@ -9561,6 +9597,15 @@ export interface operations {
             };
             /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9904,6 +9949,15 @@ export interface operations {
             };
             /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10775,6 +10829,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     get_port_order: {
@@ -10973,6 +11036,15 @@ export interface operations {
             };
             /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

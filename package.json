@@ -1,6 +1,6 @@
 {
   "name": "faxforagents",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "TypeScript and JavaScript client for Fax for Agents: a fax API, a hosted MCP server and SDKs built so AI agents can send and receive faxes.",
   "keywords": [
     "fax",

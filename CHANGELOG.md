@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 (2026-10-29)
+
+API version 1.2.3. The generated types document `503 live_provider_unavailable` on the eight operations
+that reach the carrier with a live key (`createFaxQuote`, `createFax`, `cancelFax`, `getNumberInventory`,
+`createNumberOrder`, `createReleaseRequest`, `createPortabilityCheck`, `createPortOrder`). A production
+server with no carrier configured refuses them before any hold or approval is consumed, with `retryable`
+false. No client code changed.
+
 ## 0.2.0 (2026-10-28)
 
 API version 1.1.0: HTML rendering and image uploads.
