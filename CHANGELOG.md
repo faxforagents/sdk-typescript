@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 (2026-10-30)
+
+First version on the npm registry. The README opens with the Fax for Agents logo, a link row to the
+website, quickstart, API reference, SDK docs, MCP page, dashboard, pricing and changelog, and badges
+for the npm version, CI, licence, Node and TypeScript. No client code changed.
+
 ## 0.2.1 (2026-10-29)
 
 API version 1.2.3. The generated types document `503 live_provider_unavailable` on the eight operations

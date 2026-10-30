@@ -1,6 +1,29 @@
-# faxforagents
+<p align="center">
+  <a href="https://faxforagents.com"><img src="https://faxforagents.com/brand/logo-512.png" width="88" alt="Fax for Agents"></a>
+</p>
 
-The TypeScript and JavaScript client for Fax for Agents, <https://faxforagents.com>.
+<h1 align="center">faxforagents</h1>
+
+<p align="center">The TypeScript and JavaScript client for <a href="https://faxforagents.com">Fax for Agents</a>, the fax API built for AI agents.</p>
+
+<p align="center">
+  <a href="https://faxforagents.com">Website</a> ·
+  <a href="https://faxforagents.com/docs/quickstart/">Quickstart</a> ·
+  <a href="https://faxforagents.com/docs/api/">API reference</a> ·
+  <a href="https://faxforagents.com/docs/sdks/">SDKs</a> ·
+  <a href="https://faxforagents.com/mcp/">MCP</a> ·
+  <a href="https://app.faxforagents.com">Dashboard</a> ·
+  <a href="https://faxforagents.com/pricing/">Pricing</a> ·
+  <a href="https://faxforagents.com/changelog/">Changelog</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/faxforagents"><img src="https://img.shields.io/npm/v/faxforagents?label=npm" alt="npm version"></a>
+  <a href="https://github.com/faxforagents/sdk-typescript/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/faxforagents/sdk-typescript/ci.yml?branch=main&label=ci" alt="CI"></a>
+  <a href="https://github.com/faxforagents/sdk-typescript/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-MIT-1f6feb" alt="MIT licence"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-18%2B-339933" alt="Node 18+"></a>
+  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/types-included-3178c6" alt="TypeScript"></a>
+</p>
 
 Fax for Agents is a fax API, a hosted MCP server and SDKs built so AI agents can send and receive
 faxes. It is made by JSB Holdings LLC.
