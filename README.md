@@ -26,7 +26,7 @@
 </p>
 
 Fax for Agents is a fax API, a hosted MCP server and SDKs built so AI agents can send and receive
-faxes. It is made by JSB Holdings LLC.
+faxes. It is made by JSB Holdings LLC and built by [Synapse](https://synapsereality.io/).
 
 ```bash
 npm install faxforagents
