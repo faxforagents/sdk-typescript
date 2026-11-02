@@ -11,6 +11,7 @@ it('declares the fax and quote fields with their wire types', () => {
   expectTypeOf<Quote['pricing']>().toEqualTypeOf<string | undefined>();
   expectTypeOf<Quote['policy_evaluation']>().toEqualTypeOf<Record<string, unknown> | null | undefined>();
   expectTypeOf<Capabilities['one_time']>().toEqualTypeOf<Record<string, unknown> | undefined>();
+  expectTypeOf<Capabilities['extraction']>().toEqualTypeOf<boolean | undefined>();
   expectTypeOf<PolicyEvaluation['usage']>().toEqualTypeOf<Record<string, number> | null | undefined>();
 });
 

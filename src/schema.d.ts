@@ -1754,6 +1754,405 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AbuseReview */
+        AbuseReview: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "none" | "suspended";
+            /** Id */
+            id: string;
+            /** Key Id */
+            key_id?: string | null;
+            /** Opened By */
+            opened_by: string;
+            /** Org Id */
+            org_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "resolved";
+        } & {
+            [key: string]: unknown;
+        };
+        /** AbuseReviewCreate */
+        AbuseReviewCreate: {
+            /** Key Id */
+            key_id?: string | null;
+            /** Org Id */
+            org_id: string;
+            /**
+             * Reason
+             * @description Why: recorded on the audit row
+             */
+            reason: string;
+            /**
+             * Suspend
+             * @description Suspend sends for the organization or key at once
+             * @default false
+             */
+            suspend: boolean;
+        };
+        /** AbuseReviewPage */
+        AbuseReviewPage: {
+            /** Items */
+            items: components["schemas"]["AbuseReview"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AbuseReviewPatch */
+        AbuseReviewPatch: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "suspend" | "unsuspend" | "resolve";
+            /**
+             * Reason
+             * @description Why: recorded on the audit row
+             */
+            reason: string;
+        };
+        /** Accepted */
+        Accepted: {
+            organization: components["schemas"]["OrganizationSummary"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** Adjustment */
+        Adjustment: {
+            /** Amount Micro */
+            amount_micro: number;
+            /** Applied By */
+            applied_by?: string | null;
+            /** Direction */
+            direction: string;
+            /** Environment */
+            environment: string;
+            /** Id */
+            id: string;
+            /** Org Id */
+            org_id: string;
+            /** Proposed By */
+            proposed_by: string;
+            /** Status */
+            status: string;
+            /** Txn Id */
+            txn_id?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdjustmentApply */
+        AdjustmentApply: {
+            /**
+             * Confirm
+             * @description Required when the proposer applies their own adjustment
+             * @default false
+             */
+            confirm: boolean;
+            /**
+             * Reason
+             * @description Why: recorded on the audit row
+             */
+            reason: string;
+        };
+        /** AdjustmentCreate */
+        AdjustmentCreate: {
+            /**
+             * Amount Micro
+             * @description Integer micro-USD; at most 10,000.00
+             */
+            amount_micro: number;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "credit" | "debit";
+            /**
+             * Environment
+             * @default live
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Org Id */
+            org_id: string;
+            /**
+             * Reason
+             * @description Why: recorded on the audit row
+             */
+            reason: string;
+        };
+        /** AdjustmentPage */
+        AdjustmentPage: {
+            /** Items */
+            items: components["schemas"]["Adjustment"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminAction */
+        AdminAction: {
+            /**
+             * Reason
+             * @description Why: recorded on the audit row
+             */
+            reason: string;
+        };
+        /** AdminBrief */
+        AdminBrief: {
+            /** Attempt Utc Day */
+            attempt_utc_day?: string | null;
+            /** Attempted At */
+            attempted_at?: string | null;
+            /**
+             * Attempts
+             * @default 0
+             */
+            attempts: number;
+            /** Channel */
+            channel?: string | null;
+            /** Local Day */
+            local_day?: string | null;
+            /** Posted At */
+            posted_at?: string | null;
+            /**
+             * Retry After S
+             * @default 600
+             */
+            retry_after_s: number;
+            /** Status */
+            status?: ("posted" | "failed" | "gave_up") | null;
+            /** Text */
+            text?: string | null;
+            /** Utc Day */
+            utc_day?: string | null;
+            /** Waiting Day */
+            waiting_day?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminDaily */
+        AdminDaily: {
+            /** Days */
+            days: number;
+            /** Description */
+            description: string;
+            /** Items */
+            items: components["schemas"]["AdminDailyPoint"][];
+            /** Metric */
+            metric: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminDailyPoint */
+        AdminDailyPoint: {
+            /** Computed At */
+            computed_at: string;
+            /** Day */
+            day: string;
+            /** Dims */
+            dims: {
+                [key: string]: unknown;
+            };
+            /** Environment */
+            environment: string;
+            /** Value Json */
+            value_json?: unknown;
+            /** Value Num */
+            value_num?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminJob */
+        AdminJob: {
+            /** Age S */
+            age_s: number;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Id */
+            id: string;
+            /** Org Id */
+            org_id: string;
+            /** Route */
+            route: string;
+            /** State */
+            state: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminJobPage */
+        AdminJobPage: {
+            /** Items */
+            items: components["schemas"]["AdminJob"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminOrganization */
+        AdminOrganization: {
+            /** Balances Micro */
+            balances_micro: {
+                [key: string]: unknown;
+            };
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Id */
+            id: string;
+            /**
+             * Internal
+             * @default false
+             */
+            internal: boolean;
+            /** Name */
+            name: string;
+            /** Suspended At */
+            suspended_at?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminOrganizationDetail */
+        AdminOrganizationDetail: {
+            /** Keys */
+            keys: {
+                [key: string]: unknown;
+            }[];
+            /** Ledger */
+            ledger: {
+                [key: string]: unknown;
+            };
+            /** Members */
+            members: {
+                [key: string]: unknown;
+            }[];
+            /** Open Reviews */
+            open_reviews: {
+                [key: string]: unknown;
+            }[];
+            /** Organization */
+            organization: {
+                [key: string]: unknown;
+            };
+            /** Recent Jobs */
+            recent_jobs: {
+                [key: string]: unknown;
+            }[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminOrganizationPage */
+        AdminOrganizationPage: {
+            /** Items */
+            items: components["schemas"]["AdminOrganization"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminRevenue */
+        AdminRevenue: {
+            /** Balances Micro */
+            balances_micro: {
+                [key: string]: {
+                    [key: string]: number;
+                };
+            };
+            /** By Day */
+            by_day: {
+                [key: string]: unknown;
+            }[];
+            /** Captured */
+            captured: {
+                [key: string]: unknown;
+            };
+            /** Computed At */
+            computed_at: string;
+            /** Data Age */
+            data_age: {
+                [key: string]: unknown;
+            };
+            /** Days */
+            days: number;
+            /** Funded */
+            funded: {
+                [key: string]: unknown;
+            };
+            /** Recurring */
+            recurring: {
+                [key: string]: unknown;
+            };
+            /** Refunded */
+            refunded: {
+                [key: string]: unknown;
+            };
+            /** Sources */
+            sources: {
+                [key: string]: unknown;
+            }[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminStats */
+        AdminStats: {
+            /** By Environment */
+            by_environment: {
+                [key: string]: unknown;
+            };
+            /** Computed At */
+            computed_at: string;
+            /** Jobs By State */
+            jobs_by_state: {
+                [key: string]: number;
+            };
+            /** Live Sends */
+            live_sends: {
+                [key: string]: unknown;
+            };
+            /** Money Live Micro */
+            money_live_micro: {
+                [key: string]: number;
+            };
+            /** Needs You */
+            needs_you: {
+                [key: string]: unknown;
+            };
+            /** Totals */
+            totals: {
+                [key: string]: unknown;
+            };
+            /** Window */
+            window: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** AdminWhoami */
+        AdminWhoami: {
+            /** Actor */
+            actor: string;
+            /** Identity */
+            identity: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "user" | "service" | "dev";
+            /** Read Only */
+            read_only: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** Agent */
         Agent: {
             /** Budget Id */
@@ -1883,6 +2282,234 @@ export interface components {
             policy_ids?: string[] | null;
             /** Purpose */
             purpose?: string | null;
+        };
+        /** AnalyticsJourneys */
+        AnalyticsJourneys: {
+            /** Cohort */
+            cohort: number;
+            /** Computed At */
+            computed_at: string;
+            /** Days */
+            days: number;
+            /** Doors */
+            doors: {
+                [key: string]: unknown;
+            }[];
+            /** Funnel */
+            funnel: {
+                [key: string]: unknown;
+            }[];
+            /** Leakiest */
+            leakiest?: {
+                [key: string]: unknown;
+            } | null;
+            /** Listed */
+            listed: number;
+            /** Organizations */
+            organizations: {
+                [key: string]: unknown;
+            }[];
+            /** Site */
+            site: {
+                [key: string]: unknown;
+            };
+            /** Topups */
+            topups: {
+                [key: string]: unknown;
+            };
+            /** Window */
+            window: {
+                [key: string]: string;
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** AnalyticsOrganization */
+        AnalyticsOrganization: {
+            /** Actions */
+            actions: {
+                [key: string]: unknown;
+            }[];
+            /** Computed At */
+            computed_at: string;
+            /** Days */
+            days: number;
+            /** Doors */
+            doors: {
+                [key: string]: unknown;
+            }[];
+            /** Inbound */
+            inbound: {
+                [key: string]: unknown;
+            };
+            /** Jobs */
+            jobs: {
+                [key: string]: unknown;
+            };
+            /** Keys */
+            keys: {
+                [key: string]: unknown;
+            };
+            /** Members */
+            members: {
+                [key: string]: unknown;
+            }[];
+            /** Numbers */
+            numbers: {
+                [key: string]: unknown;
+            };
+            /** Organization */
+            organization: {
+                [key: string]: unknown;
+            };
+            /** Recent */
+            recent: {
+                [key: string]: unknown;
+            }[];
+            /** Steps */
+            steps: {
+                [key: string]: unknown;
+            }[];
+            /** Tools */
+            tools: {
+                [key: string]: unknown;
+            }[];
+            /** Topups */
+            topups: {
+                [key: string]: unknown;
+            }[];
+            /** Usage */
+            usage: {
+                [key: string]: unknown;
+            }[];
+            /** Window */
+            window: {
+                [key: string]: string;
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** AnalyticsSource */
+        AnalyticsSource: {
+            /** Error */
+            error?: string | null;
+            /** Label */
+            label: string;
+            /** Last Pulled At */
+            last_pulled_at?: string | null;
+            /** Latest Day */
+            latest_day?: string | null;
+            /** Missing */
+            missing: string[];
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /** Step */
+            step: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AnalyticsSources */
+        AnalyticsSources: {
+            /** Items */
+            items: components["schemas"]["AnalyticsSource"][];
+            /** Pull */
+            pull: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** AnalyticsUsage */
+        AnalyticsUsage: {
+            /** By Day */
+            by_day: {
+                [key: string]: unknown;
+            }[];
+            /** By Family */
+            by_family: {
+                [key: string]: unknown;
+            }[];
+            /** By Surface */
+            by_surface: {
+                [key: string]: unknown;
+            }[];
+            /** Computed At */
+            computed_at: string;
+            /** Data Age */
+            data_age: {
+                [key: string]: unknown;
+            };
+            /** Days */
+            days: number;
+            /** Org Id */
+            org_id?: string | null;
+            /** Tools */
+            tools: {
+                [key: string]: unknown;
+            };
+            /** Top Keys */
+            top_keys: {
+                [key: string]: unknown;
+            }[];
+            /** Top Organizations */
+            top_organizations: {
+                [key: string]: unknown;
+            }[];
+            /** Totals */
+            totals: {
+                [key: string]: unknown;
+            };
+            /** Window */
+            window: {
+                [key: string]: string;
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** AnalyticsWebsite */
+        AnalyticsWebsite: {
+            /** Authority */
+            authority: {
+                [key: string]: unknown;
+            };
+            /** Bing */
+            bing: {
+                [key: string]: unknown;
+            };
+            /** Computed At */
+            computed_at: string;
+            /** Data Age */
+            data_age: {
+                [key: string]: unknown;
+            };
+            /** Days */
+            days: number;
+            /** Search */
+            search: {
+                [key: string]: unknown;
+            };
+            /** Site */
+            site: {
+                [key: string]: unknown;
+            };
+            /** Sources */
+            sources: components["schemas"]["AnalyticsSource"][];
+            /** Traffic */
+            traffic: {
+                [key: string]: unknown;
+            };
+            /** Ux */
+            ux: {
+                [key: string]: unknown;
+            };
+            /** Window */
+            window: {
+                [key: string]: string;
+            };
+        } & {
+            [key: string]: unknown;
         };
         /** ApiKey */
         ApiKey: {
@@ -2095,6 +2722,34 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** AuditEvent */
+        AuditEvent: {
+            /** Action */
+            action: string;
+            /** Actor */
+            actor: string;
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            /** Org Id */
+            org_id?: string | null;
+            /** Resource Id */
+            resource_id?: string | null;
+            /** Resource Type */
+            resource_type: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AuditEventPage */
+        AuditEventPage: {
+            /** Items */
+            items: components["schemas"]["AuditEvent"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
         /** AutoTopup */
         AutoTopup: {
             /** Amount Micro */
@@ -2288,6 +2943,8 @@ export interface components {
              * @enum {string}
              */
             environment: "live" | "test";
+            /** Extraction */
+            extraction?: boolean;
             /** Formats */
             formats: string[];
             /** Limits */
@@ -2841,6 +3498,126 @@ export interface components {
             /** Quote Id */
             quote_id: string;
         };
+        /** InboxItem */
+        faxforagents__api__routes__inbox__InboxItem: {
+            /**
+             * Amount Micro
+             * @default 0
+             */
+            amount_micro: number;
+            /** Document Id */
+            document_id: string | null;
+            /** Duration Secs */
+            duration_secs?: number | null;
+            /**
+             * Environment
+             * @default live
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Expires At */
+            expires_at?: string | null;
+            /** From */
+            from?: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Media Status
+             * @default stored
+             */
+            media_status: string;
+            /** Note */
+            note?: string | null;
+            /** Number Id */
+            number_id?: string | null;
+            /** Pages */
+            pages: number;
+            /**
+             * Partial Content
+             * @default false
+             */
+            partial_content: boolean;
+            /** Project Id */
+            project_id?: string | null;
+            /**
+             * Provider
+             * @default
+             */
+            provider: string;
+            /** Read At */
+            read_at?: string | null;
+            /** Received At */
+            received_at: string;
+            /** Status */
+            status: string;
+            /** To */
+            to: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** InboxItem */
+        faxforagents__api__schemas__InboxItem: {
+            /**
+             * Amount Micro
+             * @default 0
+             */
+            amount_micro: number;
+            /** Document Id */
+            document_id: string | null;
+            /** From */
+            from?: string | null;
+            /** Id */
+            id: string;
+            /** Note */
+            note?: string | null;
+            /** Pages */
+            pages: number;
+            /** Received At */
+            received_at: string;
+            /** Status */
+            status: string;
+            /** To */
+            to: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** Me */
+        faxforagents__api__schemas__Me: {
+            /** Actor */
+            actor: string;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Key Id */
+            key_id: string;
+            /** Key Prefix */
+            key_prefix: string;
+            /** Org Id */
+            org_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Scopes */
+            scopes: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** Me */
+        faxforagents__auth__schemas__Me: {
+            /** Csrf Token */
+            csrf_token: string;
+            organization: components["schemas"]["OrganizationSummary"] | null;
+            /** Organizations */
+            organizations: components["schemas"]["OrganizationSummary"][];
+            /** Passkeys */
+            passkeys: number;
+            providers: components["schemas"]["Providers"];
+            session: components["schemas"]["SessionInfo"];
+            user: components["schemas"]["UserOut"];
+        } & {
+            [key: string]: unknown;
+        };
         /** FaxJob */
         FaxJob: {
             /** Amount Micro */
@@ -3288,6 +4065,19 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** MagicLinkRequest */
+        MagicLinkRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Next
+             * @description An in-app path to open after sign-in.
+             */
+            next?: string | null;
+        };
         /** Me */
         Me: {
             /** Actor */
@@ -3472,6 +4262,142 @@ export interface components {
             /** Project Id */
             project_id?: string | null;
         };
+        /** OAuthConsent */
+        OAuthConsent: {
+            client: components["schemas"]["OAuthConsentClient"];
+            /**
+             * Default Environment
+             * @enum {string}
+             */
+            default_environment: "live" | "test";
+            /** Expires At */
+            expires_at: string;
+            /** Id */
+            id: string;
+            /** Organizations */
+            organizations: components["schemas"]["OAuthConsentOrganization"][];
+            /** Redirect Host */
+            redirect_host: string;
+            /** Scopes Requested */
+            scopes_requested: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** OAuthConsentClient */
+        OAuthConsentClient: {
+            /**
+             * First Seen
+             * @description This client was registered during this request.
+             */
+            first_seen: boolean;
+            /**
+             * Host
+             * @description The host the person is sending a credential to: the trust anchor.
+             */
+            host: string;
+            /**
+             * Loopback
+             * @description The redirect goes to the person's own computer (an app they started).
+             */
+            loopback: boolean;
+            /**
+             * Name
+             * @description The client's own name, shown as text beside the host.
+             */
+            name: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OAuthConsentDecision */
+        OAuthConsentDecision: {
+            /**
+             * Environment
+             * @default test
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Org Id */
+            org_id: string;
+        };
+        /** OAuthConsentOrganization */
+        OAuthConsentOrganization: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /**
+             * Scopes
+             * @description What the grant would carry for this organization and role.
+             */
+            scopes: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** OAuthRedirect */
+        OAuthRedirect: {
+            /**
+             * Redirect To
+             * @description Where the browser goes next: the client's registered redirect URI.
+             */
+            redirect_to: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * OneTimeConfig
+         * @description What the public send page and an agent read before an order: whether the product is open here, the
+         *     card the order will be priced from (present only while open), the document limits and the policy the
+         *     sender accepts. Prices are integer micro-USD; the dollar figure is the client's to format.
+         */
+        OneTimeConfig: {
+            /** Aup Url */
+            aup_url: string;
+            /** Aup Version */
+            aup_version: string;
+            /** Currency */
+            currency: string;
+            /** Effective From */
+            effective_from: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Formats */
+            formats: string[];
+            /** Max Document Pages */
+            max_document_pages: number;
+            /** Max Text Chars */
+            max_text_chars: number;
+            /** Max Upload Bytes */
+            max_upload_bytes: number;
+            /** Price Version */
+            price_version: string;
+            /** Reason */
+            reason?: string | null;
+            /** Routes */
+            routes: {
+                [key: string]: components["schemas"]["OneTimeRoute"];
+            };
+            /** Terms Url */
+            terms_url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OneTimeRoute */
+        OneTimeRoute: {
+            /** Cover Included */
+            cover_included: boolean;
+            /** Extra Page Micro */
+            extra_page_micro: number;
+            /** Flat Micro */
+            flat_micro: number;
+            /** Included Pages */
+            included_pages: number;
+            /** Label */
+            label: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** Organization */
         Organization: {
             /** Created At */
@@ -3513,6 +4439,54 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** OutboxDiscarded */
+        OutboxDiscarded: {
+            /** Discarded */
+            discarded: boolean;
+            /** Id */
+            id: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OutboxPage */
+        OutboxPage: {
+            /** Items */
+            items: components["schemas"]["OutboxRow"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OutboxRow */
+        OutboxRow: {
+            /** Age S */
+            age_s: number;
+            /** Attempts */
+            attempts: number;
+            /** Created At */
+            created_at: string;
+            /** Error */
+            error?: string | null;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Max Attempts */
+            max_attempts: number;
+            /** Org Id */
+            org_id?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "done" | "failed" | "dead";
+            /** Title */
+            title?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
         /** PagePreview */
         PagePreview: {
             /** Height Px */
@@ -3525,6 +4499,48 @@ export interface components {
             width_px: number | null;
         } & {
             [key: string]: unknown;
+        };
+        /** Passkey */
+        Passkey: {
+            /** Aaguid */
+            aaguid: string | null;
+            /** Backup Eligible */
+            backup_eligible: boolean;
+            /** Created At */
+            created_at: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string | null;
+            /** Last Used At */
+            last_used_at: string | null;
+            /** Transports */
+            transports: string[] | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** PasskeyList */
+        PasskeyList: {
+            /** Items */
+            items: components["schemas"]["Passkey"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** PasskeyLoginVerify */
+        PasskeyLoginVerify: {
+            /** Credential */
+            credential: {
+                [key: string]: unknown;
+            };
+        };
+        /** PasskeyRegisterVerify */
+        PasskeyRegisterVerify: {
+            /** Credential */
+            credential: {
+                [key: string]: unknown;
+            };
+            /** Label */
+            label?: string | null;
         };
         /** Policy */
         Policy: {
@@ -3761,6 +4777,63 @@ export interface components {
             /** Number Id */
             number_id: string;
         };
+        /** ProviderHealth */
+        ProviderHealth: {
+            /**
+             * Breakers
+             * @default []
+             */
+            breakers: {
+                [key: string]: unknown;
+            }[];
+            /** Circuit */
+            circuit: string;
+            /** Concurrency In Use */
+            concurrency_in_use: number;
+            /** Configured */
+            configured: boolean;
+            /** Last Failure At */
+            last_failure_at?: string | null;
+            /** Last Success At */
+            last_success_at?: string | null;
+            /** Name */
+            name: string;
+            /** Routes Paused */
+            routes_paused: string[];
+            /**
+             * Serves
+             * @default []
+             */
+            serves: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** ProviderList */
+        ProviderList: {
+            /** Items */
+            items: components["schemas"]["ProviderHealth"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** Providers */
+        Providers: {
+            /** Github */
+            github: boolean;
+            /** Google */
+            google: boolean;
+            /**
+             * Magic Link
+             * @default true
+             */
+            magic_link: boolean;
+            /**
+             * Passkeys
+             * @default true
+             */
+            passkeys: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** Quote */
         Quote: {
             /** Amount Micro */
@@ -3851,6 +4924,18 @@ export interface components {
              */
             to: string;
         };
+        /** Reauth */
+        Reauth: {
+            /** Credential */
+            credential?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "passkey" | "magic_link";
+        };
         /** Receipt */
         Receipt: {
             /** Amount Micro */
@@ -3896,6 +4981,28 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ReconcileResult */
+        ReconcileResult: {
+            job: components["schemas"]["AdminJob"];
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "no_provider_ref" | "skipped" | "poll_failed" | "finalized" | "retry_scheduled" | "unknown" | "pending";
+        } & {
+            [key: string]: unknown;
+        };
+        /** ReconciliationReport */
+        ReconciliationReport: {
+            /** Last Day */
+            last_day: string | null;
+            /** Report */
+            report: {
+                [key: string]: unknown;
+            } | null;
+        } & {
+            [key: string]: unknown;
+        };
         /** ReleaseRequest */
         ReleaseRequest: {
             /**
@@ -3903,6 +5010,16 @@ export interface components {
              * @description The number itself, typed out, to confirm.
              */
             confirm?: string | null;
+        };
+        /** ReleaseResult */
+        ReleaseResult: {
+            job: components["schemas"]["AdminJob"];
+            /** Settlement */
+            settlement: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
         /** Requested */
         Requested: {
@@ -3915,6 +5032,42 @@ export interface components {
             message: string;
             /** Requested */
             requested: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** Revoked */
+        Revoked: {
+            /** Revoked */
+            revoked: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouteList */
+        RouteList: {
+            /** Items */
+            items: components["schemas"]["RouteState"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouteState */
+        RouteState: {
+            /** Actor */
+            actor: string;
+            /** Open Until */
+            open_until?: string | null;
+            /** Paused At */
+            paused_at?: string | null;
+            /** Reason */
+            reason?: string | null;
+            /** Route */
+            route: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "paused" | "open" | "breaker_open";
+            /** Updated At */
+            updated_at: string;
         } & {
             [key: string]: unknown;
         };
@@ -4032,6 +5185,15 @@ export interface components {
              */
             from: string;
         };
+        /** Sent */
+        Sent: {
+            /** Message */
+            message: string;
+            /** Sent */
+            sent: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** ServiceStatus */
         ServiceStatus: {
             /** Database */
@@ -4054,6 +5216,53 @@ export interface components {
             version: string;
             /** Worker Beat Age S */
             worker_beat_age_s?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** SessionInfo */
+        SessionInfo: {
+            /** Auth Method */
+            auth_method: string;
+            /** Authenticated At */
+            authenticated_at: string;
+            /** Expires At */
+            expires_at: string;
+            /** Fresh */
+            fresh: boolean;
+            /** Fresh Until */
+            fresh_until: string;
+            /** Id */
+            id: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** SessionList */
+        SessionList: {
+            /** Items */
+            items: components["schemas"]["SessionOut"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** SessionOut */
+        SessionOut: {
+            /** Auth Method */
+            auth_method: string;
+            /** Authenticated At */
+            authenticated_at: string;
+            /** Created At */
+            created_at: string;
+            /** Current */
+            current: boolean;
+            /** Expires At */
+            expires_at: string;
+            /** Id */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /** Last Seen At */
+            last_seen_at: string;
+            /** User Agent */
+            user_agent: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -4136,6 +5345,22 @@ export interface components {
              * @default 0.75
              */
             strong_model_if_below: number;
+        };
+        /** SwitchOrganization */
+        SwitchOrganization: {
+            /** Org Id */
+            org_id: string;
+        };
+        /** TelnyxAck */
+        TelnyxAck: {
+            /** Event Id */
+            event_id?: string | null;
+            /** Outcome */
+            outcome: string;
+            /** Received */
+            received: boolean;
+        } & {
+            [key: string]: unknown;
         };
         /** TopupCreate */
         TopupCreate: {
@@ -4340,6 +5565,23 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** UserOut */
+        UserOut: {
+            /** Created At */
+            created_at: string;
+            /** Email */
+            email: string;
+            /** Email Verified */
+            email_verified: boolean;
+            /** Id */
+            id: string;
+            /** Last Login At */
+            last_login_at: string | null;
+            /** Name */
+            name: string | null;
+        } & {
+            [key: string]: unknown;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -4371,6 +5613,18 @@ export interface components {
             updated_at: string;
             /** Url */
             url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** WebhookAck */
+        WebhookAck: {
+            /** Outcome */
+            outcome: string;
+            /**
+             * Received
+             * @default true
+             */
+            received: boolean;
         } & {
             [key: string]: unknown;
         };
@@ -4437,6 +5691,27 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type AbuseReview = components['schemas']['AbuseReview'];
+export type AbuseReviewCreate = components['schemas']['AbuseReviewCreate'];
+export type AbuseReviewPage = components['schemas']['AbuseReviewPage'];
+export type AbuseReviewPatch = components['schemas']['AbuseReviewPatch'];
+export type Accepted = components['schemas']['Accepted'];
+export type Adjustment = components['schemas']['Adjustment'];
+export type AdjustmentApply = components['schemas']['AdjustmentApply'];
+export type AdjustmentCreate = components['schemas']['AdjustmentCreate'];
+export type AdjustmentPage = components['schemas']['AdjustmentPage'];
+export type AdminAction = components['schemas']['AdminAction'];
+export type AdminBrief = components['schemas']['AdminBrief'];
+export type AdminDaily = components['schemas']['AdminDaily'];
+export type AdminDailyPoint = components['schemas']['AdminDailyPoint'];
+export type AdminJob = components['schemas']['AdminJob'];
+export type AdminJobPage = components['schemas']['AdminJobPage'];
+export type AdminOrganization = components['schemas']['AdminOrganization'];
+export type AdminOrganizationDetail = components['schemas']['AdminOrganizationDetail'];
+export type AdminOrganizationPage = components['schemas']['AdminOrganizationPage'];
+export type AdminRevenue = components['schemas']['AdminRevenue'];
+export type AdminStats = components['schemas']['AdminStats'];
+export type AdminWhoami = components['schemas']['AdminWhoami'];
 export type Agent = components['schemas']['Agent'];
 export type AgentActivity = components['schemas']['AgentActivity'];
 export type AgentActivityPage = components['schemas']['AgentActivityPage'];
@@ -4444,6 +5719,12 @@ export type AgentCreate = components['schemas']['AgentCreate'];
 export type AgentKeyCreate = components['schemas']['AgentKeyCreate'];
 export type AgentList = components['schemas']['AgentList'];
 export type AgentUpdate = components['schemas']['AgentUpdate'];
+export type AnalyticsJourneys = components['schemas']['AnalyticsJourneys'];
+export type AnalyticsOrganization = components['schemas']['AnalyticsOrganization'];
+export type AnalyticsSource = components['schemas']['AnalyticsSource'];
+export type AnalyticsSources = components['schemas']['AnalyticsSources'];
+export type AnalyticsUsage = components['schemas']['AnalyticsUsage'];
+export type AnalyticsWebsite = components['schemas']['AnalyticsWebsite'];
 export type ApiKey = components['schemas']['ApiKey'];
 export type ApiKeyCreate = components['schemas']['ApiKeyCreate'];
 export type ApiKeyList = components['schemas']['ApiKeyList'];
@@ -4454,6 +5735,8 @@ export type ApprovalRequestCreate = components['schemas']['ApprovalRequestCreate
 export type ApprovalRequestPage = components['schemas']['ApprovalRequestPage'];
 export type Attempt = components['schemas']['Attempt'];
 export type AttemptPage = components['schemas']['AttemptPage'];
+export type AuditEvent = components['schemas']['AuditEvent'];
+export type AuditEventPage = components['schemas']['AuditEventPage'];
 export type AutoTopup = components['schemas']['AutoTopup'];
 export type AutoTopupCreate = components['schemas']['AutoTopupCreate'];
 export type AutoTopupList = components['schemas']['AutoTopupList'];
@@ -4488,6 +5771,10 @@ export type ExtractionPageList = components['schemas']['ExtractionPageList'];
 export type ExtractionSchema = components['schemas']['ExtractionSchema'];
 export type ExtractionSchemaList = components['schemas']['ExtractionSchemaList'];
 export type FaxCreate = components['schemas']['FaxCreate'];
+export type FaxforagentsApiRoutesInboxInboxItem = components['schemas']['faxforagents__api__routes__inbox__InboxItem'];
+export type FaxforagentsApiSchemasInboxItem = components['schemas']['faxforagents__api__schemas__InboxItem'];
+export type FaxforagentsApiSchemasMe = components['schemas']['faxforagents__api__schemas__Me'];
+export type FaxforagentsAuthSchemasMe = components['schemas']['faxforagents__auth__schemas__Me'];
 export type FaxJob = components['schemas']['FaxJob'];
 export type FaxJobPage = components['schemas']['FaxJobPage'];
 export type HttpValidationError = components['schemas']['HTTPValidationError'];
@@ -4505,6 +5792,7 @@ export type Invoice = components['schemas']['Invoice'];
 export type InvoicePage = components['schemas']['InvoicePage'];
 export type LedgerEntry = components['schemas']['LedgerEntry'];
 export type LedgerPage = components['schemas']['LedgerPage'];
+export type MagicLinkRequest = components['schemas']['MagicLinkRequest'];
 export type Me = components['schemas']['Me'];
 export type Member = components['schemas']['Member'];
 export type MemberList = components['schemas']['MemberList'];
@@ -4514,11 +5802,25 @@ export type NumberList = components['schemas']['NumberList'];
 export type NumberOrder = components['schemas']['NumberOrder'];
 export type NumberOrderCreate = components['schemas']['NumberOrderCreate'];
 export type NumberUpdate = components['schemas']['NumberUpdate'];
+export type OAuthConsent = components['schemas']['OAuthConsent'];
+export type OAuthConsentClient = components['schemas']['OAuthConsentClient'];
+export type OAuthConsentDecision = components['schemas']['OAuthConsentDecision'];
+export type OAuthConsentOrganization = components['schemas']['OAuthConsentOrganization'];
+export type OAuthRedirect = components['schemas']['OAuthRedirect'];
+export type OneTimeConfig = components['schemas']['OneTimeConfig'];
+export type OneTimeRoute = components['schemas']['OneTimeRoute'];
 export type Organization = components['schemas']['Organization'];
 export type OrganizationList = components['schemas']['OrganizationList'];
 export type OrganizationPatch = components['schemas']['OrganizationPatch'];
 export type OrganizationSummary = components['schemas']['OrganizationSummary'];
+export type OutboxDiscarded = components['schemas']['OutboxDiscarded'];
+export type OutboxPage = components['schemas']['OutboxPage'];
+export type OutboxRow = components['schemas']['OutboxRow'];
 export type PagePreview = components['schemas']['PagePreview'];
+export type Passkey = components['schemas']['Passkey'];
+export type PasskeyList = components['schemas']['PasskeyList'];
+export type PasskeyLoginVerify = components['schemas']['PasskeyLoginVerify'];
+export type PasskeyRegisterVerify = components['schemas']['PasskeyRegisterVerify'];
 export type Policy = components['schemas']['Policy'];
 export type PolicyCreate = components['schemas']['PolicyCreate'];
 export type PolicyEvaluation = components['schemas']['PolicyEvaluation'];
@@ -4534,11 +5836,21 @@ export type PortOrder = components['schemas']['PortOrder'];
 export type PortOrderCreate = components['schemas']['PortOrderCreate'];
 export type PortOrderList = components['schemas']['PortOrderList'];
 export type PortOutRequestCreate = components['schemas']['PortOutRequestCreate'];
+export type ProviderHealth = components['schemas']['ProviderHealth'];
+export type ProviderList = components['schemas']['ProviderList'];
+export type Providers = components['schemas']['Providers'];
 export type Quote = components['schemas']['Quote'];
 export type QuoteCreate = components['schemas']['QuoteCreate'];
+export type Reauth = components['schemas']['Reauth'];
 export type Receipt = components['schemas']['Receipt'];
+export type ReconcileResult = components['schemas']['ReconcileResult'];
+export type ReconciliationReport = components['schemas']['ReconciliationReport'];
 export type ReleaseRequest = components['schemas']['ReleaseRequest'];
+export type ReleaseResult = components['schemas']['ReleaseResult'];
 export type Requested = components['schemas']['Requested'];
+export type Revoked = components['schemas']['Revoked'];
+export type RouteList = components['schemas']['RouteList'];
+export type RouteState = components['schemas']['RouteState'];
 export type SandboxFixture = components['schemas']['SandboxFixture'];
 export type SandboxInboundCreate = components['schemas']['SandboxInboundCreate'];
 export type SandboxReset = components['schemas']['SandboxReset'];
@@ -4547,12 +5859,18 @@ export type SandboxScenarios = components['schemas']['SandboxScenarios'];
 export type SchemaCreate = components['schemas']['SchemaCreate'];
 export type SenderVerification = components['schemas']['SenderVerification'];
 export type SenderVerificationCreate = components['schemas']['SenderVerificationCreate'];
+export type Sent = components['schemas']['Sent'];
 export type ServiceStatus = components['schemas']['ServiceStatus'];
+export type SessionInfo = components['schemas']['SessionInfo'];
+export type SessionList = components['schemas']['SessionList'];
+export type SessionOut = components['schemas']['SessionOut'];
 export type SignedUrl = components['schemas']['SignedUrl'];
 export type Subscription = components['schemas']['Subscription'];
 export type SubscriptionCheckout = components['schemas']['SubscriptionCheckout'];
 export type SubscriptionList = components['schemas']['SubscriptionList'];
 export type SummaryCreate = components['schemas']['SummaryCreate'];
+export type SwitchOrganization = components['schemas']['SwitchOrganization'];
+export type TelnyxAck = components['schemas']['TelnyxAck'];
 export type TopupCreate = components['schemas']['TopupCreate'];
 export type TopupSession = components['schemas']['TopupSession'];
 export type TopupSessionPage = components['schemas']['TopupSessionPage'];
@@ -4563,8 +5881,10 @@ export type UsageExport = components['schemas']['UsageExport'];
 export type UsageExportCreate = components['schemas']['UsageExportCreate'];
 export type UsageItem = components['schemas']['UsageItem'];
 export type UsageReport = components['schemas']['UsageReport'];
+export type UserOut = components['schemas']['UserOut'];
 export type ValidationError = components['schemas']['ValidationError'];
 export type Webhook = components['schemas']['Webhook'];
+export type WebhookAck = components['schemas']['WebhookAck'];
 export type WebhookCreate = components['schemas']['WebhookCreate'];
 export type WebhookList = components['schemas']['WebhookList'];
 export type WebhookUpdate = components['schemas']['WebhookUpdate'];
