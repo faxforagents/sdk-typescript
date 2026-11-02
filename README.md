@@ -71,7 +71,8 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
   `{ idempotencyKey }` as the last argument to pick your own.
 - 429 and 5xx answers are retried up to three times. `Retry-After` is honoured. Network errors and
   timeouts are retried the same way.
-- Every list has an `iter` twin that follows `next_cursor`, as an async iterator.
+- Cursor-paginated fax, document, event, approval, inbox, extraction and billing lists have async iterators
+  that follow `next_cursor`.
 - `documents.create({ text })`, `{ markdown }` or `{ html }` renders on the server. HTML prints with
   scripts off and no network, inline CSS and `data:` images only, at most 2 MiB.
 - `documents.upload(bytes, { filename })` runs the whole upload path for a PDF or an image (PNG, JPG,
@@ -81,6 +82,14 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
 - `verifyWebhook(secret, headers, body)` checks the Standard Webhooks signature on a delivery.
 - Types are generated from the public OpenAPI document with openapi-typescript. Money is an integer
   count of USD micro-units (`39000` is $0.039). Timestamps are UTC strings.
+
+For raw HTTP upload completion, send a JSON object even when you omit the checksum.
+
+```bash
+curl -X POST "https://api.faxforagents.com/v1/uploads/$UPLOAD_ID/complete" \
+  -H "Authorization: Bearer $FAXFORAGENTS_API_KEY" \
+  -H "Content-Type: application/json" -d '{}'
+```
 
 ## Resources
 
@@ -96,7 +105,7 @@ names the scope each call needs.
 | `ffa.faxes` | `create`, `list`, `iter`, `get`, `wait`, `listEvents`, `listAttempts`, `getReceipt`, `cancel` |
 | `ffa.webhooks` | `list`, `create`, `update`, `delete`, `rotateSecret`, `test`, `listDeliveries`, `replayDelivery` |
 | `ffa.events` | `list`, `iter` |
-| `ffa.billing` | `balance`, `listLedger`, settings, top-ups, auto top-ups, budgets, `usage`, exports, invoices, subscriptions, `createPortalSession` |
+| `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, auto top-ups, budgets, `usage`, exports, invoices, subscriptions, `createPortalSession` |
 | `ffa.platform` | `capabilities`, `serviceStatus` |
 | `ffa.sandbox` | `listScenarios`, `createScenario`, `createInboundFax`, `reset` |
 | `ffa.approvals` | `request`, `requestHelp`, `list`, `iter`, `get`, `wait`, `approve`, `reject`, `revoke` |
@@ -190,7 +199,11 @@ sh scripts/truthcheck.sh
 ```
 
 `spec/openapi.yaml` is a copy of the public document. To take a new one, copy it over and run
-`npm run gen:types`. `npm install` from a git URL builds the package on install (the `prepare` script),
+`npm run gen:types`. Preserve the route-documented response additions when refreshing the snapshot.
+The snapshot covers existing SDK operations from API version 1.5.0 and retains the public model names.
+New response fields are optional so older payloads and existing callers remain valid.
+
+`npm install` from a git URL builds the package on install (the `prepare` script),
 so `npm install github:faxforagents/sdk-typescript` works before the package is on npm.
 
 ## Licence

@@ -262,6 +262,10 @@ export class Billing extends Resource {
   listLedger(p: Page = {}): Promise<S.LedgerPage> {
     return this.h.request('GET', '/v1/ledger', { params: p });
   }
+  /** Every ledger entry, following next_cursor. */
+  iterLedger(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.LedgerEntry, void, undefined> {
+    return paginate((cursor) => this.listLedger({ ...p, cursor }));
+  }
   /** Billing settings of the organization. Scope: billing:read. */
   getSettings(): Promise<S.BillingSettings> {
     return this.h.request('GET', '/v1/billing-settings');
@@ -277,6 +281,10 @@ export class Billing extends Resource {
   /** Top-up sessions, newest first. Scope: billing:read. */
   listTopupSessions(p: Page = {}): Promise<S.TopupSessionPage> {
     return this.h.request('GET', '/v1/topup-sessions', { params: p });
+  }
+  /** Every top-up session, following next_cursor. */
+  iterTopupSessions(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.TopupSession, void, undefined> {
+    return paginate((cursor) => this.listTopupSessions({ ...p, cursor }));
   }
   /** Read a top-up session. Scope: billing:read. */
   getTopupSession(topupSessionId: string): Promise<S.TopupSession> {
@@ -321,6 +329,10 @@ export class Billing extends Resource {
   /** Stripe invoices and receipts as hosted links. Scope: billing:read. */
   listInvoices(p: Page = {}): Promise<S.InvoicePage> {
     return this.h.request('GET', '/v1/invoices', { params: p });
+  }
+  /** Every invoice, following next_cursor. */
+  iterInvoices(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.Invoice, void, undefined> {
+    return paginate((cursor) => this.listInvoices({ ...p, cursor }));
   }
   /** One invoice. Scope: billing:read. */
   getInvoice(invoiceId: string): Promise<S.Invoice> {

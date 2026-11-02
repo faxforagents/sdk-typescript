@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3 (2026-11-02)
+
+Declare response fields from API version 1.5.0 and the server serializers.
+Add billing iterators for ledger entries, top-up sessions and invoices.
+Document the required JSON object for upload completion.
+
 ## 0.2.2 (2026-10-30)
 
 First version on the npm registry. The README opens with the Fax for Agents logo, a link row to the

@@ -327,3 +327,18 @@ describe('faxes', () => {
     expect(body).toEqual({ document_id: 'doc_1', to: '+15550000001', from: '+12025550100' });
   });
 });
+
+
+it('completeUpload sends an empty JSON object without a checksum', async () => {
+  let body = '';
+  let contentType: string | null = null;
+  server.use(http.post(`${BASE}/v1/uploads/upl_1/complete`, async ({ request }) => {
+    body = await request.text();
+    contentType = request.headers.get('content-type');
+    return HttpResponse.json({ id: 'upl_1', status: 'completed' });
+  }));
+  const ffa = new FaxForAgents({ apiKey: KEY, baseUrl: BASE });
+  await ffa.documents.completeUpload('upl_1');
+  expect(body).toBe('{}');
+  expect(contentType).toBe('application/json');
+});

@@ -2300,6 +2300,10 @@ export interface components {
             max_upload_bytes: number;
             /** Numbers */
             numbers: boolean;
+            /** One Time */
+            one_time?: {
+                [key: string]: unknown;
+            };
             /** Price Version */
             price_version: string;
             /** Provider */
@@ -2751,11 +2755,15 @@ export interface components {
         ExtractionPage: {
             /** Confidence */
             confidence: number;
+            /** @description Returned by GET /v1/extractions/{extraction_id}. Declared here until the public schema includes it. */
+            cost_micro?: number;
             /**
              * Escalated
              * @default false
              */
             escalated: boolean;
+            /** @description Returned by GET /v1/extractions/{extraction_id}. Declared here until the public schema includes it. */
+            fast_read?: boolean;
             /** Language */
             language?: string | null;
             /** Model */
@@ -2764,6 +2772,8 @@ export interface components {
             page: number;
             /** Status */
             status: string;
+            /** @description Returned by GET /v1/extractions/{extraction_id}. Declared here until the public schema includes it. */
+            strong_read?: boolean;
             /** Text */
             text: string;
             /**
@@ -2771,6 +2781,8 @@ export interface components {
              * @default []
              */
             warnings: string[];
+            /** @description Returned by GET /v1/extractions/{extraction_id}. Declared here until the public schema includes it. */
+            words_count?: number;
         } & {
             [key: string]: unknown;
         };
@@ -2833,6 +2845,8 @@ export interface components {
         FaxJob: {
             /** Amount Micro */
             amount_micro: number;
+            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
+            approval_id?: string | null;
             /** Attempt Count */
             attempt_count: number;
             /** Billable Pages */
@@ -2875,8 +2889,16 @@ export interface components {
             from?: string | null;
             /** Id */
             id: string;
+            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
+            one_time?: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
+            one_time_order_id?: string | null;
             /** Pages Sent */
             pages_sent: number;
+            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
+            policy_version_id?: string | null;
             /** Provider */
             provider: string;
             /** Provider Ref */
@@ -3044,14 +3066,60 @@ export interface components {
             amount_micro: number;
             /** Document Id */
             document_id: string | null;
+            /**
+             * Duration Secs
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            duration_secs?: number | null;
+            /**
+             * Environment
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             * @enum {string}
+             */
+            environment?: "live" | "test";
+            /**
+             * Expires At
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            expires_at?: string | null;
             /** From */
             from?: string | null;
             /** Id */
             id: string;
+            /**
+             * Media Status
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            media_status?: string;
             /** Note */
             note?: string | null;
+            /**
+             * Number Id
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            number_id?: string | null;
             /** Pages */
             pages: number;
+            /**
+             * Partial Content
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            partial_content?: boolean;
+            /**
+             * Project Id
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            project_id?: string | null;
+            /**
+             * Provider
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            provider?: string;
+            /**
+             * Read At
+             * @description Returned by POST /v1/sandbox/inbound-faxes.
+             */
+            read_at?: string | null;
             /** Received At */
             received_at: string;
             /** Status */
@@ -3534,6 +3602,10 @@ export interface components {
             reason: string;
             /** Rule */
             rule: string | null;
+            /** @description Returned by POST /v1/policy-evaluations when a bound policy has usage. */
+            usage?: {
+                [key: string]: number;
+            } | null;
             /** Version */
             version: number | null;
         } & {
@@ -3733,8 +3805,14 @@ export interface components {
              * @default 0
              */
             per_page_micro: number;
+            /** @description Returned by GET /v1/fax-quotes/{quote_id}. Declared here until the public schema includes it. */
+            policy_evaluation?: {
+                [key: string]: unknown;
+            } | null;
             /** Price Version */
             price_version: string;
+            /** @description Returned by POST /v1/fax-quotes. Declared here until the public schema includes it. */
+            pricing?: string;
             /** Route */
             route: string;
             /**
