@@ -1,4 +1,4 @@
-/** Every operationId of spec/openapi.yaml is reachable through a resource (signed URLs through helpers). */
+/** Track client methods and operations exposed only through generated route declarations. */
 import { readFileSync } from 'node:fs';
 
 import { expect, it } from 'vitest';
@@ -135,11 +135,84 @@ const COVERED: Record<string, string> = {
   revoke_invitation: 'members.revokeInvitation',
 };
 
-it('covers every operationId of the spec', () => {
+// These routes have generated declarations. The client currently has no methods for them.
+const GENERATED_ONLY = [
+  'accept_invitation',
+  'admin_apply_adjustment',
+  'admin_audit_events',
+  'admin_brief_latest',
+  'admin_cancel_adjustment',
+  'admin_daily',
+  'admin_disable_oauth_client',
+  'admin_discard_outbox',
+  'admin_get_organization',
+  'admin_list_adjustments',
+  'admin_list_jobs',
+  'admin_list_organizations',
+  'admin_list_outbox',
+  'admin_list_reviews',
+  'admin_list_routes',
+  'admin_oauth_clients',
+  'admin_oauth_grants',
+  'admin_open_review',
+  'admin_patch_review',
+  'admin_pause_route',
+  'admin_propose_adjustment',
+  'admin_providers',
+  'admin_reconcile_job',
+  'admin_reconciliation',
+  'admin_release_hold',
+  'admin_requeue_outbox',
+  'admin_resume_route',
+  'admin_revenue',
+  'admin_revoke_oauth_grant',
+  'admin_stats',
+  'admin_whoami',
+  'analytics_journeys',
+  'analytics_organization',
+  'analytics_sources',
+  'analytics_usage',
+  'analytics_website',
+  'approve_oauth_authorization',
+  'create_review_access',
+  'delete_passkey',
+  'deny_oauth_authorization',
+  'get_auth_me',
+  'get_auth_providers',
+  'get_oauth_authorization',
+  'get_one_time_config',
+  'list_oauth_grants',
+  'list_passkeys',
+  'list_sessions',
+  'logout',
+  'oauth_callback',
+  'oauth_start',
+  'open_magic_link',
+  'passkey_login_options',
+  'passkey_login_verify',
+  'passkey_register_options',
+  'passkey_register_verify',
+  'reauth',
+  'request_magic_link',
+  'review_sign_in',
+  'revoke_oauth_grant',
+  'revoke_other_sessions',
+  'revoke_review_access',
+  'revoke_session',
+  'stripe_webhook',
+  'switch_organization',
+  'telnyx_media',
+  'telnyx_webhook',
+  'telnyx_webhook_failover',
+];
+
+it('accounts for every operationId and retains every existing client method', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const ids = new Set([...yaml.matchAll(/^\s+operationId: (\w+)$/gm)].map((m) => m[1]!));
-  expect(ids.size).toBe(127);
-  expect([...ids].sort()).toEqual(Object.keys(COVERED).sort());
+  expect(Object.keys(COVERED)).toHaveLength(127);
+  expect(GENERATED_ONLY).toHaveLength(67);
+  expect(ids.size).toBe(194);
+  expect([...ids].sort()).toEqual([...Object.keys(COVERED), ...GENERATED_ONLY].sort());
   const c = new FaxForAgents({ apiKey: 'ffa_test_x' }) as unknown as Record<string, Record<string, unknown>>;
   for (const target of Object.values(COVERED)) {
     const [res, method] = target.split('.') as [string, string];

@@ -4,9 +4,10 @@ import ts from 'typescript';
 import { expect, it } from 'vitest';
 import { parse } from 'yaml';
 
-it('declares every property in the saved live OpenAPI schemas', () => {
+it('declares every schema property and route in the saved live OpenAPI document', () => {
   const spec = parse(readFileSync(new URL('../spec/openapi.yaml', import.meta.url), 'utf8')) as {
     components: { schemas: Record<string, { properties?: Record<string, unknown> }> };
+    paths: Record<string, Record<string, { operationId: string }>>;
   };
   const filename = fileURLToPath(new URL('../src/schema.d.ts', import.meta.url));
   const program = ts.createProgram([filename], { strict: true, noEmit: true });
@@ -32,4 +33,30 @@ it('declares every property in the saved live OpenAPI schemas', () => {
     }
   }
   expect(missing, 'Undeclared schema properties or models').toEqual([]);
+
+  const paths = source.statements.find(
+    (node): node is ts.InterfaceDeclaration => ts.isInterfaceDeclaration(node) && node.name.text === 'paths',
+  );
+  const operations = source.statements.find(
+    (node): node is ts.InterfaceDeclaration => ts.isInterfaceDeclaration(node) && node.name.text === 'operations',
+  );
+  expect(paths).toBeDefined();
+  expect(operations).toBeDefined();
+  const pathTypes = checker.getTypeAtLocation(paths!);
+  const operationTypes = checker.getTypeAtLocation(operations!);
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    const route = pathTypes.getProperty(path);
+    expect(route, path).toBeDefined();
+    const routeType = checker.getTypeOfSymbolAtLocation(route!, source);
+    for (const [method, { operationId }] of Object.entries(methods)) {
+      const declaration = routeType.getProperty(method);
+      const operation = operationTypes.getProperty(operationId);
+      expect(declaration, `${method} ${path}`).toBeDefined();
+      expect(operation, operationId).toBeDefined();
+      const declaredType = checker.getTypeOfSymbolAtLocation(declaration!, source);
+      const operationType = checker.getTypeOfSymbolAtLocation(operation!, source);
+      expect(declaredType.flags & (ts.TypeFlags.Never | ts.TypeFlags.Any)).toBe(0);
+      expect(checker.typeToString(declaredType)).toBe(checker.typeToString(operationType));
+    }
+  }
 });

@@ -198,9 +198,11 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` contains all schemas from the live API version 1.5.2 document and the existing SDK operations.
+`spec/openapi.yaml` contains all schemas from the live API version 1.6.0 document and all its operations.
 It also retains earlier public model names and route-documented response additions.
-To refresh it, merge the live schemas while preserving existing declarations, then run `npm run gen:types`.
+To refresh it, merge live schemas and routes while preserving existing declarations, then run `npm run gen:types`.
+Generated route types include authentication, admin and provider webhook endpoints.
+These routes have type declarations only. The client methods remain listed in `test/surface.test.ts`.
 Keep new response fields optional so older payloads and existing callers remain valid.
 The schema drift test compares every saved schema property with the generated declarations without network access.
 

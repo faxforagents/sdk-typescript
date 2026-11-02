@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.5 (2026-11-02)
+
+Add `Grant`, `GrantList` and `ReviewSignIn` for connected apps and reviewer sign-in.
+Also declare `Client`, `ClientList`, `ReviewAccessAction`, `ReviewAccessCreate` and `ReviewAccessIssued`.
+Generate declarations for all API 1.6.0 routes, including connected app listing and revocation.
+Retain existing model names, fields, optionality and operation names.
+
 ## 0.2.4 (2026-11-02)
 
 Regenerate models from API version 1.5.2, including the boolean `Capabilities.extraction` field.

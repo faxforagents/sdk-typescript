@@ -26,7 +26,7 @@ info:
   x-logo:
     url: https://faxforagents.com/brand/logo-512.png
     altText: Fax for Agents
-  version: 1.5.2
+  version: 1.6.0
 servers:
 - url: https://api.faxforagents.com
   description: Production (live and test keys)
@@ -7103,6 +7103,2002 @@ paths:
         mutating: false
         idempotency_key: false
         agent_key_allowed: true
+  /v1/auth/providers:
+    get:
+      tags:
+      - auth
+      summary: Which sign-in methods are available
+      operationId: get_auth_providers
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Providers'
+  /v1/auth/me:
+    get:
+      tags:
+      - auth
+      summary: The signed-in person, their organizations and the CSRF token
+      operationId: get_auth_me
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/faxforagents__auth__schemas__Me'
+  /v1/auth/logout:
+    post:
+      tags:
+      - auth
+      summary: End this session
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: logout
+      responses:
+        '204':
+          description: Successful Response
+  /v1/auth/switch-organization:
+    post:
+      tags:
+      - auth
+      summary: Look at another organization you belong to
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: switch_organization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchOrganization'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/faxforagents__auth__schemas__Me'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/magic-links:
+    post:
+      tags:
+      - auth
+      summary: Send a sign-in link to an email address (always 202)
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: request_magic_link
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MagicLinkRequest'
+        required: true
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sent'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/magic-links/{token}:
+    get:
+      tags:
+      - auth
+      summary: 'Open a sign-in link: sets the session cookie and redirects to the
+        app'
+      operationId: open_magic_link
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '303':
+          description: Redirect to the app, signed in or with an error code in the
+            query.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/passkeys/register/options:
+    post:
+      tags:
+      - auth
+      summary: Options for navigator.credentials.create() (fresh session required)
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: passkey_register_options
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Passkey Register Options
+  /v1/auth/passkeys/register/verify:
+    post:
+      tags:
+      - auth
+      summary: Store a new passkey after the browser created it
+      operationId: passkey_register_verify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyRegisterVerify'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passkey'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+  /v1/auth/passkeys:
+    get:
+      tags:
+      - auth
+      summary: Your passkeys
+      operationId: list_passkeys
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyList'
+  /v1/auth/passkeys/{passkey_id}:
+    delete:
+      tags:
+      - auth
+      summary: Remove one of your passkeys
+      operationId: delete_passkey
+      parameters:
+      - name: passkey_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Passkey Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/passkeys/login/options:
+    post:
+      tags:
+      - auth
+      summary: Options for navigator.credentials.get() (discoverable, no email needed)
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: passkey_login_options
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Passkey Login Options
+  /v1/auth/passkeys/login/verify:
+    post:
+      tags:
+      - auth
+      summary: Sign in with a passkey assertion
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: passkey_login_verify
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyLoginVerify'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/faxforagents__auth__schemas__Me'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/reauth:
+    post:
+      tags:
+      - auth
+      summary: Prove it is you again (passkey now, or a fresh link by mail) before
+        a sensitive action
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: reauth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reauth'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/faxforagents__auth__schemas__Me'
+        '202':
+          description: A sign-in link was sent; opening it in this browser refreshes
+            the session.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/oauth/{provider}/start:
+    get:
+      tags:
+      - auth
+      summary: Begin GitHub or Google sign-in (redirects to the provider)
+      operationId: oauth_start
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider
+      - name: next
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 400
+          - type: 'null'
+          title: Next
+      responses:
+        '303':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/oauth/{provider}/callback:
+    get:
+      tags:
+      - auth
+      summary: Finish GitHub or Google sign-in (the app forwards its /auth/{provider}/callback
+        here)
+      operationId: oauth_callback
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider
+      - name: code
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: Code
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: State
+      - name: error
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/faxforagents__auth__schemas__Me'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/invitations/{token}/accept:
+    post:
+      tags:
+      - auth
+      summary: Join the organization an invitation link names (the signed-in email
+        must match)
+      operationId: accept_invitation
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Token
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accepted'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/review-access:
+    post:
+      tags:
+      - auth
+      summary: Sign in with reviewer credentials
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: review_sign_in
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewSignIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/faxforagents__auth__schemas__Me'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/auth/sessions:
+    get:
+      tags:
+      - auth
+      summary: Your live sessions
+      operationId: list_sessions
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+    delete:
+      tags:
+      - auth
+      summary: Sign out everywhere else
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: revoke_other_sessions
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Revoked'
+  /v1/auth/sessions/{session_id}:
+    delete:
+      tags:
+      - auth
+      summary: Revoke one of your sessions
+      description: Idempotency-Key is accepted but ignored for this session-only authentication
+        action. Repeated requests do not create customer resources or charges. Authentication,
+        one-time challenge checks and rate limits still apply.
+      operationId: revoke_session
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Session Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/one-time-sends/config:
+    get:
+      tags:
+      - one-time-sends
+      summary: Whether one-time sends are open here, and the card and limits an order
+        is priced and checked by
+      operationId: get_one_time_config
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OneTimeConfig'
+  /v1/oauth/grants:
+    get:
+      tags:
+      - oauth
+      summary: Your connected apps in this organization
+      operationId: list_oauth_grants
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantList'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/oauth/grants/{grant_id}:
+    delete:
+      tags:
+      - oauth
+      summary: Revoke a connected app
+      operationId: revoke_oauth_grant
+      parameters:
+      - name: grant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Grant Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/oauth/authorizations/{authorization_id}:
+    get:
+      tags:
+      - oauth
+      summary: 'The pending consent behind a consent URL: the app, the scopes and
+        your organizations'
+      operationId: get_oauth_authorization
+      parameters:
+      - name: authorization_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Authorization Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthConsent'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/oauth/authorizations/{authorization_id}/approve:
+    post:
+      tags:
+      - oauth
+      summary: 'Allow: mint the authorization code and return where the browser goes
+        next'
+      operationId: approve_oauth_authorization
+      parameters:
+      - name: authorization_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Authorization Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthConsentDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthRedirect'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/oauth/authorizations/{authorization_id}/deny:
+    post:
+      tags:
+      - oauth
+      summary: 'Deny: send the app an access_denied answer'
+      operationId: deny_oauth_authorization
+      parameters:
+      - name: authorization_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Authorization Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthRedirect'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/oauth/clients:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: OAuth clients'
+      operationId: admin_oauth_clients
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientList'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/oauth/clients/{client_id}/disable:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: disable an OAuth client'
+      operationId: admin_disable_oauth_client
+      parameters:
+      - name: client_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Client Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Disable Oauth Client
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/oauth/grants:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: OAuth grants'
+      operationId: admin_oauth_grants
+      parameters:
+      - name: org_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Org Id
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrantList'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/oauth/grants/{grant_id}/revoke:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: revoke an OAuth grant'
+      operationId: admin_revoke_oauth_grant
+      parameters:
+      - name: grant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Grant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Revoke Oauth Grant
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/review-access:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: issue a reviewer access code'
+      operationId: create_review_access
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewAccessCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewAccessIssued'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/review-access/{access_id}:
+    delete:
+      tags:
+      - admin
+      summary: 'Admin: revoke reviewer access and review sessions'
+      operationId: revoke_review_access
+      parameters:
+      - name: access_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Access Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewAccessAction'
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/whoami:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: who the Access assertion says you are'
+      operationId: admin_whoami
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminWhoami'
+  /v1/admin/stats:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: system stats (30-day window)'
+      operationId: admin_stats
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStats'
+  /v1/admin/revenue:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: revenue from the rollup'
+      operationId: admin_revenue
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminRevenue'
+  /v1/admin/daily:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: one rollup metric per UTC day (platform_daily)'
+      operationId: admin_daily
+      parameters:
+      - name: metric
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 64
+          description: One of worker.rollup.METRICS
+          title: Metric
+        description: One of worker.rollup.METRICS
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 400
+          minimum: 1
+          default: 30
+          title: Days
+      - name: environment
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            pattern: ^(live|test|all)$
+          - type: 'null'
+          title: Environment
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDaily'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/brief/latest:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: the last daily brief'
+      operationId: admin_brief_latest
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBrief'
+  /v1/admin/providers:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: provider health'
+      operationId: admin_providers
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderList'
+  /v1/admin/jobs:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: open and uncertain jobs across organizations'
+      operationId: admin_list_jobs
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State
+      - name: older_than
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+          description: Seconds since the last update
+          title: Older Than
+        description: Seconds since the last update
+      - name: route
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Route
+      - name: org_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Org Id
+      - name: environment
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            pattern: ^(live|test)$
+          - type: 'null'
+          title: Environment
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminJobPage'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/jobs/{fax_id}/reconcile:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: re-run the provider status check for one job (never a resend)'
+      operationId: admin_reconcile_job
+      parameters:
+      - name: fax_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Fax Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconcileResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/jobs/{fax_id}/release-hold:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: release the hold of an unknown job after a human decision'
+      operationId: admin_release_hold
+      parameters:
+      - name: fax_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Fax Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/routes:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: route circuit breakers'
+      operationId: admin_list_routes
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteList'
+  /v1/admin/routes/{route}/pause:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: pause dispatch on a route'
+      operationId: admin_pause_route
+      parameters:
+      - name: route
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteState'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/routes/{route}/resume:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: resume dispatch on a route'
+      operationId: admin_resume_route
+      parameters:
+      - name: route
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteState'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/billing-adjustments:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: propose a wallet adjustment (dual control)'
+      operationId: admin_propose_adjustment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustmentCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adjustment'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+    get:
+      tags:
+      - admin
+      summary: 'Admin: list wallet adjustments'
+      operationId: admin_list_adjustments
+      parameters:
+      - name: org_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Org Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 16
+          - type: 'null'
+          title: Status
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdjustmentPage'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/billing-adjustments/{adjustment_id}/apply:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: apply a proposed adjustment (a second identity, or confirm
+        when alone)'
+      operationId: admin_apply_adjustment
+      parameters:
+      - name: adjustment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Adjustment Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustmentApply'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adjustment'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/billing-adjustments/{adjustment_id}/cancel:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: cancel a proposed adjustment'
+      operationId: admin_cancel_adjustment
+      parameters:
+      - name: adjustment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Adjustment Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adjustment'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/billing/reconciliation:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: the last nightly ledger reconciliation report'
+      operationId: admin_reconciliation
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationReport'
+  /v1/admin/abuse-reviews:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: open an abuse review'
+      operationId: admin_open_review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbuseReviewCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbuseReview'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        description: 'Replay the first successful response for the same request within
+          24 hours. Reusing the idempotency header with a different request returns
+          409 idempotency_key_conflict. Responses include Idempotent-Replayed: true
+          on replay.'
+    get:
+      tags:
+      - admin
+      summary: 'Admin: list abuse reviews'
+      operationId: admin_list_reviews
+      parameters:
+      - name: org_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Org Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 16
+          - type: 'null'
+          title: Status
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbuseReviewPage'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/abuse-reviews/{review_id}:
+    patch:
+      tags:
+      - admin
+      summary: 'Admin: suspend, unsuspend or resolve an abuse review'
+      operationId: admin_patch_review
+      parameters:
+      - name: review_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Review Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbuseReviewPatch'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbuseReview'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/organizations:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: search customers'
+      operationId: admin_list_organizations
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Q
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOrganizationPage'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/organizations/{org_id}:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: one customer in detail'
+      operationId: admin_get_organization
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Org Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOrganizationDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/outbox:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: outbox rows that gave up (status dead)'
+      operationId: admin_list_outbox
+      parameters:
+      - name: kind
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Kind
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboxPage'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/outbox/{job_id}/requeue:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: run a dead outbox row again (attempts reset)'
+      operationId: admin_requeue_outbox
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboxRow'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/outbox/{job_id}/discard:
+    post:
+      tags:
+      - admin
+      summary: 'Admin: discard a dead outbox row once understood'
+      operationId: admin_discard_outbox
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAction'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboxDiscarded'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/audit-events:
+    get:
+      tags:
+      - admin
+      summary: 'Admin: search the audit log'
+      operationId: admin_audit_events
+      parameters:
+      - name: org_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Org Id
+      - name: actor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Actor
+      - name: action
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          description: Exact, or a prefix ending in a dot
+          title: Action
+        description: Exact, or a prefix ending in a dot
+      - name: since
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Since
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEventPage'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/analytics/sources:
+    get:
+      tags:
+      - admin
+      summary: 'Admin analytics: the external sources'
+      operationId: analytics_sources
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsSources'
+  /v1/admin/analytics/website:
+    get:
+      tags:
+      - admin
+      summary: 'Admin analytics: search, traffic and UX'
+      operationId: analytics_website
+      parameters:
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: 'The window in days: one of 7, 30, 90'
+          default: 30
+          title: Days
+        description: 'The window in days: one of 7, 30, 90'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsWebsite'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/analytics/journeys:
+    get:
+      tags:
+      - admin
+      summary: 'Admin analytics: the product funnel'
+      operationId: analytics_journeys
+      parameters:
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: 'The window in days: one of 7, 30, 90'
+          default: 30
+          title: Days
+        description: 'The window in days: one of 7, 30, 90'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsJourneys'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/analytics/journeys/{org_id}:
+    get:
+      tags:
+      - admin
+      summary: 'Admin analytics: one organization''s journey'
+      operationId: analytics_organization
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Org Id
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: 'The window in days: one of 7, 30, 90'
+          default: 30
+          title: Days
+        description: 'The window in days: one of 7, 30, 90'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOrganization'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/admin/analytics/usage:
+    get:
+      tags:
+      - admin
+      summary: 'Admin analytics: API and MCP usage'
+      operationId: analytics_usage
+      parameters:
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: 'The window in days: one of 7, 30, 90'
+          default: 30
+          title: Days
+        description: 'The window in days: one of 7, 30, 90'
+      - name: org_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          description: One organization's usage
+          title: Org Id
+        description: One organization's usage
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsUsage'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /webhooks/stripe:
+    post:
+      tags:
+      - webhooks
+      summary: Stripe event delivery (signed by Stripe, no API key)
+      operationId: stripe_webhook
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAck'
+  /webhooks/telnyx:
+    post:
+      tags:
+      - webhooks
+      summary: Telnyx fax events (signed, no API key)
+      operationId: telnyx_webhook
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelnyxAck'
+  /webhooks/telnyx/failover:
+    post:
+      tags:
+      - webhooks
+      summary: Telnyx fax events, failover URL
+      operationId: telnyx_webhook_failover
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelnyxAck'
+  /webhooks/telnyx/media/{fax_job_id}:
+    get:
+      tags:
+      - webhooks
+      summary: The transmitted PDF behind a signed 15-minute link (fetched by Telnyx,
+        no API key)
+      operationId: telnyx_media
+      parameters:
+      - name: fax_job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Fax Job Id
+      - name: exp
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Exp
+      - name: sig
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sig
+      responses:
+        '200':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   securitySchemes:
     bearerAuth:
@@ -14178,3 +16174,249 @@ components:
       - passkeys
       - providers
       title: Me
+    Client:
+      properties:
+        id:
+          type: string
+          title: Id
+        client_id:
+          type: string
+          title: Client Id
+        kind:
+          type: string
+          enum:
+          - static
+          - dynamic
+          - cimd
+          title: Kind
+        client_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Name
+        client_host:
+          type: string
+          title: Client Host
+        created_at:
+          type: string
+          title: Created At
+        last_used_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Used At
+        disabled_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disabled At
+        disabled_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disabled Reason
+      additionalProperties: true
+      type: object
+      required:
+      - id
+      - client_id
+      - kind
+      - client_name
+      - client_host
+      - created_at
+      - last_used_at
+      - disabled_at
+      - disabled_reason
+      title: Client
+    ClientList:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Client'
+          type: array
+          title: Items
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+        total:
+          type: integer
+          minimum: 0.0
+          title: Total
+      additionalProperties: true
+      type: object
+      required:
+      - items
+      - total
+      title: ClientList
+    Grant:
+      properties:
+        id:
+          type: string
+          title: Id
+        org_id:
+          type: string
+          title: Org Id
+        organization:
+          type: string
+          title: Organization
+        user_id:
+          type: string
+          title: User Id
+        client_id:
+          type: string
+          title: Client Id
+        client_host:
+          type: string
+          title: Client Host
+        client_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Name
+        environment:
+          type: string
+          enum:
+          - test
+          - live
+          title: Environment
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+        created_at:
+          type: string
+          title: Created At
+        last_used_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Used At
+        revoked_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revoked At
+      additionalProperties: true
+      type: object
+      required:
+      - id
+      - org_id
+      - organization
+      - user_id
+      - client_id
+      - client_host
+      - client_name
+      - environment
+      - scopes
+      - created_at
+      - last_used_at
+      - revoked_at
+      title: Grant
+    GrantList:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Grant'
+          type: array
+          title: Items
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+      additionalProperties: true
+      type: object
+      required:
+      - items
+      title: GrantList
+    ReviewAccessAction:
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 3
+          title: Reason
+          description: 'Why: recorded on the audit row'
+      additionalProperties: false
+      type: object
+      required:
+      - reason
+      title: ReviewAccessAction
+    ReviewAccessCreate:
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 3
+          title: Reason
+          description: 'Why: recorded on the audit row'
+        email:
+          type: string
+          format: email
+          title: Email
+        label:
+          type: string
+          maxLength: 120
+          minLength: 1
+          title: Label
+          default: Directory review
+        ttl_days:
+          type: integer
+          maximum: 90.0
+          minimum: 1.0
+          title: Ttl Days
+          default: 30
+      additionalProperties: false
+      type: object
+      required:
+      - reason
+      - email
+      title: ReviewAccessCreate
+    ReviewAccessIssued:
+      properties:
+        id:
+          type: string
+          title: Id
+        email:
+          type: string
+          title: Email
+        label:
+          type: string
+          title: Label
+        code:
+          type: string
+          title: Code
+        expires_at:
+          type: string
+          title: Expires At
+      additionalProperties: true
+      type: object
+      required:
+      - id
+      - email
+      - label
+      - code
+      - expires_at
+      title: ReviewAccessIssued
+    ReviewSignIn:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        code:
+          type: string
+          maxLength: 256
+          minLength: 1
+          format: password
+          title: Code
+          writeOnly: true
+      additionalProperties: false
+      type: object
+      required:
+      - email
+      - code
+      title: ReviewSignIn
