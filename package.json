@@ -64,7 +64,7 @@
   "devDependencies": {
     "@types/node": "^26.4.0",
     "esbuild": "^0.28.2",
-    "msw": "^2.15.0",
+    "msw": "^3.0.3",
     "openapi-typescript": "^7.13.0",
     "tsup": "^9.0.0",
     "typescript": "^5.5.0",
