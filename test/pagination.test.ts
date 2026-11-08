@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 import { FaxForAgents } from '../src/index.js';
 import { BASE, HttpResponse, KEY, faxJob, http, server } from './helpers.js';
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

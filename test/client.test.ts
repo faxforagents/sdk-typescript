@@ -14,7 +14,7 @@ import {
 } from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, document, faxJob, http, quote, sequence, server } from './helpers.js';
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
