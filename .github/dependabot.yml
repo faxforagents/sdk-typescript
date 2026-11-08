@@ -19,3 +19,7 @@ updates:
       # Drop when openapi-typescript accepts TypeScript 7.
       - dependency-name: typescript
         update-types: ["version-update:semver-major"]
+      # msw 3 calls Map.groupBy and declares node >=22.12, so the mocked tests fail on the node 20 leg of the matrix (2026-11-08).
+      # Drop when the CI matrix drops node 20.
+      - dependency-name: msw
+        update-types: ["version-update:semver-major"]
