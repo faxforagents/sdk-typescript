@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.7 (2026-11-09)
+
+`QuoteCreate.sender_name` (the station name in the fax header) and `QuoteCreate.delete_after_send`. `Quote` and `FaxJob` carry both. Needs API 1.12.0.
+
 ## 0.2.6 (2026-11-09)
 
 `QuoteCreate.quality`: standard, fine (the default), superfine or ultra. `Quote` and `FaxJob` carry `quality`. Needs API 1.11.0; older servers refuse the field.

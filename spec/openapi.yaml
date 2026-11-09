@@ -11203,6 +11203,14 @@ components:
         quality:
           type: string
           title: Quality
+        sender_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sender Name
+        delete_after_send:
+          type: boolean
+          title: Delete After Send
         pages_sent:
           type: integer
           title: Pages Sent
@@ -12906,6 +12914,14 @@ components:
         quality:
           type: string
           title: Quality
+        sender_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sender Name
+        delete_after_send:
+          type: boolean
+          title: Delete After Send
         authorization_required:
           type: boolean
           title: Authorization Required
@@ -12978,6 +12994,17 @@ components:
           - ultra
           title: Quality
           description: Fax resolution. standard is 204 by 98 dpi, fine (the default) 204 by 196, superfine 204 by 392; ultra asks the carrier for its best text setting. Same price at every level.
+        sender_name:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Sender Name
+          description: The station name the carrier prints in the fax header next to the sending number. Letters, digits, spaces and - _ ~ ! . + only, at most 128 characters. Omit to show the number alone.
+        delete_after_send:
+          type: boolean
+          title: Delete After Send
+          description: Delete the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The job, its receipt and the carrier evidence stay.
         to:
           type: string
           title: To

@@ -4800,6 +4800,8 @@ export interface components {
             created_at: string;
             /** Currency */
             currency: string;
+            /** Delete After Send */
+            delete_after_send?: boolean;
             /** Direction */
             direction: string;
             /** Document Id */
@@ -4844,6 +4846,8 @@ export interface components {
             quote_id: string | null;
             /** Route */
             route: string;
+            /** Sender Name */
+            sender_name?: string | null;
             /**
              * State
              * @enum {string}
@@ -6055,6 +6059,8 @@ export interface components {
             created_at: string;
             /** Currency */
             currency: string;
+            /** Delete After Send */
+            delete_after_send?: boolean;
             /** Document Id */
             document_id: string;
             /** Document Pages */
@@ -6096,6 +6102,8 @@ export interface components {
              * @default
              */
             route_label: string;
+            /** Sender Name */
+            sender_name?: string | null;
             /** To */
             to: string;
             /** Warnings */
@@ -6114,6 +6122,11 @@ export interface components {
             cover?: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * Delete After Send
+             * @description Delete the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The job, its receipt and the carrier evidence stay.
+             */
+            delete_after_send?: boolean;
             /** Document Id */
             document_id: string;
             /**
@@ -6127,6 +6140,11 @@ export interface components {
              * @enum {string}
              */
             quality?: "standard" | "fine" | "superfine" | "ultra";
+            /**
+             * Sender Name
+             * @description The station name the carrier prints in the fax header next to the sending number. Letters, digits, spaces and - _ ~ ! . + only, at most 128 characters. Omit to show the number alone.
+             */
+            sender_name?: string | null;
             /**
              * To
              * @description Destination in E.164, for example +12025550123.
