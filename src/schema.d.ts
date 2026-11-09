@@ -4838,6 +4838,11 @@ export interface components {
             provider: string;
             /** Provider Ref */
             provider_ref: string | null;
+            /**
+             * Quality
+             * @default fine
+             */
+            quality: string;
             /** Quote Id */
             quote_id: string | null;
             /** Route */
@@ -6085,6 +6090,11 @@ export interface components {
             price_version: string;
             /** @description Returned by POST /v1/fax-quotes. Declared here until the public schema includes it. */
             pricing?: string;
+            /**
+             * Quality
+             * @default fine
+             */
+            quality: string;
             /** Route */
             route: string;
             /**
@@ -6117,6 +6127,13 @@ export interface components {
              * @description A number you own; omit for the shared pool.
              */
             from?: string | null;
+            /**
+             * Quality
+             * @description Fax resolution. standard is 204 by 98 dpi, fine (the default) 204 by 196, superfine 204 by 392; ultra asks the carrier for its best text setting. Same price at every level.
+             * @default fine
+             * @enum {string}
+             */
+            quality: "standard" | "fine" | "superfine" | "ultra";
             /**
              * To
              * @description Destination in E.164, for example +12025550123.
