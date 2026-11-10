@@ -201,6 +201,10 @@ export class Faxes extends Resource {
   getReceipt(faxId: string): Promise<S.Receipt> {
     return this.h.request('GET', `/v1/faxes/${faxId}/receipt`);
   }
+  /** The same receipt as a one-page PDF. Scope: fax:read. */
+  getReceiptPdf(faxId: string): Promise<Uint8Array> {
+    return this.h.bytes('GET', `/v1/faxes/${faxId}/receipt.pdf`);
+  }
   /** Cancel while queued, best effort once sending. Scope: fax:cancel. */
   cancel(faxId: string, o: Mut = {}): Promise<S.FaxJob> {
     return this.h.request('POST', `/v1/faxes/${faxId}/cancel`, { json: {}, ...o });
@@ -444,6 +448,18 @@ export class Policies extends Resource {
   effective(): Promise<S.EffectivePolicies> {
     return this.h.request('GET', '/v1/policies/effective');
   }
+  /** The auto-send setting for connected apps in this key's environment. Scope: policy:read. */
+  getAutoSend(): Promise<S.AutoSendSetting> {
+    return this.h.request('GET', '/v1/organizations/current/auto-send');
+  }
+  /**
+   * Let connected apps send without asking, inside an amount per fax and a count per day.
+   * Scope: org:admin and policy:admin, never an agent key.
+   */
+  setAutoSend(body: S.AutoSendUpdate, o: Mut = {}): Promise<S.AutoSendSetting> {
+    const idempotencyKey = o.idempotencyKey ?? crypto.randomUUID();
+    return this.h.request('PUT', '/v1/organizations/current/auto-send', { json: body, idempotencyKey });
+  }
   /** A policy at its current version. Scope: policy:read. */
   get(policyId: string): Promise<S.Policy> {
     return this.h.request('GET', `/v1/policies/${policyId}`);
@@ -536,6 +552,10 @@ export class Numbers extends Resource {
    */
   createOrder(body: S.NumberOrderCreate, o: Mut = {}): Promise<S.NumberOrder> {
     return this.h.request('POST', '/v1/number-orders', { json: body, ...o });
+  }
+  /** Your number orders. Scope: number:read. */
+  listOrders(): Promise<S.NumberOrderList> {
+    return this.h.request('GET', '/v1/number-orders');
   }
   /** Read a number order. Scope: number:read. */
   getOrder(orderId: string): Promise<S.NumberOrder> {
@@ -676,6 +696,13 @@ export class Organizations extends Resource {
   requestDataDeletion(o: Mut = {}): Promise<S.Requested> {
     return this.h.request('POST', '/v1/organizations/current/deletion-requests', { json: {}, ...o });
   }
+  /**
+   * The organization archive of a data export. `token`, `exp` and `sig` come from the signed link,
+   * which lives 72 hours. The link is the credential.
+   */
+  downloadExportArchive(token: string, p: { exp: string; sig: string }): Promise<Uint8Array> {
+    return this.h.bytes('GET', `/v1/organization/export-archives/${token}`, { params: p });
+  }
 }
 
 export class Members extends Resource {
@@ -705,6 +732,21 @@ export class Members extends Resource {
   }
 }
 
+export class Oauth extends Resource {
+  /** The organization's connected apps. Scope: key:admin, never an agent key. */
+  listGrants(p: Page = {}): Promise<S.GrantList> {
+    return this.h.request('GET', '/v1/oauth/grants', { params: p });
+  }
+  /** Every connected app, following next_cursor. */
+  iterGrants(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.Grant, void, undefined> {
+    return paginate((cursor) => this.listGrants({ ...p, cursor }));
+  }
+  /** Revoke a connected app. Scope: key:admin, never an agent key. */
+  async revokeGrant(grantId: string, o: Mut = {}): Promise<void> {
+    await this.h.request('DELETE', `/v1/oauth/grants/${grantId}`, o);
+  }
+}
+
 export class FaxForAgents {
   readonly http: Http;
   readonly identity: Identity;
@@ -724,6 +766,7 @@ export class FaxForAgents {
   readonly extractions: Extractions;
   readonly organizations: Organizations;
   readonly members: Members;
+  readonly oauth: Oauth;
 
   constructor(opts: ClientOptions = {}) {
     this.http = new Http(opts);
@@ -744,6 +787,7 @@ export class FaxForAgents {
     this.extractions = new Extractions(this.http);
     this.organizations = new Organizations(this.http);
     this.members = new Members(this.http);
+    this.oauth = new Oauth(this.http);
   }
 
   /** Shortcut for identity.me(). */

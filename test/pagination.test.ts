@@ -45,3 +45,33 @@ it('inbox.iter stops on an empty first page', async () => {
   expect(items).toEqual([]);
   expect(calls).toBe(1);
 });
+
+it('oauth.iterGrants follows next_cursor', async () => {
+  const grant = (id: string) => ({
+    id,
+    org_id: 'org_1',
+    organization: 'Example',
+    user_id: 'user_1',
+    client_id: 'client_1',
+    client_host: 'app.example',
+    client_name: null,
+    environment: 'test',
+    scopes: ['fax:read'],
+    created_at: '2026-11-01T00:00:00Z',
+    last_used_at: null,
+    revoked_at: null,
+  });
+  const urls: string[] = [];
+  server.use(
+    http.get(`${BASE}/v1/oauth/grants`, ({ request }) => {
+      urls.push(request.url);
+      const cursor = new URL(request.url).searchParams.get('cursor');
+      if (!cursor) return HttpResponse.json({ items: [grant('grant_a')], next_cursor: 'c2' });
+      return HttpResponse.json({ items: [grant('grant_b')], next_cursor: null });
+    }),
+  );
+  const ids: string[] = [];
+  for await (const g of client().oauth.iterGrants({ limit: 1 })) ids.push(g.id);
+  expect(ids).toEqual(['grant_a', 'grant_b']);
+  expect(urls[1]).toContain('cursor=c2');
+});

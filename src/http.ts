@@ -133,7 +133,8 @@ export class Http {
       headers['Content-Type'] = 'application/json';
       body = JSON.stringify(stripNulls(opts.json));
     }
-    if (MUTATING.has(m) && !('Idempotency-Key' in headers)) {
+    // A PUT carries a key only when the caller passes one: the signed upload PUT takes none.
+    if ((MUTATING.has(m) || opts.idempotencyKey !== undefined) && !('Idempotency-Key' in headers)) {
       headers['Idempotency-Key'] = opts.idempotencyKey ?? crypto.randomUUID();
     }
 

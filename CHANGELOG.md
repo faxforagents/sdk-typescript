@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+The saved spec follows the public document at API 1.12.0, 134 public operations. Types are regenerated from it.
+New calls: `faxes.getReceiptPdf`, `numbers.listOrders`, `policies.getAutoSend`, `policies.setAutoSend` and `organizations.downloadExportArchive`.
+New resource `oauth` for connected apps: `listGrants`, `iterGrants` and `revokeGrant`.
+New types `AutoSendSetting`, `AutoSendUpdate` and `NumberOrderList`. `ApiKey` carries `connected_app`, `Policy` carries `managed` and `EffectivePolicies` carries `requires_human_approval`.
+Existing type names, fields and optionality are kept. Fields with a server default stay optional.
+
 ## 0.2.7 (2026-11-09)
 
 `QuoteCreate.sender_name` (the station name in the fax header) and `QuoteCreate.delete_after_send`. `Quote` and `FaxJob` carry both. Needs API 1.12.0.

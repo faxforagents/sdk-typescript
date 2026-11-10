@@ -342,3 +342,67 @@ it('completeUpload sends an empty JSON object without a checksum', async () => {
   expect(body).toBe('{}');
   expect(contentType).toBe('application/json');
 });
+
+describe('operations added with API 1.12.0', () => {
+  it('getReceiptPdf returns the bytes', async () => {
+    server.use(
+      http.get(`${BASE}/v1/faxes/fax_1/receipt.pdf`, () =>
+        new HttpResponse(new TextEncoder().encode('%PDF'), { headers: { 'content-type': 'application/pdf' } }),
+      ),
+    );
+    const bytes = await client().faxes.getReceiptPdf('fax_1');
+    expect(new TextDecoder().decode(bytes)).toBe('%PDF');
+  });
+
+  it('numbers.listOrders reads the order list', async () => {
+    server.use(http.get(`${BASE}/v1/number-orders`, () => HttpResponse.json({ items: [] })));
+    expect((await client().numbers.listOrders()).items).toEqual([]);
+  });
+
+  it('setAutoSend puts the body with an idempotency key', async () => {
+    const setting = { environment: 'test', enabled: true, max_amount_micro: 5000000, daily_max_jobs: 5, policy_id: 'pol_1', version: 1 };
+    let body: unknown;
+    const keys: (string | null)[] = [];
+    server.use(
+      http.get(`${BASE}/v1/organizations/current/auto-send`, () => HttpResponse.json({ ...setting, enabled: false })),
+      http.put(`${BASE}/v1/organizations/current/auto-send`, async ({ request }) => {
+        body = await request.json();
+        keys.push(request.headers.get('idempotency-key'));
+        return HttpResponse.json(setting);
+      }),
+    );
+    const ffa = client();
+    expect((await ffa.policies.getAutoSend()).enabled).toBe(false);
+    const out = await ffa.policies.setAutoSend({ enabled: true, daily_max_jobs: 5 });
+    expect(out.version).toBe(1);
+    expect(body).toEqual({ enabled: true, daily_max_jobs: 5 });
+    await ffa.policies.setAutoSend({ enabled: true }, { idempotencyKey: 'k1' });
+    expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(keys[1]).toBe('k1');
+  });
+
+  it('downloadExportArchive sends the signed values', async () => {
+    let url = '';
+    server.use(
+      http.get(`${BASE}/v1/organization/export-archives/org_1.arc_1`, ({ request }) => {
+        url = request.url;
+        return new HttpResponse(new TextEncoder().encode('PK'), { headers: { 'content-type': 'application/zip' } });
+      }),
+    );
+    const bytes = await client().organizations.downloadExportArchive('org_1.arc_1', { exp: '1', sig: 's' });
+    expect(new TextDecoder().decode(bytes)).toBe('PK');
+    expect(url).toBe(`${BASE}/v1/organization/export-archives/org_1.arc_1?exp=1&sig=s`);
+  });
+
+  it('oauth.revokeGrant deletes with the given key', async () => {
+    let key: string | null = null;
+    server.use(
+      http.delete(`${BASE}/v1/oauth/grants/grant_1`, ({ request }) => {
+        key = request.headers.get('idempotency-key');
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    await client().oauth.revokeGrant('grant_1', { idempotencyKey: 'k1' });
+    expect(key).toBe('k1');
+  });
+});

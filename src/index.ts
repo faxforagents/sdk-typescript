@@ -29,6 +29,7 @@ export {
   Inbox,
   Members,
   Numbers,
+  Oauth,
   Organizations,
   Platform,
   Policies,

@@ -102,20 +102,21 @@ names the scope each call needs.
 | `ffa.identity` | `me`, `listApiKeys`, `createApiKey`, `rotateApiKey`, `revokeApiKey` |
 | `ffa.documents` | `create`, `upload`, `createUpload`, `putUploadContent`, `completeUpload`, `cancelUpload`, `list`, `iter`, `get`, `delete`, `getValidation`, `getDownload`, `download`, `listPages` |
 | `ffa.quotes` | `create`, `get` |
-| `ffa.faxes` | `create`, `list`, `iter`, `get`, `wait`, `listEvents`, `listAttempts`, `getReceipt`, `cancel` |
+| `ffa.faxes` | `create`, `list`, `iter`, `get`, `wait`, `listEvents`, `listAttempts`, `getReceipt`, `getReceiptPdf`, `cancel` |
 | `ffa.webhooks` | `list`, `create`, `update`, `delete`, `rotateSecret`, `test`, `listDeliveries`, `replayDelivery` |
 | `ffa.events` | `list`, `iter` |
 | `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, auto top-ups, budgets, `usage`, exports, invoices, subscriptions, `createPortalSession` |
 | `ffa.platform` | `capabilities`, `serviceStatus` |
 | `ffa.sandbox` | `listScenarios`, `createScenario`, `createInboundFax`, `reset` |
 | `ffa.approvals` | `request`, `requestHelp`, `list`, `iter`, `get`, `wait`, `approve`, `reject`, `revoke` |
-| `ffa.policies` | `list`, `create`, `effective`, `get`, `update`, `listVersions`, `evaluate` |
+| `ffa.policies` | `list`, `create`, `effective`, `getAutoSend`, `setAutoSend`, `get`, `update`, `listVersions`, `evaluate` |
 | `ffa.agents` | `list`, `create`, `get`, `update`, `createKey`, `activity` |
 | `ffa.inbox` | `list`, `iter`, `get`, `update`, `delete`, `getDownload`, `download` |
-| `ffa.numbers` | `coverage`, `inventory`, `createOrder`, `getOrder`, `list`, `get`, `update`, `release`, `checkPortability`, `listPortOrders`, `createPortOrder`, `getPortOrder`, `createPortOutRequest`, `verifySender` |
+| `ffa.numbers` | `coverage`, `inventory`, `createOrder`, `listOrders`, `getOrder`, `list`, `get`, `update`, `release`, `checkPortability`, `listPortOrders`, `createPortOrder`, `getPortOrder`, `createPortOutRequest`, `verifySender` |
 | `ffa.extractions` | `create`, `list`, `iter`, `get`, `correct`, `classify`, `listClassifications`, `iterClassifications`, `getClassification`, `summarize`, `listSummaries`, `iterSummaries`, `getSummary`, `listSchemas`, `createSchema`, `getSchema` |
-| `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion` |
+| `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `downloadExportArchive` |
 | `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `revokeInvitation` |
+| `ffa.oauth` | `listGrants`, `iterGrants`, `revokeGrant` |
 
 `ffa.request('GET', '/v1/anything')` reaches an operation the resources do not cover yet.
 
@@ -198,7 +199,8 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` contains all schemas from the live API version 1.6.0 document and all its operations.
+`spec/openapi.yaml` follows the public document at API version 1.12.0.
+It keeps the schemas and the other operations of the live API version 1.6.0 document.
 It also retains earlier public model names and route-documented response additions.
 To refresh it, merge live schemas and routes while preserving existing declarations, then run `npm run gen:types`.
 Generated route types include authentication, admin and provider webhook endpoints.

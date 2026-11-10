@@ -32,6 +32,7 @@ const COVERED: Record<string, string> = {
   list_fax_events: 'faxes.listEvents',
   list_fax_attempts: 'faxes.listAttempts',
   get_fax_receipt: 'faxes.getReceipt',
+  get_fax_receipt_pdf: 'faxes.getReceiptPdf',
   cancel_fax: 'faxes.cancel',
   list_webhooks: 'webhooks.list',
   create_webhook: 'webhooks.create',
@@ -79,6 +80,8 @@ const COVERED: Record<string, string> = {
   list_policies: 'policies.list',
   create_policy: 'policies.create',
   get_effective_policies: 'policies.effective',
+  get_auto_send: 'policies.getAutoSend',
+  put_auto_send: 'policies.setAutoSend',
   get_policy: 'policies.get',
   update_policy: 'policies.update',
   list_policy_versions: 'policies.listVersions',
@@ -98,6 +101,7 @@ const COVERED: Record<string, string> = {
   get_coverage: 'numbers.coverage',
   get_number_inventory: 'numbers.inventory',
   create_number_order: 'numbers.createOrder',
+  list_number_orders: 'numbers.listOrders',
   get_number_order: 'numbers.getOrder',
   list_numbers: 'numbers.list',
   get_number: 'numbers.get',
@@ -127,12 +131,15 @@ const COVERED: Record<string, string> = {
   update_current_organization: 'organizations.updateCurrent',
   request_data_export: 'organizations.requestDataExport',
   request_data_deletion: 'organizations.requestDataDeletion',
+  download_export_archive: 'organizations.downloadExportArchive',
   list_members: 'members.list',
   update_member: 'members.update',
   remove_member: 'members.remove',
   list_invitations: 'members.listInvitations',
   create_invitation: 'members.invite',
   revoke_invitation: 'members.revokeInvitation',
+  list_oauth_grants: 'oauth.listGrants',
+  revoke_oauth_grant: 'oauth.revokeGrant',
 };
 
 // These routes have generated declarations. The client currently has no methods for them.
@@ -181,7 +188,6 @@ const GENERATED_ONLY = [
   'get_auth_providers',
   'get_oauth_authorization',
   'get_one_time_config',
-  'list_oauth_grants',
   'list_passkeys',
   'list_sessions',
   'logout',
@@ -195,7 +201,6 @@ const GENERATED_ONLY = [
   'reauth',
   'request_magic_link',
   'review_sign_in',
-  'revoke_oauth_grant',
   'revoke_other_sessions',
   'revoke_review_access',
   'revoke_session',
@@ -209,9 +214,9 @@ const GENERATED_ONLY = [
 it('accounts for every operationId and retains every existing client method', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const ids = new Set([...yaml.matchAll(/^\s+operationId: (\w+)$/gm)].map((m) => m[1]!));
-  expect(Object.keys(COVERED)).toHaveLength(127);
-  expect(GENERATED_ONLY).toHaveLength(67);
-  expect(ids.size).toBe(194);
+  expect(Object.keys(COVERED)).toHaveLength(134);
+  expect(GENERATED_ONLY).toHaveLength(65);
+  expect(ids.size).toBe(199);
   expect([...ids].sort()).toEqual([...Object.keys(COVERED), ...GENERATED_ONLY].sort());
   const c = new FaxForAgents({ apiKey: 'ffa_test_x' }) as unknown as Record<string, Record<string, unknown>>;
   for (const target of Object.values(COVERED)) {
