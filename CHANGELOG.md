@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 (2026-11-10)
 
 The saved spec follows the public document at API 1.12.0, 134 public operations. Types are regenerated from it.
 New calls: `faxes.getReceiptPdf`, `numbers.listOrders`, `policies.getAutoSend`, `policies.setAutoSend` and `organizations.downloadExportArchive`.
