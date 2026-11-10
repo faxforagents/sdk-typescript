@@ -167,8 +167,11 @@ export class Faxes extends Resource {
   create(body: S.FaxCreate, o: Mut = {}): Promise<S.FaxJob> {
     return this.h.request('POST', '/v1/faxes', { json: body, ...o });
   }
-  /** Fax jobs, newest first. Scope: fax:read. */
-  list(p: Page & { state?: string } = {}): Promise<S.FaxJobPage> {
+  /**
+   * Fax jobs, newest first. Scope: fax:read. `idempotency_key` finds the send made with that
+   * Idempotency-Key. It is a filter here, not a header. An empty result does not prove no fax was sent.
+   */
+  list(p: Page & { state?: string; idempotency_key?: string } = {}): Promise<S.FaxJobPage> {
     return this.h.request('GET', '/v1/faxes', { params: p });
   }
   /** Every fax job, following next_cursor. */
@@ -444,9 +447,13 @@ export class Policies extends Resource {
   create(body: S.PolicyCreate, o: Mut = {}): Promise<S.Policy> {
     return this.h.request('POST', '/v1/policies', { json: body, ...o });
   }
-  /** What this key is allowed to do alone, and whether a human is needed. Scope: policy:read. */
-  effective(): Promise<S.EffectivePolicies> {
-    return this.h.request('GET', '/v1/policies/effective');
+  /**
+   * What a key is allowed to do alone, and whether a human is needed. Scope: policy:read. With no
+   * argument the answer is for the calling key. Pass at most one of `key_id`, `agent_id` or
+   * `connection_id` (a connected app, see `oauth.listGrants`) to ask about another principal.
+   */
+  effective(p: { key_id?: string; agent_id?: string; connection_id?: string } = {}): Promise<S.EffectivePolicies> {
+    return this.h.request('GET', '/v1/policies/effective', { params: p });
   }
   /** The auto-send setting for connected apps in this key's environment. Scope: policy:read. */
   getAutoSend(): Promise<S.AutoSendSetting> {

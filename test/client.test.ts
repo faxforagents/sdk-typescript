@@ -406,3 +406,33 @@ describe('operations added with API 1.12.0', () => {
     expect(key).toBe('k1');
   });
 });
+
+describe('filters added in 0.3.1', () => {
+  it('faxes.list sends idempotency_key as a query filter, not a header', async () => {
+    let url = '';
+    let header: string | null = 'unset';
+    server.use(
+      http.get(`${BASE}/v1/faxes`, ({ request }) => {
+        url = request.url;
+        header = request.headers.get('idempotency-key');
+        return HttpResponse.json({ items: [], next_cursor: null });
+      }),
+    );
+    await client().faxes.list({ idempotency_key: 'order-42' });
+    expect(url).toBe(`${BASE}/v1/faxes?idempotency_key=order-42`);
+    expect(header).toBeNull();
+  });
+
+  it('policies.effective can ask about a connected app', async () => {
+    const urls: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/policies/effective`, ({ request }) => {
+        urls.push(request.url);
+        return HttpResponse.json({});
+      }),
+    );
+    await client().policies.effective({ connection_id: 'ogr_1' });
+    await client().policies.effective();
+    expect(urls).toEqual([`${BASE}/v1/policies/effective?connection_id=ogr_1`, `${BASE}/v1/policies/effective`]);
+  });
+});
