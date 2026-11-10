@@ -199,7 +199,7 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.13.1.
+`spec/openapi.yaml` follows the public document at API version 1.13.2.
 It keeps the schemas and the other operations of the live API version 1.6.0 document.
 Those sign-in, admin and provider webhook routes were compared with the API version 1.13.1 server on 2026-11-10 and match it.
 Two operator routes added after 1.6.0 and the auto-send fields of the consent screen are not declared.
