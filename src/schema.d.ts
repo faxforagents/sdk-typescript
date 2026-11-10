@@ -715,7 +715,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Rotate a key: a new secret, the old one works for 24 more hours */
+        /**
+         * Rotate an API key and preserve its expiry
+         * @description The replacement keeps the original expires_at, including no expiry. The old secret works for up to 24 hours, capped by its existing expiry.
+         */
         post: operations["rotate_api_key"];
         delete?: never;
         options?: never;
@@ -767,7 +770,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Approve the bound quote (a human with approval:decide, never the requester) */
+        /** Approve the bound quote (approval:decide, fresh session or independent API credential) */
         post: operations["approve_request"];
         delete?: never;
         options?: never;
@@ -1757,6 +1760,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/faxes/{fax_id}/receipt.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The same receipt as a one-page PDF */
+        get: operations["get_fax_receipt_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/inbox": {
         parameters: {
             query?: never;
@@ -1992,9 +2012,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List your number orders */
+        get: operations["list_number_orders"];
         put?: never;
-        /** Buy a number (the first month is held now, charged on activation) */
+        /**
+         * Buy a number (the first month is held now, charged on activation)
+         * @description Returns 201 with the created order, including when the carrier refuses the purchase. A refused order has status failed and an error describing the carrier's reason. Its first-month hold is released and nothing is charged. Reusing the same Idempotency-Key returns the same response body without another purchase. An unconfirmed carrier response leaves the order pending for reconciliation.
+         */
         post: operations["create_number_order"];
         delete?: never;
         options?: never;
@@ -2173,6 +2197,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/organization/export-archives/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download an organization archive with a signed link valid for 72 hours
+         * @description No API key: the `exp` and `sig` query values come from the signed URL the API minted. The link lives 72 hours.
+         */
+        get: operations["download_export_archive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/organizations": {
         parameters: {
             query?: never;
@@ -2206,6 +2250,27 @@ export interface paths {
         head?: never;
         /** Rename the organization */
         patch: operations["update_current_organization"];
+        trace?: never;
+    };
+    "/v1/organizations/current/auto-send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the auto-send setting for connected apps in this environment */
+        get: operations["get_auto_send"];
+        /**
+         * Let connected apps send without asking, inside two limits (owner)
+         * @description The environment comes from X-FFA-Environment. When enabled, every connected app of the organization (OAuth connections such as ChatGPT or Claude, and API keys flagged connected_app) sends in that environment with no approval per fax, inside the amount per fax and the faxes per day. A hosted integration the server marks requires_human_approval still needs a person. The first enable creates a managed policy. Every later save is a new policy version with its audit row. A browser session needs a sign-in from the last 15 minutes.
+         */
+        put: operations["put_auto_send"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/organizations/current/deletion-requests": {
@@ -3636,6 +3701,11 @@ export interface components {
         ApiKey: {
             /** Agent Id */
             agent_id: string | null;
+            /**
+             * Connected App
+             * @description The key belongs to a connected app used over stdio, such as the Gemini CLI extension. The organization's auto-send setting (Settings, Connected apps) binds it like an OAuth connection.
+             */
+            connected_app?: boolean;
             /** Created At */
             created_at: string;
             /**
@@ -3667,6 +3737,11 @@ export interface components {
         /** ApiKeyCreate */
         ApiKeyCreate: {
             /**
+             * Connected App
+             * @description This key is for a connected app such as the Gemini CLI extension: the auto-send setting binds it. Not available on an agent's key.
+             */
+            connected_app?: boolean;
+            /**
              * Environment
              * @default test
              * @enum {string}
@@ -3693,6 +3768,11 @@ export interface components {
         ApiKeyWithSecret: {
             /** Agent Id */
             agent_id: string | null;
+            /**
+             * Connected App
+             * @description The key belongs to a connected app used over stdio, such as the Gemini CLI extension. The organization's auto-send setting (Settings, Connected apps) binds it like an OAuth connection.
+             */
+            connected_app?: boolean;
             /** Created At */
             created_at: string;
             /**
@@ -3870,6 +3950,54 @@ export interface components {
             next_cursor?: string | null;
         } & {
             [key: string]: unknown;
+        };
+        /**
+         * AutoSendSetting
+         * @description The organization's auto-send setting for one environment: Settings, Connected apps, "Let connected
+         *     apps send without asking". Stored as the managed policy ``policy_id`` (docs/APPROVALS.md).
+         */
+        AutoSendSetting: {
+            /**
+             * Daily Max Jobs
+             * @description Faxes per UTC day, at most, across every connected app.
+             */
+            daily_max_jobs: number;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /**
+             * Max Amount Micro
+             * @description Amount per fax, at most, in micro-units of USD.
+             */
+            max_amount_micro: number;
+            /**
+             * Policy Id
+             * @description The managed policy; null before the first enable.
+             */
+            policy_id: string | null;
+            /** Version */
+            version: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AutoSendUpdate */
+        AutoSendUpdate: {
+            /**
+             * Daily Max Jobs
+             * @description Faxes per UTC day.
+             */
+            daily_max_jobs?: number;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Max Amount Micro
+             * @description Amount per fax, at most, in micro-units of USD (5000000 is five US dollars).
+             */
+            max_amount_micro?: number;
         };
         /** AutoTopup */
         AutoTopup: {
@@ -4314,7 +4442,10 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** DocumentCreate */
+        /**
+         * DocumentCreate
+         * @description Send exactly one of text, markdown, html or upload_id.
+         */
         DocumentCreate: {
             /** Filename */
             filename?: string | null;
@@ -4331,6 +4462,7 @@ export interface components {
             /**
              * Text
              * @description Plain text rendered to a letter PDF.
+             * @example Hello from Fax for Agents
              */
             text?: string | null;
             /** Upload Id */
@@ -4392,6 +4524,11 @@ export interface components {
             environment: "live" | "test";
             /** Policies */
             policies: components["schemas"]["Policy"][];
+            /**
+             * Requires Human Approval
+             * @description Server-set for hosted integration clients and their keys: every send needs a person's approval, whatever the policies say.
+             */
+            requires_human_approval?: boolean;
             /** Rules Order */
             rules_order: string[];
             /** Under Policy */
@@ -5458,6 +5595,13 @@ export interface components {
              */
             project_id?: string | null;
         };
+        /** NumberOrderList */
+        NumberOrderList: {
+            /** Items */
+            items: components["schemas"]["NumberOrder"][];
+        } & {
+            [key: string]: unknown;
+        };
         /** NumberUpdate */
         NumberUpdate: {
             /** Inbound Webhook Id */
@@ -5759,6 +5903,11 @@ export interface components {
             enabled: boolean;
             /** Id */
             id: string;
+            /**
+             * Managed
+             * @description connected_apps when a Settings switch (the auto-send setting) manages this policy. Such a policy is read here and changed only through PUT /v1/organizations/current/auto-send.
+             */
+            managed?: string | null;
             /** Name */
             name: string;
             /** Purpose */
@@ -6124,7 +6273,7 @@ export interface components {
             } | null;
             /**
              * Delete After Send
-             * @description Delete the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The job, its receipt and the carrier evidence stay.
+             * @description Delete the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The job, its receipt and the carrier evidence stay; they hold no document content. A fax that ends unknown keeps the document until a reconcile settles it. Default: keep the document for the retention period.
              */
             delete_after_send?: boolean;
             /** Document Id */
@@ -6136,13 +6285,13 @@ export interface components {
             from?: string | null;
             /**
              * Quality
-             * @description Fax resolution. standard is 204 by 98 dpi, fine (the default) 204 by 196, superfine 204 by 392; ultra asks the carrier for its best text setting. Same price at every level.
+             * @description Fax resolution. standard is the fax standard's 204 by 98 dpi, fine (the default) 204 by 196, superfine 204 by 392. ultra asks the carrier for its darkest text processing at the same superfine resolution and takes longer to process: measured 2026-11-09, a page sent at ultra and one at superfine both arrived as 1728 by 4112 pixels, 204 by 391 dpi. The price does not change. The job echoes the level.
              * @enum {string}
              */
             quality?: "standard" | "fine" | "superfine" | "ultra";
             /**
              * Sender Name
-             * @description The station name the carrier prints in the fax header next to the sending number. Letters, digits, spaces and - _ ~ ! . + only, at most 128 characters. Omit to show the number alone.
+             * @description The station name the carrier prints in the fax header, next to the sending number. Letters, digits, spaces and - _ ~ ! . + only, at most 128 characters. Omit to show the number alone.
              */
             sender_name?: string | null;
             /**
@@ -7023,6 +7172,8 @@ export type Attempt = components['schemas']['Attempt'];
 export type AttemptPage = components['schemas']['AttemptPage'];
 export type AuditEvent = components['schemas']['AuditEvent'];
 export type AuditEventPage = components['schemas']['AuditEventPage'];
+export type AutoSendSetting = components['schemas']['AutoSendSetting'];
+export type AutoSendUpdate = components['schemas']['AutoSendUpdate'];
 export type AutoTopup = components['schemas']['AutoTopup'];
 export type AutoTopupCreate = components['schemas']['AutoTopupCreate'];
 export type AutoTopupList = components['schemas']['AutoTopupList'];
@@ -7091,6 +7242,7 @@ export type Number = components['schemas']['Number'];
 export type NumberList = components['schemas']['NumberList'];
 export type NumberOrder = components['schemas']['NumberOrder'];
 export type NumberOrderCreate = components['schemas']['NumberOrderCreate'];
+export type NumberOrderList = components['schemas']['NumberOrderList'];
 export type NumberUpdate = components['schemas']['NumberUpdate'];
 export type OAuthConsent = components['schemas']['OAuthConsent'];
 export type OAuthConsentClient = components['schemas']['OAuthConsentClient'];
@@ -8402,7 +8554,10 @@ export interface operations {
     create_agent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8538,7 +8693,10 @@ export interface operations {
     update_agent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 agent_id: string;
             };
@@ -8679,7 +8837,10 @@ export interface operations {
     create_agent_key: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 agent_id: string;
             };
@@ -8806,7 +8967,10 @@ export interface operations {
     create_api_key: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8875,7 +9039,10 @@ export interface operations {
     revoke_api_key: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 key_id: string;
             };
@@ -8942,7 +9109,10 @@ export interface operations {
     rotate_api_key: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 key_id: string;
             };
@@ -9078,7 +9248,10 @@ export interface operations {
     create_approval_request: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9214,7 +9387,10 @@ export interface operations {
     approve_request: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 approval_id: string;
             };
@@ -9285,7 +9461,10 @@ export interface operations {
     reject_request: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 approval_id: string;
             };
@@ -9356,7 +9535,10 @@ export interface operations {
     revoke_approval: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 approval_id: string;
             };
@@ -10043,7 +10225,10 @@ export interface operations {
     create_auto_topup: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10112,7 +10297,10 @@ export interface operations {
     delete_auto_topup: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 auto_topup_id: string;
             };
@@ -10235,7 +10423,10 @@ export interface operations {
     create_portal_session: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10347,7 +10538,10 @@ export interface operations {
     patch_billing_settings: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10472,7 +10666,10 @@ export interface operations {
     create_budget: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10541,7 +10738,10 @@ export interface operations {
     patch_budget: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 budget_id: string;
             };
@@ -10729,7 +10929,10 @@ export interface operations {
     create_classification: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10991,7 +11194,10 @@ export interface operations {
     create_document_summary: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11195,7 +11401,10 @@ export interface operations {
     create_document: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11331,7 +11540,10 @@ export interface operations {
     delete_document: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 document_id: string;
             };
@@ -11808,7 +12020,10 @@ export interface operations {
     create_extraction_schema: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12014,7 +12229,10 @@ export interface operations {
     create_extraction: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12150,7 +12368,10 @@ export interface operations {
     create_correction: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 extraction_id: string;
             };
@@ -12221,7 +12442,10 @@ export interface operations {
     create_fax_quote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12367,6 +12591,8 @@ export interface operations {
         parameters: {
             query?: {
                 cursor?: string | null;
+                /** @description Find the send job using its Idempotency-Key. This lookup requires the stored replay record. An empty result does not prove no fax was sent. */
+                idempotency_key?: string | null;
                 limit?: number;
                 state?: string | null;
             };
@@ -12435,7 +12661,10 @@ export interface operations {
     create_fax: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12647,7 +12876,10 @@ export interface operations {
     cancel_fax: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 fax_id: string;
             };
@@ -12854,6 +13086,73 @@ export interface operations {
             };
         };
     };
+    get_fax_receipt_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fax_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The receipt as a PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope fax:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_inbox: {
         parameters: {
             query?: {
@@ -12993,7 +13292,10 @@ export interface operations {
     delete_inbox_item: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 inbox_id: string;
             };
@@ -13060,7 +13362,10 @@ export interface operations {
     update_inbox_item: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 inbox_id: string;
             };
@@ -13295,7 +13600,10 @@ export interface operations {
     create_invitation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13364,7 +13672,10 @@ export interface operations {
     revoke_invitation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 invitation_id: string;
             };
@@ -13735,7 +14046,10 @@ export interface operations {
     remove_member: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 member_id: string;
             };
@@ -13800,7 +14114,10 @@ export interface operations {
     update_member: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 member_id: string;
             };
@@ -13947,10 +14264,69 @@ export interface operations {
             };
         };
     };
-    create_number_order: {
+    list_number_orders: {
         parameters: {
             query?: never;
             header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NumberOrderList"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope number:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_number_order: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14229,7 +14605,10 @@ export interface operations {
     update_number: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 number_id: string;
             };
@@ -14300,7 +14679,10 @@ export interface operations {
     create_release_request: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 number_id: string;
             };
@@ -14501,6 +14883,33 @@ export interface operations {
                     "application/json": components["schemas"]["GrantList"];
                 };
             };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope key:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -14508,6 +14917,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -14533,6 +14951,33 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope key:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -14540,6 +14985,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -14560,6 +15014,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OneTimeConfig"];
+                };
+            };
+        };
+    };
+    download_export_archive: {
+        parameters: {
+            query?: {
+                exp?: string | null;
+                sig?: string | null;
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No such resource, or the signed link expired. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -14670,7 +15165,10 @@ export interface operations {
     update_current_organization: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14736,10 +15234,141 @@ export interface operations {
             };
         };
     };
-    request_data_deletion: {
+    get_auto_send: {
         parameters: {
             query?: never;
             header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutoSendSetting"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope policy:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    put_auto_send: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutoSendUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutoSendSetting"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope org:admin (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    request_data_deletion: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14795,7 +15424,10 @@ export interface operations {
     request_data_export: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14907,7 +15539,10 @@ export interface operations {
     create_policy: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15043,7 +15678,10 @@ export interface operations {
     update_policy: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 policy_id: string;
             };
@@ -15180,7 +15818,14 @@ export interface operations {
     };
     get_effective_policies: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description An agent in your organization. Uses the current environment and excludes bindings to individual keys. */
+                agent_id?: string | null;
+                /** @description A connected app (an OAuth grant, GET /v1/oauth/grants) in your organization; a signed-in person sees their own. Uses the connection's environment. Choose at most one of key_id, agent_id and connection_id. */
+                connection_id?: string | null;
+                /** @description An API key in your organization. Uses the key's environment. Choose either key_id or agent_id. */
+                key_id?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -15223,6 +15868,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
             /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
             429: {
                 headers: {
@@ -15237,7 +15891,10 @@ export interface operations {
     create_policy_evaluation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15362,7 +16019,10 @@ export interface operations {
     create_port_order: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15507,7 +16167,10 @@ export interface operations {
     create_port_out_request: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15576,7 +16239,10 @@ export interface operations {
     create_portability_check: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15654,7 +16320,10 @@ export interface operations {
     reset_sandbox_data: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15710,7 +16379,10 @@ export interface operations {
     create_sandbox_inbound_fax: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15835,7 +16507,10 @@ export interface operations {
     create_sandbox_scenario: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -15904,7 +16579,10 @@ export interface operations {
     create_sender_verification: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16076,7 +16754,10 @@ export interface operations {
     create_subscription_checkout: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16200,7 +16881,10 @@ export interface operations {
     create_topup_session: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16336,7 +17020,10 @@ export interface operations {
     create_upload: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16405,7 +17092,10 @@ export interface operations {
     cancel_upload: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 upload_id: string;
             };
@@ -16472,13 +17162,16 @@ export interface operations {
     complete_upload: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 upload_id: string;
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "application/json": components["schemas"]["UploadComplete"];
             };
@@ -16546,7 +17239,10 @@ export interface operations {
                 exp?: string | null;
                 sig?: string | null;
             };
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 upload_id: string;
             };
@@ -16657,7 +17353,10 @@ export interface operations {
     create_usage_export: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16904,7 +17603,10 @@ export interface operations {
     replay_webhook_delivery: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 delivery_id: string;
             };
@@ -17027,7 +17729,10 @@ export interface operations {
     create_webhook: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17096,7 +17801,10 @@ export interface operations {
     delete_webhook: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 webhook_id: string;
             };
@@ -17163,7 +17871,10 @@ export interface operations {
     update_webhook: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 webhook_id: string;
             };
@@ -17234,7 +17945,10 @@ export interface operations {
     rotate_webhook_secret: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 webhook_id: string;
             };
@@ -17301,7 +18015,10 @@ export interface operations {
     test_webhook: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 webhook_id: string;
             };
