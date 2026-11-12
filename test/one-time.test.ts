@@ -219,6 +219,72 @@ describe('one-time sends', () => {
     expect(seen?.get('idempotency-key')).toBeTruthy();
   });
 
+  it('sends accept_aup on a from-quote order only when given', async () => {
+    let sent: unknown;
+    server.use(
+      http.post(`${ROOT}/from-quote`, async ({ request }) => {
+        sent = await request.json();
+        return HttpResponse.json({ ...CASES.created, aup_accepted: false }, { status: 201 });
+      }),
+    );
+    const order = await keyed().oneTimeSends.createFromQuote({
+      quote_id: 'quote_' + '6'.repeat(32),
+      sender_name: 'Dana Example',
+      approval_id: 'apr_1',
+    });
+    expect(order.aup_accepted).toBe(false);
+    expect(order.status_url).toBeTruthy();
+    expect(sent).toEqual({ quote_id: 'quote_' + '6'.repeat(32), sender_name: 'Dana Example', approval_id: 'apr_1' });
+  });
+
+  it('sends accept_aup on the checkout only when given', async () => {
+    const bodies: unknown[] = [];
+    server.use(
+      http.post(`${ROOT}/${ORDER}/checkout`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json(CASES.checkout, { status: 201 });
+      }),
+    );
+    const c = keyless();
+    await c.oneTimeSends.checkout(ORDER, { orderToken: TOKEN });
+    await c.oneTimeSends.checkout(ORDER, { orderToken: TOKEN, acceptAup: true });
+    expect(bodies).toEqual([{}, { accept_aup: true }]);
+  });
+
+  it('reads the queue and the new order fields', async () => {
+    const queue = { queued: true, jobs_ahead: 7, estimated_wait_minutes: 14 };
+    server.use(
+      http.get(`${ROOT}/config`, () => HttpResponse.json({ ...CASES.config, queue })),
+      http.get(`${ROOT}/${ORDER}`, () =>
+        HttpResponse.json({ ...CASES.checkout_open, queue, aup_accepted: false, status_url: 'https://faxforagents.com/send/status/x' }),
+      ),
+    );
+    const c = keyless();
+    const config = await c.oneTimeSends.config();
+    expect(config.queue?.queued).toBe(true);
+    expect(config.queue?.estimated_wait_minutes).toBe(14);
+    const order = await c.oneTimeSends.get(ORDER, { orderToken: TOKEN });
+    expect(order.queue?.jobs_ahead).toBe(7);
+    expect(order.aup_accepted).toBe(false);
+    expect(order.status_url).toBe('https://faxforagents.com/send/status/x');
+  });
+
+  it('posts the token of a confirmation link in the body', async () => {
+    let sent: unknown;
+    let url = '';
+    server.use(
+      http.post(`${ROOT}/by-token`, async ({ request }) => {
+        sent = await request.json();
+        url = request.url;
+        return HttpResponse.json(CASES.by_token);
+      }),
+    );
+    const summary = await keyless().oneTimeSends.readByToken('mail-token');
+    expect(summary.order_id).toBe(ORDER);
+    expect(sent).toEqual({ token: 'mail-token' });
+    expect(url).not.toContain('mail-token');
+  });
+
   it('reads a confirmation link and confirms', async () => {
     let sent: unknown;
     server.use(
@@ -311,6 +377,7 @@ describe('one-time sends', () => {
               apiError('insufficient_balance', 'top up first', {
                 available_micro: 0,
                 needed_micro: 78_000,
+                top_up_url: 'https://app.faxforagents.com/app/billing',
                 one_time_offer: offer,
               }),
               { status: 402 },
@@ -322,7 +389,11 @@ describe('one-time sends', () => {
     const plain = await c.faxes.create({ quote_id: 'quote_1' }).catch((e: unknown) => e);
     expect(plain).toBeInstanceOf(PaymentRequiredError);
     expect((plain as PaymentRequiredError).oneTimeOffer).toBeNull();
+    expect((plain as PaymentRequiredError).topUpUrl).toBeNull();
     const withOffer = await c.faxes.create({ quote_id: 'quote_1' }).catch((e: unknown) => e);
     expect((withOffer as PaymentRequiredError).oneTimeOffer).toEqual(offer);
+    const typed: number | undefined = (withOffer as PaymentRequiredError).oneTimeOffer?.amount_micro;
+    expect(typed).toBe(offer.amount_micro);
+    expect((withOffer as PaymentRequiredError).topUpUrl).toBe('https://app.faxforagents.com/app/billing');
   });
 });

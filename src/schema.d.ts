@@ -4,603 +4,6 @@
  */
 
 export interface paths {
-    "/v1/admin/abuse-reviews": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: list abuse reviews */
-        get: operations["admin_list_reviews"];
-        put?: never;
-        /** Admin: open an abuse review */
-        post: operations["admin_open_review"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/abuse-reviews/{review_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Admin: suspend, unsuspend or resolve an abuse review */
-        patch: operations["admin_patch_review"];
-        trace?: never;
-    };
-    "/v1/admin/analytics/journeys": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin analytics: the product funnel */
-        get: operations["analytics_journeys"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/analytics/journeys/{org_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin analytics: one organization's journey */
-        get: operations["analytics_organization"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/analytics/sources": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin analytics: the external sources */
-        get: operations["analytics_sources"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/analytics/usage": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin analytics: API and MCP usage */
-        get: operations["analytics_usage"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/analytics/website": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin analytics: search, traffic and UX */
-        get: operations["analytics_website"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/audit-events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: search the audit log */
-        get: operations["admin_audit_events"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing-adjustments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: list wallet adjustments */
-        get: operations["admin_list_adjustments"];
-        put?: never;
-        /** Admin: propose a wallet adjustment (dual control) */
-        post: operations["admin_propose_adjustment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing-adjustments/{adjustment_id}/apply": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: apply a proposed adjustment (a second identity, or confirm when alone) */
-        post: operations["admin_apply_adjustment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing-adjustments/{adjustment_id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: cancel a proposed adjustment */
-        post: operations["admin_cancel_adjustment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/reconciliation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: the last nightly ledger reconciliation report */
-        get: operations["admin_reconciliation"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/brief/latest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: the last daily brief */
-        get: operations["admin_brief_latest"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/daily": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: one rollup metric per UTC day (platform_daily) */
-        get: operations["admin_daily"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/jobs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: open and uncertain jobs across organizations */
-        get: operations["admin_list_jobs"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/jobs/{fax_id}/reconcile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: re-run the provider status check for one job (never a resend) */
-        post: operations["admin_reconcile_job"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/jobs/{fax_id}/release-hold": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: release the hold of an unknown job after a human decision */
-        post: operations["admin_release_hold"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/oauth/clients": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: OAuth clients */
-        get: operations["admin_oauth_clients"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/oauth/clients/{client_id}/disable": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: disable an OAuth client */
-        post: operations["admin_disable_oauth_client"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/oauth/grants": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: OAuth grants */
-        get: operations["admin_oauth_grants"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/oauth/grants/{grant_id}/revoke": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: revoke an OAuth grant */
-        post: operations["admin_revoke_oauth_grant"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/organizations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: search customers */
-        get: operations["admin_list_organizations"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/organizations/{org_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: one customer in detail */
-        get: operations["admin_get_organization"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/outbox": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: outbox rows that gave up (status dead) */
-        get: operations["admin_list_outbox"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/outbox/{job_id}/discard": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: discard a dead outbox row once understood */
-        post: operations["admin_discard_outbox"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/outbox/{job_id}/requeue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: run a dead outbox row again (attempts reset) */
-        post: operations["admin_requeue_outbox"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/providers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: provider health */
-        get: operations["admin_providers"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/revenue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: revenue from the rollup */
-        get: operations["admin_revenue"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/review-access": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: issue a reviewer access code */
-        post: operations["create_review_access"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/review-access/{access_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Admin: revoke reviewer access and review sessions */
-        delete: operations["revoke_review_access"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/routes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: route circuit breakers */
-        get: operations["admin_list_routes"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/routes/{route}/pause": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: pause dispatch on a route */
-        post: operations["admin_pause_route"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/routes/{route}/resume": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admin: resume dispatch on a route */
-        post: operations["admin_resume_route"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/stats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: system stats (30-day window) */
-        get: operations["admin_stats"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/whoami": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Admin: who the Access assertion says you are */
-        get: operations["admin_whoami"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/agents": {
         parameters: {
             query?: never;
@@ -806,360 +209,6 @@ export interface paths {
         put?: never;
         /** Revoke an approval nobody has used yet */
         post: operations["revoke_approval"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/invitations/{token}/accept": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Join the organization an invitation link names (the signed-in email must match) */
-        post: operations["accept_invitation"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * End this session
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["logout"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/magic-links": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Send a sign-in link to an email address (always 202)
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["request_magic_link"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/magic-links/{token}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Open a sign-in link: sets the session cookie and redirects to the app */
-        get: operations["open_magic_link"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** The signed-in person, their organizations and the CSRF token */
-        get: operations["get_auth_me"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/oauth/{provider}/callback": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Finish GitHub or Google sign-in (the app forwards its /auth/{provider}/callback here) */
-        get: operations["oauth_callback"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/oauth/{provider}/start": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Begin GitHub or Google sign-in (redirects to the provider) */
-        get: operations["oauth_start"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/passkeys": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Your passkeys */
-        get: operations["list_passkeys"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/passkeys/{passkey_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Remove one of your passkeys */
-        delete: operations["delete_passkey"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/passkeys/login/options": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Options for navigator.credentials.get() (discoverable, no email needed)
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["passkey_login_options"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/passkeys/login/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Sign in with a passkey assertion
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["passkey_login_verify"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/passkeys/register/options": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Options for navigator.credentials.create() (fresh session required)
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["passkey_register_options"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/passkeys/register/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Store a new passkey after the browser created it */
-        post: operations["passkey_register_verify"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/providers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Which sign-in methods are available */
-        get: operations["get_auth_providers"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/reauth": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Prove it is you again (passkey now, or a fresh link by mail) before a sensitive action
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["reauth"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/review-access": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Sign in with reviewer credentials
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["review_sign_in"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/sessions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Your live sessions */
-        get: operations["list_sessions"];
-        put?: never;
-        post?: never;
-        /**
-         * Sign out everywhere else
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        delete: operations["revoke_other_sessions"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/sessions/{session_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Revoke one of your sessions
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        delete: operations["revoke_session"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/switch-organization": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Look at another organization you belong to
-         * @description Idempotency-Key is accepted but ignored for this session-only authentication action. Repeated requests do not create customer resources or charges. Authentication, one-time challenge checks and rate limits still apply.
-         */
-        post: operations["switch_organization"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2095,57 +1144,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/oauth/authorizations/{authorization_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** The pending consent behind a consent URL: the app, the scopes and your organizations */
-        get: operations["get_oauth_authorization"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/oauth/authorizations/{authorization_id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Allow: mint the authorization code and return where the browser goes next */
-        post: operations["approve_oauth_authorization"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/oauth/authorizations/{authorization_id}/deny": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Deny: send the app an access_denied answer */
-        post: operations["deny_oauth_authorization"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/oauth/grants": {
         parameters: {
             query?: never;
@@ -2229,7 +1227,7 @@ export interface paths {
         put?: never;
         /**
          * Open the card payment of a one-time order
-         * @description Answers the hosted payment page of the order. The card is authorized there, not charged: it is charged when the carrier confirms delivery. A second call answers the same page while it can still be paid, and a new one after it expired.
+         * @description Answers the hosted payment page of the order. The card is authorized there, not charged: it is charged when the carrier confirms delivery. A second call answers the same page while it can still be paid, and a new one after it expired. An order whose aup_accepted is false needs {"accept_aup": true} in the body once, from the status token or a session: the person who pays accepts the policy, never a key.
          */
         post: operations["create_one_time_checkout"];
         delete?: never;
@@ -2300,6 +1298,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/one-time-sends/by-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * What a confirmation link is for, without using it
+         * @description The confirm page reads this before the click, with the token in the body. Nothing is consumed by reading it, and nothing is changed: the call is a read that keeps the token out of the address. Idempotency-Key is accepted but ignored.
+         *
+         *     No API key is needed.
+         */
+        post: operations["read_one_time_order_by_token"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/one-time-sends/by-token/{token}": {
         parameters: {
             query?: never;
@@ -2308,8 +1328,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * What a confirmation link is for, without using it
-         * @description The confirm page reads this before the click. Nothing is consumed by reading it.
+         * What a confirmation link is for, without using it (token in the path)
+         * @deprecated
+         * @description Kept for pages loaded before 2026-11-12. The token in a path reaches access logs, so new callers post it to /v1/one-time-sends/by-token instead. Nothing is consumed by reading it.
          *
          *     No API key is needed.
          */
@@ -3033,477 +2054,10 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/webhooks/stripe": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Stripe event delivery (signed by Stripe, no API key) */
-        post: operations["stripe_webhook"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/webhooks/telnyx": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Telnyx fax events (signed, no API key) */
-        post: operations["telnyx_webhook"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/webhooks/telnyx/failover": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Telnyx fax events, failover URL */
-        post: operations["telnyx_webhook_failover"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/webhooks/telnyx/media/{fax_job_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** The transmitted PDF behind a signed 15-minute link (fetched by Telnyx, no API key) */
-        get: operations["telnyx_media"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AbuseReview */
-        AbuseReview: {
-            /**
-             * Action
-             * @enum {string}
-             */
-            action: "none" | "suspended";
-            /** Id */
-            id: string;
-            /** Key Id */
-            key_id?: string | null;
-            /** Opened By */
-            opened_by: string;
-            /** Org Id */
-            org_id: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "open" | "resolved";
-        } & {
-            [key: string]: unknown;
-        };
-        /** AbuseReviewCreate */
-        AbuseReviewCreate: {
-            /** Key Id */
-            key_id?: string | null;
-            /** Org Id */
-            org_id: string;
-            /**
-             * Reason
-             * @description Why: recorded on the audit row
-             */
-            reason: string;
-            /**
-             * Suspend
-             * @description Suspend sends for the organization or key at once
-             * @default false
-             */
-            suspend: boolean;
-        };
-        /** AbuseReviewPage */
-        AbuseReviewPage: {
-            /** Items */
-            items: components["schemas"]["AbuseReview"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AbuseReviewPatch */
-        AbuseReviewPatch: {
-            /**
-             * Action
-             * @enum {string}
-             */
-            action: "suspend" | "unsuspend" | "resolve";
-            /**
-             * Reason
-             * @description Why: recorded on the audit row
-             */
-            reason: string;
-        };
-        /** Accepted */
-        Accepted: {
-            organization: components["schemas"]["OrganizationSummary"];
-        } & {
-            [key: string]: unknown;
-        };
-        /** Adjustment */
-        Adjustment: {
-            /** Amount Micro */
-            amount_micro: number;
-            /** Applied By */
-            applied_by?: string | null;
-            /** Direction */
-            direction: string;
-            /** Environment */
-            environment: string;
-            /** Id */
-            id: string;
-            /** Org Id */
-            org_id: string;
-            /** Proposed By */
-            proposed_by: string;
-            /** Status */
-            status: string;
-            /** Txn Id */
-            txn_id?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdjustmentApply */
-        AdjustmentApply: {
-            /**
-             * Confirm
-             * @description Required when the proposer applies their own adjustment
-             * @default false
-             */
-            confirm: boolean;
-            /**
-             * Reason
-             * @description Why: recorded on the audit row
-             */
-            reason: string;
-        };
-        /** AdjustmentCreate */
-        AdjustmentCreate: {
-            /**
-             * Amount Micro
-             * @description Integer micro-USD; at most 10,000.00
-             */
-            amount_micro: number;
-            /**
-             * Direction
-             * @enum {string}
-             */
-            direction: "credit" | "debit";
-            /**
-             * Environment
-             * @default live
-             * @enum {string}
-             */
-            environment: "live" | "test";
-            /** Org Id */
-            org_id: string;
-            /**
-             * Reason
-             * @description Why: recorded on the audit row
-             */
-            reason: string;
-        };
-        /** AdjustmentPage */
-        AdjustmentPage: {
-            /** Items */
-            items: components["schemas"]["Adjustment"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminAction */
-        AdminAction: {
-            /**
-             * Reason
-             * @description Why: recorded on the audit row
-             */
-            reason: string;
-        };
-        /** AdminBrief */
-        AdminBrief: {
-            /** Attempt Utc Day */
-            attempt_utc_day?: string | null;
-            /** Attempted At */
-            attempted_at?: string | null;
-            /**
-             * Attempts
-             * @default 0
-             */
-            attempts: number;
-            /** Channel */
-            channel?: string | null;
-            /** Local Day */
-            local_day?: string | null;
-            /** Posted At */
-            posted_at?: string | null;
-            /**
-             * Retry After S
-             * @default 600
-             */
-            retry_after_s: number;
-            /** Status */
-            status?: ("posted" | "failed" | "gave_up") | null;
-            /** Text */
-            text?: string | null;
-            /** Utc Day */
-            utc_day?: string | null;
-            /** Waiting Day */
-            waiting_day?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminDaily */
-        AdminDaily: {
-            /** Days */
-            days: number;
-            /** Description */
-            description: string;
-            /** Items */
-            items: components["schemas"]["AdminDailyPoint"][];
-            /** Metric */
-            metric: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminDailyPoint */
-        AdminDailyPoint: {
-            /** Computed At */
-            computed_at: string;
-            /** Day */
-            day: string;
-            /** Dims */
-            dims: {
-                [key: string]: unknown;
-            };
-            /** Environment */
-            environment: string;
-            /** Value Json */
-            value_json?: unknown;
-            /** Value Num */
-            value_num?: number | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminJob */
-        AdminJob: {
-            /** Age S */
-            age_s: number;
-            /**
-             * Environment
-             * @enum {string}
-             */
-            environment: "live" | "test";
-            /** Id */
-            id: string;
-            /** Org Id */
-            org_id: string;
-            /** Route */
-            route: string;
-            /** State */
-            state: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminJobPage */
-        AdminJobPage: {
-            /** Items */
-            items: components["schemas"]["AdminJob"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminOrganization */
-        AdminOrganization: {
-            /** Balances Micro */
-            balances_micro: {
-                [key: string]: unknown;
-            };
-            /** Counts */
-            counts: {
-                [key: string]: number;
-            };
-            /** Id */
-            id: string;
-            /**
-             * Internal
-             * @default false
-             */
-            internal: boolean;
-            /** Name */
-            name: string;
-            /** Suspended At */
-            suspended_at?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminOrganizationDetail */
-        AdminOrganizationDetail: {
-            /** Keys */
-            keys: {
-                [key: string]: unknown;
-            }[];
-            /** Ledger */
-            ledger: {
-                [key: string]: unknown;
-            };
-            /** Members */
-            members: {
-                [key: string]: unknown;
-            }[];
-            /** Open Reviews */
-            open_reviews: {
-                [key: string]: unknown;
-            }[];
-            /** Organization */
-            organization: {
-                [key: string]: unknown;
-            };
-            /** Recent Jobs */
-            recent_jobs: {
-                [key: string]: unknown;
-            }[];
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminOrganizationPage */
-        AdminOrganizationPage: {
-            /** Items */
-            items: components["schemas"]["AdminOrganization"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminRevenue */
-        AdminRevenue: {
-            /** Balances Micro */
-            balances_micro: {
-                [key: string]: {
-                    [key: string]: number;
-                };
-            };
-            /** By Day */
-            by_day: {
-                [key: string]: unknown;
-            }[];
-            /** Captured */
-            captured: {
-                [key: string]: unknown;
-            };
-            /** Computed At */
-            computed_at: string;
-            /** Data Age */
-            data_age: {
-                [key: string]: unknown;
-            };
-            /** Days */
-            days: number;
-            /** Funded */
-            funded: {
-                [key: string]: unknown;
-            };
-            /** Recurring */
-            recurring: {
-                [key: string]: unknown;
-            };
-            /** Refunded */
-            refunded: {
-                [key: string]: unknown;
-            };
-            /** Sources */
-            sources: {
-                [key: string]: unknown;
-            }[];
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminStats */
-        AdminStats: {
-            /** By Environment */
-            by_environment: {
-                [key: string]: unknown;
-            };
-            /** Computed At */
-            computed_at: string;
-            /** Jobs By State */
-            jobs_by_state: {
-                [key: string]: number;
-            };
-            /** Live Sends */
-            live_sends: {
-                [key: string]: unknown;
-            };
-            /** Money Live Micro */
-            money_live_micro: {
-                [key: string]: number;
-            };
-            /** Needs You */
-            needs_you: {
-                [key: string]: unknown;
-            };
-            /** Totals */
-            totals: {
-                [key: string]: unknown;
-            };
-            /** Window */
-            window: {
-                [key: string]: unknown;
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** AdminWhoami */
-        AdminWhoami: {
-            /** Actor */
-            actor: string;
-            /** Identity */
-            identity: string;
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "user" | "service" | "dev";
-            /** Read Only */
-            read_only: boolean;
-        } & {
-            [key: string]: unknown;
-        };
         /** Agent */
         Agent: {
             /** Budget Id */
@@ -3633,234 +2187,6 @@ export interface components {
             policy_ids?: string[] | null;
             /** Purpose */
             purpose?: string | null;
-        };
-        /** AnalyticsJourneys */
-        AnalyticsJourneys: {
-            /** Cohort */
-            cohort: number;
-            /** Computed At */
-            computed_at: string;
-            /** Days */
-            days: number;
-            /** Doors */
-            doors: {
-                [key: string]: unknown;
-            }[];
-            /** Funnel */
-            funnel: {
-                [key: string]: unknown;
-            }[];
-            /** Leakiest */
-            leakiest?: {
-                [key: string]: unknown;
-            } | null;
-            /** Listed */
-            listed: number;
-            /** Organizations */
-            organizations: {
-                [key: string]: unknown;
-            }[];
-            /** Site */
-            site: {
-                [key: string]: unknown;
-            };
-            /** Topups */
-            topups: {
-                [key: string]: unknown;
-            };
-            /** Window */
-            window: {
-                [key: string]: string;
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** AnalyticsOrganization */
-        AnalyticsOrganization: {
-            /** Actions */
-            actions: {
-                [key: string]: unknown;
-            }[];
-            /** Computed At */
-            computed_at: string;
-            /** Days */
-            days: number;
-            /** Doors */
-            doors: {
-                [key: string]: unknown;
-            }[];
-            /** Inbound */
-            inbound: {
-                [key: string]: unknown;
-            };
-            /** Jobs */
-            jobs: {
-                [key: string]: unknown;
-            };
-            /** Keys */
-            keys: {
-                [key: string]: unknown;
-            };
-            /** Members */
-            members: {
-                [key: string]: unknown;
-            }[];
-            /** Numbers */
-            numbers: {
-                [key: string]: unknown;
-            };
-            /** Organization */
-            organization: {
-                [key: string]: unknown;
-            };
-            /** Recent */
-            recent: {
-                [key: string]: unknown;
-            }[];
-            /** Steps */
-            steps: {
-                [key: string]: unknown;
-            }[];
-            /** Tools */
-            tools: {
-                [key: string]: unknown;
-            }[];
-            /** Topups */
-            topups: {
-                [key: string]: unknown;
-            }[];
-            /** Usage */
-            usage: {
-                [key: string]: unknown;
-            }[];
-            /** Window */
-            window: {
-                [key: string]: string;
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** AnalyticsSource */
-        AnalyticsSource: {
-            /** Error */
-            error?: string | null;
-            /** Label */
-            label: string;
-            /** Last Pulled At */
-            last_pulled_at?: string | null;
-            /** Latest Day */
-            latest_day?: string | null;
-            /** Missing */
-            missing: string[];
-            /** Source */
-            source: string;
-            /** Status */
-            status: string;
-            /** Step */
-            step: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AnalyticsSources */
-        AnalyticsSources: {
-            /** Items */
-            items: components["schemas"]["AnalyticsSource"][];
-            /** Pull */
-            pull: {
-                [key: string]: unknown;
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** AnalyticsUsage */
-        AnalyticsUsage: {
-            /** By Day */
-            by_day: {
-                [key: string]: unknown;
-            }[];
-            /** By Family */
-            by_family: {
-                [key: string]: unknown;
-            }[];
-            /** By Surface */
-            by_surface: {
-                [key: string]: unknown;
-            }[];
-            /** Computed At */
-            computed_at: string;
-            /** Data Age */
-            data_age: {
-                [key: string]: unknown;
-            };
-            /** Days */
-            days: number;
-            /** Org Id */
-            org_id?: string | null;
-            /** Tools */
-            tools: {
-                [key: string]: unknown;
-            };
-            /** Top Keys */
-            top_keys: {
-                [key: string]: unknown;
-            }[];
-            /** Top Organizations */
-            top_organizations: {
-                [key: string]: unknown;
-            }[];
-            /** Totals */
-            totals: {
-                [key: string]: unknown;
-            };
-            /** Window */
-            window: {
-                [key: string]: string;
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** AnalyticsWebsite */
-        AnalyticsWebsite: {
-            /** Authority */
-            authority: {
-                [key: string]: unknown;
-            };
-            /** Bing */
-            bing: {
-                [key: string]: unknown;
-            };
-            /** Computed At */
-            computed_at: string;
-            /** Data Age */
-            data_age: {
-                [key: string]: unknown;
-            };
-            /** Days */
-            days: number;
-            /** Search */
-            search: {
-                [key: string]: unknown;
-            };
-            /** Site */
-            site: {
-                [key: string]: unknown;
-            };
-            /** Sources */
-            sources: components["schemas"]["AnalyticsSource"][];
-            /** Traffic */
-            traffic: {
-                [key: string]: unknown;
-            };
-            /** Ux */
-            ux: {
-                [key: string]: unknown;
-            };
-            /** Window */
-            window: {
-                [key: string]: string;
-            };
-        } & {
-            [key: string]: unknown;
         };
         /** ApiKey */
         ApiKey: {
@@ -4088,34 +2414,6 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** AuditEvent */
-        AuditEvent: {
-            /** Action */
-            action: string;
-            /** Actor */
-            actor: string;
-            /** Created At */
-            created_at: string;
-            /** Id */
-            id: string;
-            /** Org Id */
-            org_id?: string | null;
-            /** Resource Id */
-            resource_id?: string | null;
-            /** Resource Type */
-            resource_type: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** AuditEventPage */
-        AuditEventPage: {
-            /** Items */
-            items: components["schemas"]["AuditEvent"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
         /**
          * AutoSendSetting
          * @description The organization's auto-send setting for one environment: Settings, Connected apps, "Let connected
@@ -4242,6 +2540,11 @@ export interface components {
             environment: "live" | "test";
             /** Held Micro */
             held_micro: number;
+            /**
+             * Top Up Url
+             * @description The dashboard page where a person adds funds to the wallet. A key cannot top up.
+             */
+            top_up_url?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -4359,6 +2662,13 @@ export interface components {
             environment: "live" | "test";
             /** Extraction */
             extraction?: boolean;
+            /**
+             * Extraction Pricing
+             * @description What POST /v1/extractions charges, in micro-units. page_micro is for every page read. escalated_page_micro is added for a page the stronger model reads again. max_pages is the most pages one extraction reads. Sandbox extractions are free.
+             */
+            extraction_pricing?: {
+                [key: string]: unknown;
+            };
             /** Formats */
             formats: string[];
             /** Limits */
@@ -4420,43 +2730,6 @@ export interface components {
              * @default 0.75
              */
             strong_model_if_below: number;
-        };
-        /** Client */
-        Client: {
-            /** Client Host */
-            client_host: string;
-            /** Client Id */
-            client_id: string;
-            /** Client Name */
-            client_name: string | null;
-            /** Created At */
-            created_at: string;
-            /** Disabled At */
-            disabled_at: string | null;
-            /** Disabled Reason */
-            disabled_reason: string | null;
-            /** Id */
-            id: string;
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "static" | "dynamic" | "cimd";
-            /** Last Used At */
-            last_used_at: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** ClientList */
-        ClientList: {
-            /** Items */
-            items: components["schemas"]["Client"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-            /** Total */
-            total: number;
-        } & {
-            [key: string]: unknown;
         };
         /** Correction */
         Correction: {
@@ -4958,126 +3231,6 @@ export interface components {
             /** Quote Id */
             quote_id: string;
         };
-        /** InboxItem */
-        faxforagents__api__routes__inbox__InboxItem: {
-            /**
-             * Amount Micro
-             * @default 0
-             */
-            amount_micro: number;
-            /** Document Id */
-            document_id: string | null;
-            /** Duration Secs */
-            duration_secs?: number | null;
-            /**
-             * Environment
-             * @default live
-             * @enum {string}
-             */
-            environment: "live" | "test";
-            /** Expires At */
-            expires_at?: string | null;
-            /** From */
-            from?: string | null;
-            /** Id */
-            id: string;
-            /**
-             * Media Status
-             * @default stored
-             */
-            media_status: string;
-            /** Note */
-            note?: string | null;
-            /** Number Id */
-            number_id?: string | null;
-            /** Pages */
-            pages: number;
-            /**
-             * Partial Content
-             * @default false
-             */
-            partial_content: boolean;
-            /** Project Id */
-            project_id?: string | null;
-            /**
-             * Provider
-             * @default
-             */
-            provider: string;
-            /** Read At */
-            read_at?: string | null;
-            /** Received At */
-            received_at: string;
-            /** Status */
-            status: string;
-            /** To */
-            to: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** InboxItem */
-        faxforagents__api__schemas__InboxItem: {
-            /**
-             * Amount Micro
-             * @default 0
-             */
-            amount_micro: number;
-            /** Document Id */
-            document_id: string | null;
-            /** From */
-            from?: string | null;
-            /** Id */
-            id: string;
-            /** Note */
-            note?: string | null;
-            /** Pages */
-            pages: number;
-            /** Received At */
-            received_at: string;
-            /** Status */
-            status: string;
-            /** To */
-            to: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** Me */
-        faxforagents__api__schemas__Me: {
-            /** Actor */
-            actor: string;
-            /**
-             * Environment
-             * @enum {string}
-             */
-            environment: "live" | "test";
-            /** Key Id */
-            key_id: string;
-            /** Key Prefix */
-            key_prefix: string;
-            /** Org Id */
-            org_id: string;
-            /** Project Id */
-            project_id: string;
-            /** Scopes */
-            scopes: string[];
-        } & {
-            [key: string]: unknown;
-        };
-        /** Me */
-        faxforagents__auth__schemas__Me: {
-            /** Csrf Token */
-            csrf_token: string;
-            organization: components["schemas"]["OrganizationSummary"] | null;
-            /** Organizations */
-            organizations: components["schemas"]["OrganizationSummary"][];
-            /** Passkeys */
-            passkeys: number;
-            providers: components["schemas"]["Providers"];
-            session: components["schemas"]["SessionInfo"];
-            user: components["schemas"]["UserOut"];
-        } & {
-            [key: string]: unknown;
-        };
         /** FaxJob */
         FaxJob: {
             /** Amount Micro */
@@ -5441,6 +3594,20 @@ export interface components {
                     available_micro: number;
                     /** @description What this fax holds. */
                     needed_micro: number;
+                    /** @description The card path for this exact send, present when it qualifies: the one-time product is open, the key is live, the route is sold one fax at a time and the document is within the page cap. Pass the quote to POST /v1/one-time-sends/from-quote. A pointer, never a promise: the create runs every check again. */
+                    one_time_offer?: {
+                        /** @description The one-time price of this document to this number. */
+                        amount_micro: number;
+                        /** @description The approval that authorized this send. It authorizes the order of the same quote too. */
+                        approval_id?: string | null;
+                        currency: string;
+                        document_pages: number;
+                        extra_page_micro: number;
+                        included_pages: number;
+                        max_document_pages: number;
+                    };
+                    /** @description The dashboard page where a person adds funds to the wallet. A key cannot top up. */
+                    top_up_url?: string;
                 } & {
                     [key: string]: unknown;
                 };
@@ -5592,19 +3759,6 @@ export interface components {
             next_cursor?: string | null;
         } & {
             [key: string]: unknown;
-        };
-        /** MagicLinkRequest */
-        MagicLinkRequest: {
-            /**
-             * Email
-             * Format: email
-             */
-            email: string;
-            /**
-             * Next
-             * @description An in-app path to open after sign-in.
-             */
-            next?: string | null;
         };
         /** Me */
         Me: {
@@ -5797,89 +3951,6 @@ export interface components {
             /** Project Id */
             project_id?: string | null;
         };
-        /** OAuthConsent */
-        OAuthConsent: {
-            client: components["schemas"]["OAuthConsentClient"];
-            /**
-             * Default Environment
-             * @enum {string}
-             */
-            default_environment: "live" | "test";
-            /** Expires At */
-            expires_at: string;
-            /** Id */
-            id: string;
-            /** Organizations */
-            organizations: components["schemas"]["OAuthConsentOrganization"][];
-            /** Redirect Host */
-            redirect_host: string;
-            /** Scopes Requested */
-            scopes_requested: string[];
-        } & {
-            [key: string]: unknown;
-        };
-        /** OAuthConsentClient */
-        OAuthConsentClient: {
-            /**
-             * First Seen
-             * @description This client was registered during this request.
-             */
-            first_seen: boolean;
-            /**
-             * Host
-             * @description The host the person is sending a credential to: the trust anchor.
-             */
-            host: string;
-            /**
-             * Loopback
-             * @description The redirect goes to the person's own computer (an app they started).
-             */
-            loopback: boolean;
-            /**
-             * Name
-             * @description The client's own name, shown as text beside the host.
-             */
-            name: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** OAuthConsentDecision */
-        OAuthConsentDecision: {
-            /**
-             * Environment
-             * @default test
-             * @enum {string}
-             */
-            environment: "live" | "test";
-            /** Org Id */
-            org_id: string;
-        };
-        /** OAuthConsentOrganization */
-        OAuthConsentOrganization: {
-            /** Id */
-            id: string;
-            /** Name */
-            name: string;
-            /** Role */
-            role: string;
-            /**
-             * Scopes
-             * @description What the grant would carry for this organization and role.
-             */
-            scopes: string[];
-        } & {
-            [key: string]: unknown;
-        };
-        /** OAuthRedirect */
-        OAuthRedirect: {
-            /**
-             * Redirect To
-             * @description Where the browser goes next: the client's registered redirect URI.
-             */
-            redirect_to: string;
-        } & {
-            [key: string]: unknown;
-        };
         /** OneTimeCard */
         OneTimeCard: {
             /** Brand */
@@ -5931,6 +4002,8 @@ export interface components {
             max_upload_bytes: number;
             /** Price Version */
             price_version: string;
+            /** @description The wait a fax ordered now would face for a carrier line. Null when one-time sends are closed here or the carrier has no line limit. */
+            queue?: components["schemas"]["OneTimeQueue"] | null;
             /** Reason */
             reason?: string | null;
             /** Routes */
@@ -6003,8 +4076,11 @@ export interface components {
         };
         /** OneTimeFromQuote */
         OneTimeFromQuote: {
-            /** Accept Aup */
-            accept_aup: boolean;
+            /**
+             * Accept Aup
+             * @description A session sends true: the signed-in person accepts the acceptable use policy and the terms. A key's value is not recorded: the person who pays accepts on the order's page.
+             */
+            accept_aup?: boolean;
             /**
              * Approval Id
              * @description An approved, unused approval request for this quote (POST /v1/approval-requests). A key needs it unless a delegated policy allows the send. A session needs none.
@@ -6065,6 +4141,11 @@ export interface components {
         OneTimeOrder: {
             /** Amount Micro */
             amount_micro: number;
+            /**
+             * Aup Accepted
+             * @description Whether a person accepted the acceptable use policy and the terms for this order. False for an order a key created until the payer accepts on the order's page; the checkout needs it.
+             */
+            aup_accepted?: boolean;
             /** Aup Version */
             aup_version: string;
             /** Authorized At */
@@ -6137,6 +4218,8 @@ export interface components {
              */
             next: "checkout" | "confirm" | "wait" | "done";
             price: components["schemas"]["OneTimePrice"];
+            /** @description The wait for a carrier line while the order has not ended and its fax is not on a line yet. Null for an ended order, a fax that is sending, and a test order. */
+            queue?: components["schemas"]["OneTimeQueue"] | null;
             /** Quote Id */
             quote_id: string | null;
             /**
@@ -6167,6 +4250,11 @@ export interface components {
              * @enum {string}
              */
             status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed";
+            /**
+             * Status Url
+             * @description The order's page for the person who pays or confirms, with a fresh status token. Present on a read by a key or session of the order's organization while the order is not done.
+             */
+            status_url?: string | null;
             /** To */
             to: string;
             /** Updated At */
@@ -6187,6 +4275,11 @@ export interface components {
         OneTimeOrderCreated: {
             /** Amount Micro */
             amount_micro: number;
+            /**
+             * Aup Accepted
+             * @description Whether a person accepted the acceptable use policy and the terms for this order. False for an order a key created until the payer accepts on the order's page; the checkout needs it.
+             */
+            aup_accepted?: boolean;
             /** Aup Version */
             aup_version: string;
             /** Authorized At */
@@ -6259,6 +4352,8 @@ export interface components {
              */
             next: "checkout" | "confirm" | "wait" | "done";
             price: components["schemas"]["OneTimePrice"];
+            /** @description The wait for a carrier line while the order has not ended and its fax is not on a line yet. Null for an ended order, a fax that is sending, and a test order. */
+            queue?: components["schemas"]["OneTimeQueue"] | null;
             /** Quote Id */
             quote_id: string | null;
             /**
@@ -6330,6 +4425,22 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * OneTimeQueue
+         * @description The wait for a carrier line. ``queued`` is true when a fax sent now, or this order's waiting fax,
+         *     is estimated to wait more than ten minutes for a line: the order is kept and sent in turn, never
+         *     dropped. The minutes are an estimate from the number of faxes ahead and the carrier's line count.
+         */
+        OneTimeQueue: {
+            /** Estimated Wait Minutes */
+            estimated_wait_minutes: number;
+            /** Jobs Ahead */
+            jobs_ahead: number;
+            /** Queued */
+            queued: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** OneTimeRoute */
         OneTimeRoute: {
             /** Cover Included */
@@ -6386,54 +4497,6 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** OutboxDiscarded */
-        OutboxDiscarded: {
-            /** Discarded */
-            discarded: boolean;
-            /** Id */
-            id: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** OutboxPage */
-        OutboxPage: {
-            /** Items */
-            items: components["schemas"]["OutboxRow"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** OutboxRow */
-        OutboxRow: {
-            /** Age S */
-            age_s: number;
-            /** Attempts */
-            attempts: number;
-            /** Created At */
-            created_at: string;
-            /** Error */
-            error?: string | null;
-            /** Finished At */
-            finished_at?: string | null;
-            /** Id */
-            id: string;
-            /** Kind */
-            kind: string;
-            /** Max Attempts */
-            max_attempts: number;
-            /** Org Id */
-            org_id?: string | null;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "queued" | "running" | "done" | "failed" | "dead";
-            /** Title */
-            title?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
         /** PagePreview */
         PagePreview: {
             /** Height Px */
@@ -6446,48 +4509,6 @@ export interface components {
             width_px: number | null;
         } & {
             [key: string]: unknown;
-        };
-        /** Passkey */
-        Passkey: {
-            /** Aaguid */
-            aaguid: string | null;
-            /** Backup Eligible */
-            backup_eligible: boolean;
-            /** Created At */
-            created_at: string;
-            /** Id */
-            id: string;
-            /** Label */
-            label: string | null;
-            /** Last Used At */
-            last_used_at: string | null;
-            /** Transports */
-            transports: string[] | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** PasskeyList */
-        PasskeyList: {
-            /** Items */
-            items: components["schemas"]["Passkey"][];
-        } & {
-            [key: string]: unknown;
-        };
-        /** PasskeyLoginVerify */
-        PasskeyLoginVerify: {
-            /** Credential */
-            credential: {
-                [key: string]: unknown;
-            };
-        };
-        /** PasskeyRegisterVerify */
-        PasskeyRegisterVerify: {
-            /** Credential */
-            credential: {
-                [key: string]: unknown;
-            };
-            /** Label */
-            label?: string | null;
         };
         /** Policy */
         Policy: {
@@ -6729,63 +4750,6 @@ export interface components {
             /** Number Id */
             number_id: string;
         };
-        /** ProviderHealth */
-        ProviderHealth: {
-            /**
-             * Breakers
-             * @default []
-             */
-            breakers: {
-                [key: string]: unknown;
-            }[];
-            /** Circuit */
-            circuit: string;
-            /** Concurrency In Use */
-            concurrency_in_use: number;
-            /** Configured */
-            configured: boolean;
-            /** Last Failure At */
-            last_failure_at?: string | null;
-            /** Last Success At */
-            last_success_at?: string | null;
-            /** Name */
-            name: string;
-            /** Routes Paused */
-            routes_paused: string[];
-            /**
-             * Serves
-             * @default []
-             */
-            serves: string[];
-        } & {
-            [key: string]: unknown;
-        };
-        /** ProviderList */
-        ProviderList: {
-            /** Items */
-            items: components["schemas"]["ProviderHealth"][];
-        } & {
-            [key: string]: unknown;
-        };
-        /** Providers */
-        Providers: {
-            /** Github */
-            github: boolean;
-            /** Google */
-            google: boolean;
-            /**
-             * Magic Link
-             * @default true
-             */
-            magic_link: boolean;
-            /**
-             * Passkeys
-             * @default true
-             */
-            passkeys: boolean;
-        } & {
-            [key: string]: unknown;
-        };
         /** Quote */
         Quote: {
             /** Amount Micro */
@@ -6898,18 +4862,6 @@ export interface components {
              */
             to: string;
         };
-        /** Reauth */
-        Reauth: {
-            /** Credential */
-            credential?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Method
-             * @enum {string}
-             */
-            method: "passkey" | "magic_link";
-        };
         /** Receipt */
         Receipt: {
             /** Amount Micro */
@@ -6962,28 +4914,6 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** ReconcileResult */
-        ReconcileResult: {
-            job: components["schemas"]["AdminJob"];
-            /**
-             * Outcome
-             * @enum {string}
-             */
-            outcome: "no_provider_ref" | "skipped" | "poll_failed" | "finalized" | "retry_scheduled" | "unknown" | "pending";
-        } & {
-            [key: string]: unknown;
-        };
-        /** ReconciliationReport */
-        ReconciliationReport: {
-            /** Last Day */
-            last_day: string | null;
-            /** Report */
-            report: {
-                [key: string]: unknown;
-            } | null;
-        } & {
-            [key: string]: unknown;
-        };
         /** ReleaseRequest */
         ReleaseRequest: {
             /**
@@ -6991,16 +4921,6 @@ export interface components {
              * @description The number itself, typed out, to confirm.
              */
             confirm?: string | null;
-        };
-        /** ReleaseResult */
-        ReleaseResult: {
-            job: components["schemas"]["AdminJob"];
-            /** Settlement */
-            settlement: {
-                [key: string]: unknown;
-            };
-        } & {
-            [key: string]: unknown;
         };
         /** Requested */
         Requested: {
@@ -7013,101 +4933,6 @@ export interface components {
             message: string;
             /** Requested */
             requested: boolean;
-        } & {
-            [key: string]: unknown;
-        };
-        /** ReviewAccessAction */
-        ReviewAccessAction: {
-            /**
-             * Reason
-             * @description Why: recorded on the audit row
-             */
-            reason: string;
-        };
-        /** ReviewAccessCreate */
-        ReviewAccessCreate: {
-            /**
-             * Email
-             * Format: email
-             */
-            email: string;
-            /**
-             * Label
-             * @default Directory review
-             */
-            label: string;
-            /**
-             * Reason
-             * @description Why: recorded on the audit row
-             */
-            reason: string;
-            /**
-             * Ttl Days
-             * @default 30
-             */
-            ttl_days: number;
-        };
-        /** ReviewAccessIssued */
-        ReviewAccessIssued: {
-            /** Code */
-            code: string;
-            /** Email */
-            email: string;
-            /** Expires At */
-            expires_at: string;
-            /** Id */
-            id: string;
-            /** Label */
-            label: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** ReviewSignIn */
-        ReviewSignIn: {
-            /**
-             * Code
-             * Format: password
-             */
-            code: string;
-            /**
-             * Email
-             * Format: email
-             */
-            email: string;
-        };
-        /** Revoked */
-        Revoked: {
-            /** Revoked */
-            revoked: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** RouteList */
-        RouteList: {
-            /** Items */
-            items: components["schemas"]["RouteState"][];
-        } & {
-            [key: string]: unknown;
-        };
-        /** RouteState */
-        RouteState: {
-            /** Actor */
-            actor: string;
-            /** Open Until */
-            open_until?: string | null;
-            /** Paused At */
-            paused_at?: string | null;
-            /** Reason */
-            reason?: string | null;
-            /** Route */
-            route: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "paused" | "open" | "breaker_open";
-            /** Updated At */
-            updated_at: string;
         } & {
             [key: string]: unknown;
         };
@@ -7225,15 +5050,6 @@ export interface components {
              */
             from: string;
         };
-        /** Sent */
-        Sent: {
-            /** Message */
-            message: string;
-            /** Sent */
-            sent: boolean;
-        } & {
-            [key: string]: unknown;
-        };
         /** ServiceStatus */
         ServiceStatus: {
             /** Database */
@@ -7256,53 +5072,6 @@ export interface components {
             version: string;
             /** Worker Beat Age S */
             worker_beat_age_s?: number | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** SessionInfo */
-        SessionInfo: {
-            /** Auth Method */
-            auth_method: string;
-            /** Authenticated At */
-            authenticated_at: string;
-            /** Expires At */
-            expires_at: string;
-            /** Fresh */
-            fresh: boolean;
-            /** Fresh Until */
-            fresh_until: string;
-            /** Id */
-            id: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** SessionList */
-        SessionList: {
-            /** Items */
-            items: components["schemas"]["SessionOut"][];
-        } & {
-            [key: string]: unknown;
-        };
-        /** SessionOut */
-        SessionOut: {
-            /** Auth Method */
-            auth_method: string;
-            /** Authenticated At */
-            authenticated_at: string;
-            /** Created At */
-            created_at: string;
-            /** Current */
-            current: boolean;
-            /** Expires At */
-            expires_at: string;
-            /** Id */
-            id: string;
-            /** Ip */
-            ip: string | null;
-            /** Last Seen At */
-            last_seen_at: string;
-            /** User Agent */
-            user_agent: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -7385,22 +5154,6 @@ export interface components {
              * @default 0.75
              */
             strong_model_if_below: number;
-        };
-        /** SwitchOrganization */
-        SwitchOrganization: {
-            /** Org Id */
-            org_id: string;
-        };
-        /** TelnyxAck */
-        TelnyxAck: {
-            /** Event Id */
-            event_id?: string | null;
-            /** Outcome */
-            outcome: string;
-            /** Received */
-            received: boolean;
-        } & {
-            [key: string]: unknown;
         };
         /** TopupCreate */
         TopupCreate: {
@@ -7605,23 +5358,6 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** UserOut */
-        UserOut: {
-            /** Created At */
-            created_at: string;
-            /** Email */
-            email: string;
-            /** Email Verified */
-            email_verified: boolean;
-            /** Id */
-            id: string;
-            /** Last Login At */
-            last_login_at: string | null;
-            /** Name */
-            name: string | null;
-        } & {
-            [key: string]: unknown;
-        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -7653,18 +5389,6 @@ export interface components {
             updated_at: string;
             /** Url */
             url: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** WebhookAck */
-        WebhookAck: {
-            /** Outcome */
-            outcome: string;
-            /**
-             * Received
-             * @default true
-             */
-            received: boolean;
         } & {
             [key: string]: unknown;
         };
@@ -7731,27 +5455,6 @@ export interface components {
     headers: never;
     pathItems: never;
 }
-export type AbuseReview = components['schemas']['AbuseReview'];
-export type AbuseReviewCreate = components['schemas']['AbuseReviewCreate'];
-export type AbuseReviewPage = components['schemas']['AbuseReviewPage'];
-export type AbuseReviewPatch = components['schemas']['AbuseReviewPatch'];
-export type Accepted = components['schemas']['Accepted'];
-export type Adjustment = components['schemas']['Adjustment'];
-export type AdjustmentApply = components['schemas']['AdjustmentApply'];
-export type AdjustmentCreate = components['schemas']['AdjustmentCreate'];
-export type AdjustmentPage = components['schemas']['AdjustmentPage'];
-export type AdminAction = components['schemas']['AdminAction'];
-export type AdminBrief = components['schemas']['AdminBrief'];
-export type AdminDaily = components['schemas']['AdminDaily'];
-export type AdminDailyPoint = components['schemas']['AdminDailyPoint'];
-export type AdminJob = components['schemas']['AdminJob'];
-export type AdminJobPage = components['schemas']['AdminJobPage'];
-export type AdminOrganization = components['schemas']['AdminOrganization'];
-export type AdminOrganizationDetail = components['schemas']['AdminOrganizationDetail'];
-export type AdminOrganizationPage = components['schemas']['AdminOrganizationPage'];
-export type AdminRevenue = components['schemas']['AdminRevenue'];
-export type AdminStats = components['schemas']['AdminStats'];
-export type AdminWhoami = components['schemas']['AdminWhoami'];
 export type Agent = components['schemas']['Agent'];
 export type AgentActivity = components['schemas']['AgentActivity'];
 export type AgentActivityPage = components['schemas']['AgentActivityPage'];
@@ -7759,12 +5462,6 @@ export type AgentCreate = components['schemas']['AgentCreate'];
 export type AgentKeyCreate = components['schemas']['AgentKeyCreate'];
 export type AgentList = components['schemas']['AgentList'];
 export type AgentUpdate = components['schemas']['AgentUpdate'];
-export type AnalyticsJourneys = components['schemas']['AnalyticsJourneys'];
-export type AnalyticsOrganization = components['schemas']['AnalyticsOrganization'];
-export type AnalyticsSource = components['schemas']['AnalyticsSource'];
-export type AnalyticsSources = components['schemas']['AnalyticsSources'];
-export type AnalyticsUsage = components['schemas']['AnalyticsUsage'];
-export type AnalyticsWebsite = components['schemas']['AnalyticsWebsite'];
 export type ApiKey = components['schemas']['ApiKey'];
 export type ApiKeyCreate = components['schemas']['ApiKeyCreate'];
 export type ApiKeyList = components['schemas']['ApiKeyList'];
@@ -7775,8 +5472,6 @@ export type ApprovalRequestCreate = components['schemas']['ApprovalRequestCreate
 export type ApprovalRequestPage = components['schemas']['ApprovalRequestPage'];
 export type Attempt = components['schemas']['Attempt'];
 export type AttemptPage = components['schemas']['AttemptPage'];
-export type AuditEvent = components['schemas']['AuditEvent'];
-export type AuditEventPage = components['schemas']['AuditEventPage'];
 export type AutoSendSetting = components['schemas']['AutoSendSetting'];
 export type AutoSendUpdate = components['schemas']['AutoSendUpdate'];
 export type AutoTopup = components['schemas']['AutoTopup'];
@@ -7791,8 +5486,6 @@ export type BudgetList = components['schemas']['BudgetList'];
 export type BudgetPatch = components['schemas']['BudgetPatch'];
 export type Capabilities = components['schemas']['Capabilities'];
 export type ClassificationCreate = components['schemas']['ClassificationCreate'];
-export type Client = components['schemas']['Client'];
-export type ClientList = components['schemas']['ClientList'];
 export type Correction = components['schemas']['Correction'];
 export type CorrectionCreate = components['schemas']['CorrectionCreate'];
 export type Coverage = components['schemas']['Coverage'];
@@ -7815,10 +5508,6 @@ export type ExtractionPageList = components['schemas']['ExtractionPageList'];
 export type ExtractionSchema = components['schemas']['ExtractionSchema'];
 export type ExtractionSchemaList = components['schemas']['ExtractionSchemaList'];
 export type FaxCreate = components['schemas']['FaxCreate'];
-export type FaxforagentsApiRoutesInboxInboxItem = components['schemas']['faxforagents__api__routes__inbox__InboxItem'];
-export type FaxforagentsApiSchemasInboxItem = components['schemas']['faxforagents__api__schemas__InboxItem'];
-export type FaxforagentsApiSchemasMe = components['schemas']['faxforagents__api__schemas__Me'];
-export type FaxforagentsAuthSchemasMe = components['schemas']['faxforagents__auth__schemas__Me'];
 export type FaxJob = components['schemas']['FaxJob'];
 export type FaxJobPage = components['schemas']['FaxJobPage'];
 export type Grant = components['schemas']['Grant'];
@@ -7839,7 +5528,6 @@ export type Invoice = components['schemas']['Invoice'];
 export type InvoicePage = components['schemas']['InvoicePage'];
 export type LedgerEntry = components['schemas']['LedgerEntry'];
 export type LedgerPage = components['schemas']['LedgerPage'];
-export type MagicLinkRequest = components['schemas']['MagicLinkRequest'];
 export type Me = components['schemas']['Me'];
 export type Member = components['schemas']['Member'];
 export type MemberList = components['schemas']['MemberList'];
@@ -7850,11 +5538,6 @@ export type NumberOrder = components['schemas']['NumberOrder'];
 export type NumberOrderCreate = components['schemas']['NumberOrderCreate'];
 export type NumberOrderList = components['schemas']['NumberOrderList'];
 export type NumberUpdate = components['schemas']['NumberUpdate'];
-export type OAuthConsent = components['schemas']['OAuthConsent'];
-export type OAuthConsentClient = components['schemas']['OAuthConsentClient'];
-export type OAuthConsentDecision = components['schemas']['OAuthConsentDecision'];
-export type OAuthConsentOrganization = components['schemas']['OAuthConsentOrganization'];
-export type OAuthRedirect = components['schemas']['OAuthRedirect'];
 export type OneTimeCard = components['schemas']['OneTimeCard'];
 export type OneTimeCheckout = components['schemas']['OneTimeCheckout'];
 export type OneTimeConfig = components['schemas']['OneTimeConfig'];
@@ -7867,19 +5550,13 @@ export type OneTimeOrder = components['schemas']['OneTimeOrder'];
 export type OneTimeOrderCreated = components['schemas']['OneTimeOrderCreated'];
 export type OneTimeOrderPage = components['schemas']['OneTimeOrderPage'];
 export type OneTimePrice = components['schemas']['OneTimePrice'];
+export type OneTimeQueue = components['schemas']['OneTimeQueue'];
 export type OneTimeRoute = components['schemas']['OneTimeRoute'];
 export type Organization = components['schemas']['Organization'];
 export type OrganizationList = components['schemas']['OrganizationList'];
 export type OrganizationPatch = components['schemas']['OrganizationPatch'];
 export type OrganizationSummary = components['schemas']['OrganizationSummary'];
-export type OutboxDiscarded = components['schemas']['OutboxDiscarded'];
-export type OutboxPage = components['schemas']['OutboxPage'];
-export type OutboxRow = components['schemas']['OutboxRow'];
 export type PagePreview = components['schemas']['PagePreview'];
-export type Passkey = components['schemas']['Passkey'];
-export type PasskeyList = components['schemas']['PasskeyList'];
-export type PasskeyLoginVerify = components['schemas']['PasskeyLoginVerify'];
-export type PasskeyRegisterVerify = components['schemas']['PasskeyRegisterVerify'];
 export type Policy = components['schemas']['Policy'];
 export type PolicyCreate = components['schemas']['PolicyCreate'];
 export type PolicyEvaluation = components['schemas']['PolicyEvaluation'];
@@ -7895,25 +5572,11 @@ export type PortOrder = components['schemas']['PortOrder'];
 export type PortOrderCreate = components['schemas']['PortOrderCreate'];
 export type PortOrderList = components['schemas']['PortOrderList'];
 export type PortOutRequestCreate = components['schemas']['PortOutRequestCreate'];
-export type ProviderHealth = components['schemas']['ProviderHealth'];
-export type ProviderList = components['schemas']['ProviderList'];
-export type Providers = components['schemas']['Providers'];
 export type Quote = components['schemas']['Quote'];
 export type QuoteCreate = components['schemas']['QuoteCreate'];
-export type Reauth = components['schemas']['Reauth'];
 export type Receipt = components['schemas']['Receipt'];
-export type ReconcileResult = components['schemas']['ReconcileResult'];
-export type ReconciliationReport = components['schemas']['ReconciliationReport'];
 export type ReleaseRequest = components['schemas']['ReleaseRequest'];
-export type ReleaseResult = components['schemas']['ReleaseResult'];
 export type Requested = components['schemas']['Requested'];
-export type ReviewAccessAction = components['schemas']['ReviewAccessAction'];
-export type ReviewAccessCreate = components['schemas']['ReviewAccessCreate'];
-export type ReviewAccessIssued = components['schemas']['ReviewAccessIssued'];
-export type ReviewSignIn = components['schemas']['ReviewSignIn'];
-export type Revoked = components['schemas']['Revoked'];
-export type RouteList = components['schemas']['RouteList'];
-export type RouteState = components['schemas']['RouteState'];
 export type SandboxFixture = components['schemas']['SandboxFixture'];
 export type SandboxInboundCreate = components['schemas']['SandboxInboundCreate'];
 export type SandboxReset = components['schemas']['SandboxReset'];
@@ -7922,18 +5585,12 @@ export type SandboxScenarios = components['schemas']['SandboxScenarios'];
 export type SchemaCreate = components['schemas']['SchemaCreate'];
 export type SenderVerification = components['schemas']['SenderVerification'];
 export type SenderVerificationCreate = components['schemas']['SenderVerificationCreate'];
-export type Sent = components['schemas']['Sent'];
 export type ServiceStatus = components['schemas']['ServiceStatus'];
-export type SessionInfo = components['schemas']['SessionInfo'];
-export type SessionList = components['schemas']['SessionList'];
-export type SessionOut = components['schemas']['SessionOut'];
 export type SignedUrl = components['schemas']['SignedUrl'];
 export type Subscription = components['schemas']['Subscription'];
 export type SubscriptionCheckout = components['schemas']['SubscriptionCheckout'];
 export type SubscriptionList = components['schemas']['SubscriptionList'];
 export type SummaryCreate = components['schemas']['SummaryCreate'];
-export type SwitchOrganization = components['schemas']['SwitchOrganization'];
-export type TelnyxAck = components['schemas']['TelnyxAck'];
 export type TopupCreate = components['schemas']['TopupCreate'];
 export type TopupSession = components['schemas']['TopupSession'];
 export type TopupSessionPage = components['schemas']['TopupSessionPage'];
@@ -7944,1174 +5601,14 @@ export type UsageExport = components['schemas']['UsageExport'];
 export type UsageExportCreate = components['schemas']['UsageExportCreate'];
 export type UsageItem = components['schemas']['UsageItem'];
 export type UsageReport = components['schemas']['UsageReport'];
-export type UserOut = components['schemas']['UserOut'];
 export type ValidationError = components['schemas']['ValidationError'];
 export type Webhook = components['schemas']['Webhook'];
-export type WebhookAck = components['schemas']['WebhookAck'];
 export type WebhookCreate = components['schemas']['WebhookCreate'];
 export type WebhookList = components['schemas']['WebhookList'];
 export type WebhookUpdate = components['schemas']['WebhookUpdate'];
 export type WebhookWithSecret = components['schemas']['WebhookWithSecret'];
 export type $defs = Record<string, never>;
 export interface operations {
-    admin_list_reviews: {
-        parameters: {
-            query?: {
-                cursor?: string | null;
-                limit?: number;
-                org_id?: string | null;
-                status?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AbuseReviewPage"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_open_review: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
-                "Idempotency-Key"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AbuseReviewCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AbuseReview"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_patch_review: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                review_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AbuseReviewPatch"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AbuseReview"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    analytics_journeys: {
-        parameters: {
-            query?: {
-                /** @description The window in days: one of 7, 30, 90 */
-                days?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnalyticsJourneys"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    analytics_organization: {
-        parameters: {
-            query?: {
-                /** @description The window in days: one of 7, 30, 90 */
-                days?: number;
-            };
-            header?: never;
-            path: {
-                org_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnalyticsOrganization"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    analytics_sources: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnalyticsSources"];
-                };
-            };
-        };
-    };
-    analytics_usage: {
-        parameters: {
-            query?: {
-                /** @description The window in days: one of 7, 30, 90 */
-                days?: number;
-                /** @description One organization's usage */
-                org_id?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnalyticsUsage"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    analytics_website: {
-        parameters: {
-            query?: {
-                /** @description The window in days: one of 7, 30, 90 */
-                days?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnalyticsWebsite"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_audit_events: {
-        parameters: {
-            query?: {
-                /** @description Exact, or a prefix ending in a dot */
-                action?: string | null;
-                actor?: string | null;
-                cursor?: string | null;
-                limit?: number;
-                org_id?: string | null;
-                since?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuditEventPage"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_list_adjustments: {
-        parameters: {
-            query?: {
-                cursor?: string | null;
-                limit?: number;
-                org_id?: string | null;
-                status?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdjustmentPage"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_propose_adjustment: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
-                "Idempotency-Key"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdjustmentCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Adjustment"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_apply_adjustment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                adjustment_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdjustmentApply"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Adjustment"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_cancel_adjustment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                adjustment_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Adjustment"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_reconciliation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReconciliationReport"];
-                };
-            };
-        };
-    };
-    admin_brief_latest: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminBrief"];
-                };
-            };
-        };
-    };
-    admin_daily: {
-        parameters: {
-            query: {
-                days?: number;
-                environment?: string | null;
-                /** @description One of worker.rollup.METRICS */
-                metric: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminDaily"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_list_jobs: {
-        parameters: {
-            query?: {
-                cursor?: string | null;
-                environment?: string | null;
-                limit?: number;
-                /** @description Seconds since the last update */
-                older_than?: number | null;
-                org_id?: string | null;
-                route?: string | null;
-                state?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminJobPage"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_reconcile_job: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                fax_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReconcileResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_release_hold: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                fax_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReleaseResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_oauth_clients: {
-        parameters: {
-            query?: {
-                cursor?: string | null;
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClientList"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_disable_oauth_client: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                client_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_oauth_grants: {
-        parameters: {
-            query?: {
-                cursor?: string | null;
-                limit?: number;
-                org_id?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GrantList"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_revoke_oauth_grant: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                grant_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_list_organizations: {
-        parameters: {
-            query?: {
-                cursor?: string | null;
-                limit?: number;
-                q?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminOrganizationPage"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_get_organization: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                org_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminOrganizationDetail"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_list_outbox: {
-        parameters: {
-            query?: {
-                cursor?: string | null;
-                kind?: string | null;
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OutboxPage"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_discard_outbox: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OutboxDiscarded"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_requeue_outbox: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OutboxRow"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_providers: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProviderList"];
-                };
-            };
-        };
-    };
-    admin_revenue: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminRevenue"];
-                };
-            };
-        };
-    };
-    create_review_access: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReviewAccessCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReviewAccessIssued"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    revoke_review_access: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                access_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReviewAccessAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_list_routes: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RouteList"];
-                };
-            };
-        };
-    };
-    admin_pause_route: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                route: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RouteState"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_resume_route: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                route: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminAction"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RouteState"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admin_stats: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminStats"];
-                };
-            };
-        };
-    };
-    admin_whoami: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminWhoami"];
-                };
-            };
-        };
-    };
     list_agents: {
         parameters: {
             query?: never;
@@ -10219,566 +6716,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    accept_invitation: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
-                "Idempotency-Key"?: string;
-            };
-            path: {
-                token: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Accepted"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    request_magic_link: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MagicLinkRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Sent"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    open_magic_link: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                token: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Redirect to the app, signed in or with an error code in the query. */
-            303: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_auth_me: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["faxforagents__auth__schemas__Me"];
-                };
-            };
-        };
-    };
-    oauth_callback: {
-        parameters: {
-            query?: {
-                code?: string;
-                error?: string | null;
-                state?: string;
-            };
-            header?: never;
-            path: {
-                provider: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["faxforagents__auth__schemas__Me"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    oauth_start: {
-        parameters: {
-            query?: {
-                next?: string | null;
-            };
-            header?: never;
-            path: {
-                provider: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            303: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_passkeys: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PasskeyList"];
-                };
-            };
-        };
-    };
-    delete_passkey: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
-                "Idempotency-Key"?: string;
-            };
-            path: {
-                passkey_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    passkey_login_options: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-        };
-    };
-    passkey_login_verify: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PasskeyLoginVerify"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["faxforagents__auth__schemas__Me"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    passkey_register_options: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-        };
-    };
-    passkey_register_verify: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
-                "Idempotency-Key"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PasskeyRegisterVerify"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Passkey"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_auth_providers: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Providers"];
-                };
-            };
-        };
-    };
-    reauth: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["Reauth"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["faxforagents__auth__schemas__Me"];
-                };
-            };
-            /** @description A sign-in link was sent; opening it in this browser refreshes the session. */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    review_sign_in: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReviewSignIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["faxforagents__auth__schemas__Me"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_sessions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SessionList"];
-                };
-            };
-        };
-    };
-    revoke_other_sessions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Revoked"];
-                };
-            };
-        };
-    };
-    revoke_session: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                session_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    switch_organization: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SwitchOrganization"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["faxforagents__auth__schemas__Me"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -13309,7 +9246,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The wallet does not cover this fax (insufficient_balance). details names available_micro and needed_micro. Nothing was held. */
+            /** @description The wallet does not cover this fax (insufficient_balance). details names available_micro and needed_micro, top_up_url where a person adds funds, and one_time_offer when the send can be paid by card instead. Nothing was held. */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -15394,109 +11331,6 @@ export interface operations {
             };
         };
     };
-    get_oauth_authorization: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                authorization_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OAuthConsent"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    approve_oauth_authorization: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
-                "Idempotency-Key"?: string;
-            };
-            path: {
-                authorization_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OAuthConsentDecision"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OAuthRedirect"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    deny_oauth_authorization: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
-                "Idempotency-Key"?: string;
-            };
-            path: {
-                authorization_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OAuthRedirect"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     list_oauth_grants: {
         parameters: {
             query?: {
@@ -15937,7 +11771,17 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * Accept Aup
+                     * @description True: the person who pays accepts the acceptable use policy and the terms. Needed once, for an order whose aup_accepted is false, and taken only from the status token or a session.
+                     */
+                    accept_aup?: boolean;
+                };
+            };
+        };
         responses: {
             /** @description Successful Response */
             201: {
@@ -16196,6 +12040,57 @@ export interface operations {
             };
             /** @description One-time sends are switched off on this server (one_time_unavailable). Nothing was created or charged. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    read_one_time_order_by_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OneTimeConfirm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeConfirmSummary"];
+                };
+            };
+            /** @description The confirmation link is not valid (link_invalid). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19433,98 +15328,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
-                };
-            };
-        };
-    };
-    stripe_webhook: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WebhookAck"];
-                };
-            };
-        };
-    };
-    telnyx_webhook: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TelnyxAck"];
-                };
-            };
-        };
-    };
-    telnyx_webhook_failover: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TelnyxAck"];
-                };
-            };
-        };
-    };
-    telnyx_media: {
-        parameters: {
-            query?: {
-                exp?: string | null;
-                sig?: string | null;
-            };
-            header?: never;
-            path: {
-                fax_job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
