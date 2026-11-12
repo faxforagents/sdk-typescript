@@ -150,6 +150,10 @@ try {
 `ServerError` (5xx) all extend `APIError`. `APIConnectionError` and `APITimeoutError` mean the API was
 not reached.
 
+Every refusal is the same envelope, a 422 for a field that fails validation included. A 413
+`payload_too_large` is a plain `APIError`: the body is over the limit of its route. The published
+limits are in one table at <https://faxforagents.com/docs/limits/>.
+
 ## Approvals
 
 A live send needs either a human approval bound to the quote or a delegated policy that allows it.
@@ -278,7 +282,7 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.17.0.
+`spec/openapi.yaml` follows the public document at API version 1.18.0.
 It holds the paths and schemas of that document and nothing else: 145 operations in 115 paths.
 Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
 A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
