@@ -117,7 +117,7 @@ names the scope each call needs.
 | `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `downloadExportArchive` |
 | `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `revokeInvitation` |
 | `ffa.oauth` | `listGrants`, `iterGrants`, `revokeGrant` |
-| `ffa.oneTimeSends` | `config`, `create`, `createFromQuote`, `list`, `iter`, `get`, `wait`, `checkout`, `getByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
+| `ffa.oneTimeSends` | `config`, `create`, `createFromQuote`, `list`, `iter`, `get`, `wait`, `checkout`, `readByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
 
 `ffa.request('GET', '/v1/anything')` reaches an operation the resources do not cover yet.
 
@@ -206,21 +206,38 @@ With a live key, `createFromQuote` turns a quote the wallet does not cover into 
 import { PaymentRequiredError } from 'faxforagents';
 
 try {
-  await ffa.faxes.create({ quote_id: quote.id });
+  await ffa.faxes.create({ quote_id: quote.id, approval_id: approvalId });
 } catch (err) {
   if (!(err instanceof PaymentRequiredError)) throw err;
-  const order = await ffa.oneTimeSends.createFromQuote({
-    quote_id: quote.id,
-    sender_name: 'Dana Example',
-    accept_aup: true,
-    approval_id: approvalId,
-  });
+  console.log(err.topUpUrl);                      // where a person adds funds to the wallet
+  const offer = err.oneTimeOffer;                 // null when this send has no card path
+  if (offer) {
+    console.log(offer.amount_micro);              // the one-time price of this document
+    const order = await ffa.oneTimeSends.createFromQuote({
+      quote_id: quote.id,
+      sender_name: 'Dana Example',
+      approval_id: offer.approval_id,
+    });
+    console.log(order.status_url);                // hand this page to the person who pays
+  }
 }
 ```
 
-Paying by card does not replace approval. The send must have an approval or a delegated policy, as a
-wallet send does. `confirm(orderId, token)` and `getByToken(token)` serve a page of your own that
-receives the mailed link. The amounts are on the [pricing page](https://faxforagents.com/pricing/) and
+Paying by card does not replace approval. With a key, a card order must have an approval or a
+delegated policy, as a wallet send does. Pass the approval as `approval_id`. Without either the answer
+is 403 `approval_required`.
+
+The person who pays accepts the acceptable use policy and the terms on the order page, never the key.
+With a key, the order answers `aup_accepted` false and a `status_url`. Give that link to the payer. On
+a page of your own, `checkout(order.id, { orderToken, acceptAup: true })` records the payer's
+acceptance and opens the payment.
+
+`order.queue` and `config().queue` tell whether a fax would wait for a carrier line, with `jobs_ahead`
+and `estimated_wait_minutes`. A queued order is kept and sent in turn.
+
+`confirm(orderId, token)` and `readByToken(token)` serve a page of your own that receives the mailed
+link. `readByToken` posts the token, so it stays out of the address. `getByToken` still works and is
+deprecated. The amounts are on the [pricing page](https://faxforagents.com/pricing/) and
 in `config().routes`, in micro-units.
 
 ## Webhooks
@@ -260,14 +277,13 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.16.1.
-It keeps the schemas and the other operations of the live API version 1.6.0 document.
-Those sign-in, admin and provider webhook routes were compared with the API version 1.13.1 server on 2026-11-10 and match it.
-Two operator routes added after 1.6.0 and the auto-send fields of the consent screen are not declared.
-It also retains earlier public model names and route-documented response additions.
-To refresh it, merge live schemas and routes while preserving existing declarations, then run `npm run gen:types`.
-Generated route types include authentication, admin and provider webhook endpoints.
-These routes have type declarations only. The client methods remain listed in `test/surface.test.ts`.
+`spec/openapi.yaml` follows the public document at API version 1.17.0.
+It holds the paths and schemas of that document and nothing else: 145 operations in 115 paths.
+Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
+A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
+Fields the server gives a default stay optional in the types.
+To refresh it, take the public document, keep those fields, then run `npm run gen:types`.
+Every operation has a client method. `test/surface.test.ts` lists them and fails on an internal path.
 Keep new response fields optional so older payloads and existing callers remain valid.
 The schema drift test compares every saved schema property with the generated declarations without network access.
 

@@ -838,6 +838,10 @@ export class OneTimeSends extends Resource {
    * Turn a live quote the wallet does not cover into an order. Scope: fax:send, a live key. The price
    * is the one-time price of the card, not the quote's. Paying by card does not replace approval: pass
    * `approval_id` unless a delegated policy allows the send, or the answer is 403 approval_required.
+   *
+   * A key does not accept the terms for the payer, so `accept_aup` is optional. The order answers
+   * `aup_accepted` false and a `status_url`: hand that page to the person who pays. They accept the
+   * acceptable use policy and the terms there.
    */
   createFromQuote(body: S.OneTimeFromQuote, o: Mut = {}): Promise<S.OneTimeOrderCreated> {
     return this.h.request('POST', '/v1/one-time-sends/from-quote', { json: body, ...o });
@@ -881,15 +885,32 @@ export class OneTimeSends extends Resource {
    * Open the hosted card payment and return its `checkout_url`. Scope with a key: fax:send. The card is
    * authorized on that page and charged only when the carrier confirms delivery. A second call answers
    * the same page while it can still be paid.
+   *
+   * An order whose `aup_accepted` is false needs `acceptAup: true` once: the person who pays accepts
+   * the acceptable use policy and the terms. The server takes it with `orderToken` or a session, never
+   * from a key.
    */
-  checkout(orderId: string, o: Mut & Tok = {}): Promise<S.OneTimeCheckout> {
+  checkout(orderId: string, o: Mut & Tok & { acceptAup?: boolean } = {}): Promise<S.OneTimeCheckout> {
     return this.h.request('POST', `/v1/one-time-sends/${orderId}/checkout`, {
-      json: {},
+      json: o.acceptAup === undefined ? {} : { accept_aup: o.acceptAup },
       headers: tokenHeader(o.orderToken),
       idempotencyKey: o.idempotencyKey,
     });
   }
-  /** What a mailed confirmation link is for, without using it. No key needed. */
+  /**
+   * What a mailed confirmation link is for, without using it. No key needed. The token travels in the
+   * body, so it stays out of the address and of access logs. Nothing is consumed and nothing changes.
+   * Needs API 1.17.0.
+   */
+  readByToken(token: string): Promise<S.OneTimeConfirmSummary> {
+    return this.h.request('POST', '/v1/one-time-sends/by-token', { json: { token } });
+  }
+  /**
+   * The same read with the token in the path. A token in a path reaches access logs. The API keeps this
+   * route for older callers and marks it deprecated since 1.17.0.
+   *
+   * @deprecated Use `readByToken`.
+   */
   getByToken(token: string): Promise<S.OneTimeConfirmSummary> {
     return this.h.request('GET', `/v1/one-time-sends/by-token/${encodeURIComponent(token)}`);
   }

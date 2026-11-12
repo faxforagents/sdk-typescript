@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.4.1 (2026-11-12)
+
+Follows API 1.17.0. The saved spec has 145 operations and the types are regenerated from it.
+
+`oneTimeSends.createFromQuote` no longer requires `accept_aup`. `approval_id` still carries the approval of a card order.
+`oneTimeSends.checkout` takes `acceptAup`. An order whose `aup_accepted` is false needs `acceptAup: true` once, with `orderToken`. The payer accepts the terms on the order page, never a key.
+New call `oneTimeSends.readByToken(token)`: the read of a mailed confirmation link, with the token in the body. `getByToken` still works and is marked `@deprecated`.
+
+`OneTimeOrder` and `OneTimeOrderCreated` carry `aup_accepted`, `status_url` and `queue`. `OneTimeConfig` carries `queue`.
+New type `OneTimeQueue` with `queued`, `jobs_ahead` and `estimated_wait_minutes`.
+`Balance` carries `top_up_url`. `Capabilities` carries `extraction_pricing`.
+
+`PaymentRequiredError.topUpUrl` reads `details.top_up_url`, the page where a person adds funds.
+`PaymentRequiredError.oneTimeOffer` is typed as `OneTimeOffer`, exported by the package. 0.4.0 declared `Record<string, unknown>`.
+
+Removed from the saved spec and from `schema.d.ts`: every path the public document does not list.
+That is 61 paths: 35 under `/v1/admin`, the dashboard sign-in under `/v1/auth`, the OAuth consent screen and the provider webhook receivers.
+The 70 schemas only those paths used are gone too, `AbuseReview`, `Passkey` and `SessionInfo` among them.
+No client method called them. Code that imported one of those types has to declare it itself.
+The saved spec now holds the 115 paths and 152 schemas of the public document, plus the response fields marked `x-sdk-route`.
+Other type names, fields and optionality are kept.
+
 ## 0.4.0 (2026-11-12)
 
 New resource `oneTimeSends`: one fax paid by card, with no wallet.

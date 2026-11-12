@@ -7,6 +7,14 @@
  * so on. Quote the correlation_id when you write to hello@faxforagents.com.
  */
 
+import type { InsufficientBalance } from './schema.js';
+
+/**
+ * `details.one_time_offer` of 402 insufficient_balance: the card path for this exact send. A pointer,
+ * never a promise: `oneTimeSends.createFromQuote` runs every check again.
+ */
+export type OneTimeOffer = NonNullable<InsufficientBalance['error']['details']['one_time_offer']>;
+
 export class FaxForAgentsError extends Error {
   constructor(message: string) {
     super(message);
@@ -58,14 +66,24 @@ export class AuthenticationError extends APIError {}
 /** 402 insufficient_balance: the wallet does not cover the fax. A person tops up. */
 export class PaymentRequiredError extends APIError {
   /**
-   * `details.one_time_offer` when the server sent one, else null. A server that offers the card path for
-   * this exact send names its price here. Pass the quote to `oneTimeSends.createFromQuote`. Servers at
-   * API 1.16.1 do not send it.
+   * `details.top_up_url`: the dashboard page where a person adds funds, else null. A key cannot top up.
+   * Servers send it since API 1.17.0.
    */
-  get oneTimeOffer(): Record<string, unknown> | null {
+  get topUpUrl(): string | null {
+    const details = this.details as { top_up_url?: unknown } | null | undefined;
+    const url = details && typeof details === 'object' ? details.top_up_url : null;
+    return typeof url === 'string' ? url : null;
+  }
+  /**
+   * `details.one_time_offer` when the server sent one, else null. Present when this exact send can be
+   * paid by card: it names the one-time price in `amount_micro`, the page counts and the `approval_id`
+   * that authorizes the order. Pass the quote to `oneTimeSends.createFromQuote`. Servers send it since
+   * API 1.17.0.
+   */
+  get oneTimeOffer(): OneTimeOffer | null {
     const details = this.details as { one_time_offer?: unknown } | null | undefined;
     const offer = details && typeof details === 'object' ? details.one_time_offer : null;
-    return offer && typeof offer === 'object' ? (offer as Record<string, unknown>) : null;
+    return offer && typeof offer === 'object' ? (offer as OneTimeOffer) : null;
   }
 }
 /** 403: the key lacks the scope (details.scope), or an agent key tried to administer. */

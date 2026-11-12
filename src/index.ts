@@ -56,7 +56,7 @@ export {
   ScopeError,
   ServerError,
 } from './errors.js';
-export type { APIErrorFields } from './errors.js';
+export type { APIErrorFields, OneTimeOffer } from './errors.js';
 export { DEFAULT_BASE_URL, Http, ORDER_TOKEN_HEADER, paginate } from './http.js';
 export type { ClientOptions, RequestOptions } from './http.js';
 export { SignatureError, parseEvent, sign, signatureHeaders, verifyWebhook } from './webhooks.js';
