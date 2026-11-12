@@ -83,7 +83,7 @@ export class Documents extends Resource {
     return this.h.request('POST', '/v1/documents', { json: body, ...o });
   }
   /**
-   * Open an upload session with a signed PUT URL (25 MB, one hour). `content_type` is application/pdf,
+   * Open an upload session with a signed PUT URL (25 MiB, one hour). `content_type` is application/pdf,
    * image/png, image/jpeg or image/tiff. Scope: document:write.
    */
   createUpload(body: S.UploadCreate, o: Mut = {}): Promise<S.UploadSession> {
