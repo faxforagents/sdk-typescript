@@ -117,6 +117,7 @@ names the scope each call needs.
 | `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `downloadExportArchive` |
 | `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `revokeInvitation` |
 | `ffa.oauth` | `listGrants`, `iterGrants`, `revokeGrant` |
+| `ffa.oneTimeSends` | `config`, `create`, `createFromQuote`, `list`, `iter`, `get`, `wait`, `checkout`, `getByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
 
 `ffa.request('GET', '/v1/anything')` reaches an operation the resources do not cover yet.
 
@@ -163,6 +164,65 @@ if (req.status === 'approved') {
 An agent's own API key can never approve. `ffa.policies.evaluate({ quote_id })` is a dry run that
 says whether a policy would allow the send.
 
+## One fax by card
+
+A person with one fax to send needs no wallet and no key. `oneTimeSends` makes an order, opens a hosted
+card payment and follows the order until the fax ends. The person pays on the hosted page and clicks the
+link mailed to them. The client never sees a card.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { FaxForAgents } from 'faxforagents';
+
+const ffa = new FaxForAgents({ keyless: true });      // no API key: only oneTimeSends answers
+const config = await ffa.oneTimeSends.config();       // open here? the card and the limits
+const order = await ffa.oneTimeSends.create({
+  to: '+12025550123',
+  sender_name: 'Dana Example',
+  email: 'dana@example.com',                          // the confirmation link and the receipt go here
+  accept_aup: true,                                   // the policy and terms that config names
+  file: await readFile('form.pdf'),                   // or text: '...', text_format: 'markdown'
+  filename: 'form.pdf',
+});
+const orderToken = order.status_token ?? undefined;   // answered once: keep it
+const page = await ffa.oneTimeSends.checkout(order.id, { orderToken });
+console.log(page.checkout_url);                       // the person pays here, then clicks the mailed link
+const done = await ffa.oneTimeSends.wait(order.id, { orderToken, timeoutMs: 1_800_000 });
+console.log(done.status, done.fax?.state);
+const pdf = await ffa.oneTimeSends.getReceiptPdf(order.id, { orderToken });
+```
+
+`order.next` names the step that is waiting: `checkout`, `confirm`, `wait` or `done`. `wait` polls until
+`done`, or until the step you pass as `until`. The card is authorized at checkout and charged only when
+the carrier confirms delivery.
+
+The status token goes in the `X-FFA-Order-Token` header. It reads the order, opens its checkout, mails
+the confirmation again and downloads the receipt. A client with a live key of the order's organization
+needs no token. A test key is refused: an order is always live.
+
+With a live key, `createFromQuote` turns a quote the wallet does not cover into an order.
+
+```ts
+import { PaymentRequiredError } from 'faxforagents';
+
+try {
+  await ffa.faxes.create({ quote_id: quote.id });
+} catch (err) {
+  if (!(err instanceof PaymentRequiredError)) throw err;
+  const order = await ffa.oneTimeSends.createFromQuote({
+    quote_id: quote.id,
+    sender_name: 'Dana Example',
+    accept_aup: true,
+    approval_id: approvalId,
+  });
+}
+```
+
+Paying by card does not replace approval. The send must have an approval or a delegated policy, as a
+wallet send does. `confirm(orderId, token)` and `getByToken(token)` serve a page of your own that
+receives the mailed link. The amounts are on the [pricing page](https://faxforagents.com/pricing/) and
+in `config().routes`, in micro-units.
+
 ## Webhooks
 
 ```ts
@@ -184,9 +244,10 @@ either one verifies.
 
 ## Prices
 
-Price card launch-v1 is effective from 2026-10-28. $0.039 per page sent, $0.019 per page received.
+Price card launch-v2 is effective from 2026-10-31. $0.039 per page sent, $0.019 per page received.
 $2 per number per month, $19 per month for the Agent workspace. Sandbox pages cost 0.
-`ffa.platform.capabilities()` returns the card in force.
+`ffa.platform.capabilities()` returns the card in force. One fax by card has its own price:
+`ffa.oneTimeSends.config()` returns it.
 
 ## Working on this repository
 
@@ -199,7 +260,7 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.13.2.
+`spec/openapi.yaml` follows the public document at API version 1.16.1.
 It keeps the schemas and the other operations of the live API version 1.6.0 document.
 Those sign-in, admin and provider webhook routes were compared with the API version 1.13.1 server on 2026-11-10 and match it.
 Two operator routes added after 1.6.0 and the auto-send fields of the consent screen are not declared.

@@ -1,13 +1,21 @@
 /** Type assertions prevent response fields from falling back to the unknown index signature. */
 import { expectTypeOf, it } from 'vitest';
 
-import type { Capabilities, ExtractionPage, FaxJob, InboxItemSummary, PolicyEvaluation, Quote } from '../src/index.js';
+import type {
+  Capabilities,
+  ExtractionPage,
+  FaxJob,
+  InboxItemSummary,
+  OneTimeJob,
+  PolicyEvaluation,
+  Quote,
+} from '../src/index.js';
 
 it('declares the fax and quote fields with their wire types', () => {
   expectTypeOf<FaxJob['approval_id']>().toEqualTypeOf<string | null | undefined>();
   expectTypeOf<FaxJob['policy_version_id']>().toEqualTypeOf<string | null | undefined>();
   expectTypeOf<FaxJob['one_time_order_id']>().toEqualTypeOf<string | null | undefined>();
-  expectTypeOf<FaxJob['one_time']>().toEqualTypeOf<Record<string, unknown> | null | undefined>();
+  expectTypeOf<FaxJob['one_time']>().toEqualTypeOf<OneTimeJob | null | undefined>();
   expectTypeOf<Quote['pricing']>().toEqualTypeOf<string | undefined>();
   expectTypeOf<Quote['policy_evaluation']>().toEqualTypeOf<Record<string, unknown> | null | undefined>();
   expectTypeOf<Capabilities['one_time']>().toEqualTypeOf<Record<string, unknown> | undefined>();

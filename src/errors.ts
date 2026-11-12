@@ -56,7 +56,18 @@ export class InvalidRequestError extends APIError {}
 /** 401 invalid_token: no key, or a revoked or expired one. */
 export class AuthenticationError extends APIError {}
 /** 402 insufficient_balance: the wallet does not cover the fax. A person tops up. */
-export class PaymentRequiredError extends APIError {}
+export class PaymentRequiredError extends APIError {
+  /**
+   * `details.one_time_offer` when the server sent one, else null. A server that offers the card path for
+   * this exact send names its price here. Pass the quote to `oneTimeSends.createFromQuote`. Servers at
+   * API 1.16.1 do not send it.
+   */
+  get oneTimeOffer(): Record<string, unknown> | null {
+    const details = this.details as { one_time_offer?: unknown } | null | undefined;
+    const offer = details && typeof details === 'object' ? details.one_time_offer : null;
+    return offer && typeof offer === 'object' ? (offer as Record<string, unknown>) : null;
+  }
+}
 /** 403: the key lacks the scope (details.scope), or an agent key tried to administer. */
 export class ScopeError extends APIError {}
 /** 404 not_found: not an id of this organization, or deleted. */
