@@ -6,6 +6,7 @@ import {
   AuthenticationError,
   ConflictError,
   FaxForAgents,
+  InvalidRequestError,
   NotFoundError,
   PaymentRequiredError,
   RateLimitedError,
@@ -136,6 +137,34 @@ describe('retries', () => {
     expect(err).toBeInstanceOf(RateLimitedError);
     expect((err as RateLimitedError).retryAfter).toBe(7);
     expect((err as RateLimitedError).correlationId).toBe('req_1');
+  });
+
+  it('throws the envelope of a 422 and of a 429 upload_queue as the documented error types', async () => {
+    // API 1.18.0 declares every error as the envelope. A field that fails validation is no other shape.
+    server.use(
+      http.post(`${BASE}/v1/fax-quotes`, () =>
+        HttpResponse.json(
+          { error: { code: 'invalid_request', message: 'to is not a number', retryable: false, correlation_id: null, details: { field: 'to' } } },
+          { status: 422 },
+        ),
+      ),
+      http.post(`${BASE}/v1/one-time-sends`, () =>
+        HttpResponse.json(
+          { error: { code: 'rate_limited', message: 'uploads are queued', retryable: true, correlation_id: 'req_2', details: { cap: 'upload_queue' } } },
+          { status: 429, headers: { 'Retry-After': '5' } },
+        ),
+      ),
+    );
+    const invalid = await client({ maxRetries: 0 })
+      .quotes.create({ document_id: 'doc_1', to: 'x' })
+      .catch((e: unknown) => e);
+    expect(invalid).toBeInstanceOf(InvalidRequestError);
+    expect(invalid).toMatchObject({ status: 422, code: 'invalid_request', retryable: false, correlationId: null, details: { field: 'to' } });
+    const queued = await client({ maxRetries: 0, maxRetryAfter: 30 })
+      .oneTimeSends.create({ text: 'x', to: '+12025550100', email: 'a@example.com', sender_name: 'Ada', accept_aup: true })
+      .catch((e: unknown) => e);
+    expect(queued).toBeInstanceOf(RateLimitedError);
+    expect(queued).toMatchObject({ status: 429, retryable: true, retryAfter: 5, correlationId: 'req_2', details: { cap: 'upload_queue' } });
   });
 
   it('retries network errors then throws APIConnectionError', async () => {

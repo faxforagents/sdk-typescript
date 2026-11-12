@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 (2026-11-12)
+
+Follows API 1.18.0. The saved spec has 145 operations and the types are regenerated from it.
+No client method, argument or return type changed. An API key is sent as before.
+
+Breaking: the exported types `HttpValidationError` and `ValidationError` are removed, with `components['schemas']['HTTPValidationError']` and `['ValidationError']`.
+The server never sent that shape. A 422 is the error envelope and the client throws `InvalidRequestError`, as it did in 0.4.1.
+Code that imported either type has to delete the import. Nothing replaces them.
+
+Changed: `ErrorEnvelope['error']` is the new type `ErrorBody`. `correlation_id` is `string | null` and optional, and `details` is `unknown`.
+Thrown errors are the same classes with the same fields.
+
+New types `ErrorBody` and one `Response...` type per shared error response, `ResponseUnauthorized` and `ResponseConflict` among them.
+The operation types name more error statuses: 402, 409, 413 and 503 where the API answers them.
+`oneTimeSends.create` can throw `RateLimitedError` with `details.cap` equal to `upload_queue`. Too many files are being read at once, so wait `retryAfter` seconds.
+
 ## 0.4.1 (2026-11-12)
 
 Follows API 1.17.0. The saved spec has 145 operations and the types are regenerated from it.
