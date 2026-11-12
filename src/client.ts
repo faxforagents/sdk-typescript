@@ -15,7 +15,7 @@
  *   console.log(fax.state, fax.evidence);                 // delivered, {...}
  */
 
-import { ClientOptions, Http, RequestOptions, paginate } from './http.js';
+import { ClientOptions, Http, ORDER_TOKEN_HEADER, RequestOptions, paginate } from './http.js';
 import type * as S from './schema.js';
 
 export const TERMINAL_STATES: ReadonlySet<string> = new Set(['delivered', 'partial', 'failed', 'unknown']);
@@ -754,6 +754,168 @@ export class Oauth extends Resource {
   }
 }
 
+/** Content types a one-time order takes as a file, by suffix. Anything else is sent as a PDF. */
+const ONE_TIME_CONTENT_TYPES: Readonly<Record<string, string>> = {
+  ...CONTENT_TYPES,
+  '.txt': 'text/plain',
+  '.md': 'text/markdown',
+};
+
+/** The status token of a one-time order, for a client that has no key of the order's organization. */
+type Tok = { orderToken?: string };
+
+const tokenHeader = (orderToken?: string): Record<string, string> | undefined =>
+  orderToken ? { [ORDER_TOKEN_HEADER]: orderToken } : undefined;
+
+/** The step of a one-time order that is waiting: what `OneTimeOrder.next` says. */
+export type OneTimeNext = S.OneTimeOrder['next'];
+
+/** What `oneTimeSends.create` takes: the fields of the order and exactly one of `file` or `text`. */
+export interface OneTimeCreate {
+  /** The destination fax number, E.164. */
+  to: string;
+  /** Printed on the cover sheet. 2 to 120 characters. */
+  sender_name: string;
+  /** True: the sender accepts the acceptable use policy and the terms that `config` names. */
+  accept_aup: boolean;
+  /** Where the confirmation link and the receipt go. Required without a key. */
+  email?: string;
+  /** The document as bytes: a PDF, PNG, JPEG or TIFF. Sent as multipart. */
+  file?: Uint8Array | ArrayBuffer | Blob;
+  /** The name of `file`. Its suffix picks the content type. Default document.pdf. */
+  filename?: string;
+  /** The content type of `file`, when the suffix of `filename` does not say. */
+  content_type?: string;
+  /** The document as plain text or Markdown. Sent as JSON. */
+  text?: string;
+  text_format?: 'text' | 'markdown';
+  to_name?: string;
+  subject?: string;
+  message?: string;
+  delete_after_send?: boolean;
+  /** Where the sender came from: a short tag, never a URL. */
+  source_ref?: string;
+}
+
+/**
+ * One fax paid by card, with no wallet (the one-time-sends operations).
+ *
+ * A person pays on the hosted page of `checkout` and clicks the link mailed to them. Nothing here
+ * charges a card. The create answers `status_token` once. Pass it as `orderToken` to read the order,
+ * open its checkout and mail the confirmation again from a client that has no key. A key of the order's
+ * organization needs no token.
+ */
+export class OneTimeSends extends Resource {
+  /** Whether one-time sends are open, with the card and the limits. No key needed. */
+  config(): Promise<S.OneTimeConfig> {
+    return this.h.request('GET', '/v1/one-time-sends/config');
+  }
+  /**
+   * Create an order from exactly one of `file` or `text`. Nothing is charged or sent. `email` is required
+   * without a key. A test key is refused: an order is always live. Scope with a key: fax:send.
+   */
+  create(body: OneTimeCreate, o: Mut = {}): Promise<S.OneTimeOrderCreated> {
+    const { file, filename, content_type, ...fields } = body;
+    if ((file === undefined) === (fields.text === undefined)) {
+      throw new Error('pass exactly one of file or text');
+    }
+    if (file === undefined) {
+      return this.h.request('POST', '/v1/one-time-sends', { json: fields, ...o });
+    }
+    const name = filename ?? 'document.pdf';
+    const dot = name.lastIndexOf('.');
+    const suffix = dot >= 0 ? name.slice(dot).toLowerCase() : '';
+    const type = content_type ?? ONE_TIME_CONTENT_TYPES[suffix] ?? 'application/pdf';
+    const form = new FormData();
+    for (const [key, value] of Object.entries(fields)) {
+      if (value !== undefined && value !== null) form.set(key, String(value));
+    }
+    const part = file instanceof Blob ? file : new Blob([file as BlobPart], { type });
+    form.set('file', part.type === type ? part : new Blob([part], { type }), name);
+    return this.h.request('POST', '/v1/one-time-sends', { body: form, ...o });
+  }
+  /**
+   * Turn a live quote the wallet does not cover into an order. Scope: fax:send, a live key. The price
+   * is the one-time price of the card, not the quote's. Paying by card does not replace approval: pass
+   * `approval_id` unless a delegated policy allows the send, or the answer is 403 approval_required.
+   */
+  createFromQuote(body: S.OneTimeFromQuote, o: Mut = {}): Promise<S.OneTimeOrderCreated> {
+    return this.h.request('POST', '/v1/one-time-sends/from-quote', { json: body, ...o });
+  }
+  /** The organization's orders, newest first. A test key reads an empty list. Scope: fax:read. */
+  list(p: Page & { status?: S.OneTimeOrder['status'] } = {}): Promise<S.OneTimeOrderPage> {
+    return this.h.request('GET', '/v1/one-time-sends', { params: p });
+  }
+  /** Every order, following next_cursor. */
+  iter(
+    p: Omit<Page, 'cursor'> & { status?: S.OneTimeOrder['status'] } = {},
+  ): AsyncGenerator<S.OneTimeOrder, void, undefined> {
+    return paginate((cursor) => this.list({ ...p, cursor }));
+  }
+  /**
+   * The order: its status, the step that is waiting in `next`, and the fax once released. Read it with
+   * a key of the order's organization (scope fax:read) or with `orderToken`.
+   */
+  get(orderId: string, o: Tok = {}): Promise<S.OneTimeOrder> {
+    return this.h.request('GET', `/v1/one-time-sends/${orderId}`, { headers: tokenHeader(o.orderToken) });
+  }
+  /**
+   * Poll until `next` is `until` (done by default), or the order is done. Returns the last order read,
+   * which may still be short of `until` when the timeout ran out. A person pays and confirms, so allow
+   * minutes.
+   */
+  async wait(
+    orderId: string,
+    opts: Tok & { until?: OneTimeNext | OneTimeNext[]; timeoutMs?: number; intervalMs?: number } = {},
+  ): Promise<S.OneTimeOrder> {
+    const wanted = new Set<string>(['done', ...[opts.until ?? 'done'].flat()]);
+    const deadline = Date.now() + (opts.timeoutMs ?? 300_000);
+    let order = await this.get(orderId, opts);
+    while (!wanted.has(order.next) && Date.now() < deadline) {
+      await sleep(opts.intervalMs ?? 3000);
+      order = await this.get(orderId, opts);
+    }
+    return order;
+  }
+  /**
+   * Open the hosted card payment and return its `checkout_url`. Scope with a key: fax:send. The card is
+   * authorized on that page and charged only when the carrier confirms delivery. A second call answers
+   * the same page while it can still be paid.
+   */
+  checkout(orderId: string, o: Mut & Tok = {}): Promise<S.OneTimeCheckout> {
+    return this.h.request('POST', `/v1/one-time-sends/${orderId}/checkout`, {
+      json: {},
+      headers: tokenHeader(o.orderToken),
+      idempotencyKey: o.idempotencyKey,
+    });
+  }
+  /** What a mailed confirmation link is for, without using it. No key needed. */
+  getByToken(token: string): Promise<S.OneTimeConfirmSummary> {
+    return this.h.request('GET', `/v1/one-time-sends/by-token/${encodeURIComponent(token)}`);
+  }
+  /**
+   * Confirm the order with the token of the mailed link. The fax is released. No key needed. The link
+   * works once. A repeat answers 409 link_used and sends nothing.
+   */
+  confirm(orderId: string, token: string): Promise<S.OneTimeConfirmed> {
+    return this.h.request('POST', `/v1/one-time-sends/${orderId}/confirm`, { json: { token } });
+  }
+  /** Mail the confirmation link again. At most three times per order and once in ten minutes. */
+  resendConfirmation(orderId: string, o: Mut & Tok = {}): Promise<S.OneTimeOrder> {
+    return this.h.request('POST', `/v1/one-time-sends/${orderId}/resend-confirmation`, {
+      json: {},
+      headers: tokenHeader(o.orderToken),
+      idempotencyKey: o.idempotencyKey,
+    });
+  }
+  /** The receipt of the order's fax as a one-page PDF. 409 while the fax has not ended. */
+  getReceiptPdf(orderId: string, o: Tok = {}): Promise<Uint8Array> {
+    return this.h.bytes('GET', `/v1/one-time-sends/${orderId}/receipt.pdf`, {
+      headers: tokenHeader(o.orderToken),
+    });
+  }
+}
+
 export class FaxForAgents {
   readonly http: Http;
   readonly identity: Identity;
@@ -774,6 +936,7 @@ export class FaxForAgents {
   readonly organizations: Organizations;
   readonly members: Members;
   readonly oauth: Oauth;
+  readonly oneTimeSends: OneTimeSends;
 
   constructor(opts: ClientOptions = {}) {
     this.http = new Http(opts);
@@ -795,6 +958,7 @@ export class FaxForAgents {
     this.organizations = new Organizations(this.http);
     this.members = new Members(this.http);
     this.oauth = new Oauth(this.http);
+    this.oneTimeSends = new OneTimeSends(this.http);
   }
 
   /** Shortcut for identity.me(). */

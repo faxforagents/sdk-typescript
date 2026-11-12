@@ -15,12 +15,19 @@ import { APIConnectionError, APITimeoutError, errorFor } from './errors.js';
 import { VERSION } from './version.js';
 
 export const DEFAULT_BASE_URL = 'https://api.faxforagents.com';
+/** The header that carries the status token of a one-time order, for a caller without a key. */
+export const ORDER_TOKEN_HEADER = 'X-FFA-Order-Token';
 const MUTATING = new Set(['POST', 'PATCH', 'DELETE']);
 const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 export interface ClientOptions {
   /** ffa_live_... or ffa_test_... Defaults to FAXFORAGENTS_API_KEY (then FFA_API_KEY) in the environment. */
   apiKey?: string;
+  /**
+   * Build a client with no API key. It sends no Authorization header and can call `oneTimeSends` only:
+   * every other operation answers 401.
+   */
+  keyless?: boolean;
   /** Defaults to FAXFORAGENTS_API_URL in the environment, then https://api.faxforagents.com. */
   baseUrl?: string;
   /** Per attempt, in milliseconds. Default 60000. */
@@ -92,7 +99,7 @@ const sleep = (s: number) => new Promise<void>((r) => setTimeout(r, Math.max(0, 
 
 export class Http {
   readonly baseUrl: string;
-  private readonly apiKey: string;
+  private readonly apiKey: string | null;
   private readonly timeoutMs: number;
   private readonly maxRetries: number;
   private readonly backoffBase: number;
@@ -101,7 +108,7 @@ export class Http {
   private readonly extraHeaders: Record<string, string>;
 
   constructor(opts: ClientOptions = {}) {
-    this.apiKey = resolveKey(opts.apiKey);
+    this.apiKey = opts.keyless ? null : resolveKey(opts.apiKey);
     this.baseUrl = (opts.baseUrl ?? env('FAXFORAGENTS_API_URL') ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
     this.timeoutMs = opts.timeoutMs ?? 60_000;
     this.maxRetries = Math.max(0, opts.maxRetries ?? 3);
@@ -122,7 +129,7 @@ export class Http {
     const m = method.toUpperCase();
     const url = (path.startsWith('http') ? path : this.baseUrl + path) + cleanParams(opts.params);
     const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.apiKey}`,
+      ...(this.apiKey === null ? {} : { Authorization: `Bearer ${this.apiKey}` }),
       Accept: 'application/json',
       'User-Agent': `faxforagents-js/${VERSION}`,
       ...this.extraHeaders,

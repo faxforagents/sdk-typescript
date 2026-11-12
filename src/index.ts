@@ -30,6 +30,7 @@ export {
   Members,
   Numbers,
   Oauth,
+  OneTimeSends,
   Organizations,
   Platform,
   Policies,
@@ -40,6 +41,7 @@ export {
   guessContentType,
 } from './client.js';
 export { FaxForAgents as Client } from './client.js';
+export type { OneTimeCreate, OneTimeNext } from './client.js';
 export {
   APIConnectionError,
   APIError,
@@ -55,7 +57,7 @@ export {
   ServerError,
 } from './errors.js';
 export type { APIErrorFields } from './errors.js';
-export { DEFAULT_BASE_URL, Http, paginate } from './http.js';
+export { DEFAULT_BASE_URL, Http, ORDER_TOKEN_HEADER, paginate } from './http.js';
 export type { ClientOptions, RequestOptions } from './http.js';
 export { SignatureError, parseEvent, sign, signatureHeaders, verifyWebhook } from './webhooks.js';
 export type { WebhookEvent } from './webhooks.js';

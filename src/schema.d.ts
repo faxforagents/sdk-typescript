@@ -2180,6 +2180,148 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/one-time-sends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the organization's one-time orders, newest first */
+        get: operations["list_one_time_orders"];
+        put?: never;
+        /**
+         * Create a one-time order: one document to one fax number, priced from the card
+         * @description No credential is needed. The answer carries the price, the page count and the status token. The next step is the checkout. A live key with fax:send or a signed-in session may create an order for its organization. Nothing is charged and nothing is sent by this call.
+         */
+        post: operations["create_one_time_order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/one-time-sends/{one_time_order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a one-time order: where it stands, what to do next, and the fax with its evidence */
+        get: operations["get_one_time_order"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/one-time-sends/{one_time_order_id}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open the card payment of a one-time order
+         * @description Answers the hosted payment page of the order. The card is authorized there, not charged: it is charged when the carrier confirms delivery. A second call answers the same page while it can still be paid, and a new one after it expired.
+         */
+        post: operations["create_one_time_checkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/one-time-sends/{one_time_order_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm a one-time order with the token of the mailed link: the fax is released
+         * @description Proves the sender's address and releases the fax. In a browser without a session it also signs the payer in and sets the session cookies. Idempotency-Key is accepted but ignored: the link works once. A repeat by the same signed-in person answers the confirmed order again. Any other repeat answers 409 link_used and sends nothing.
+         *
+         *     No API key is needed.
+         */
+        post: operations["confirm_one_time_order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/one-time-sends/{one_time_order_id}/receipt.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The receipt of a one-time order's fax as a one-page PDF
+         * @description The delivery receipt of the order's fax: the state, the pages, the document hash, the carrier's evidence as it was reported, and what became of the card. It says charged only once the payment provider confirmed the capture. A key or session of the order's organization may read it, and so may the status token, as the header or as ?t=. 409 conflict while the fax has not ended or the order has no fax.
+         */
+        get: operations["get_one_time_receipt_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/one-time-sends/{one_time_order_id}/resend-confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mail the confirmation link of a one-time order again
+         * @description At most three times per order and once in ten minutes. The earlier links keep working.
+         */
+        post: operations["resend_one_time_confirmation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/one-time-sends/by-token/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What a confirmation link is for, without using it
+         * @description The confirm page reads this before the click. Nothing is consumed by reading it.
+         *
+         *     No API key is needed.
+         */
+        get: operations["get_one_time_order_by_token"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/one-time-sends/config": {
         parameters: {
             query?: never;
@@ -2187,10 +2329,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Whether one-time sends are open here, and the card and limits an order is priced and checked by */
+        /**
+         * Whether one-time sends are open here, and the card and limits an order is priced and checked by
+         * @description No API key is needed.
+         */
         get: operations["get_one_time_config"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/one-time-sends/from-quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a one-time order from a live quote the wallet does not cover
+         * @description The quote supplies the document, the destination and the cover. The price is the card's one-time price, not the quote's. The quote then belongs to the order. Needs a live key with fax:send. A key needs what a wallet send of the quote needs: approval_id, or a delegated policy that allows the send. Paying by card replaces neither. Without one the answer is 403 approval_required.
+         */
+        post: operations["create_one_time_order_from_quote"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4539,7 +4704,7 @@ export interface components {
         /** ErrorEnvelope */
         ErrorEnvelope: {
             error: {
-                /** @description A stable code such as invalid_token, scope_missing, not_found, quote_expired, insufficient_balance, approval_required, rate_limited, live_provider_unavailable. */
+                /** @description A stable code such as invalid_token, scope_missing, not_found, quote_expired, insufficient_balance, approval_required, rate_limited, live_provider_unavailable, one_time_unavailable. */
                 code: string;
                 /** @description The X-Request-Id of the request. Quote it when you write to hello@faxforagents.com. */
                 correlation_id: string;
@@ -4963,11 +5128,11 @@ export interface components {
             from?: string | null;
             /** Id */
             id: string;
-            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
-            one_time?: {
-                [key: string]: unknown;
-            } | null;
-            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
+            one_time?: components["schemas"]["OneTimeJob"] | null;
+            /**
+             * One Time Order Id
+             * @description The one-time order this fax was paid by; null for a wallet fax.
+             */
             one_time_order_id?: string | null;
             /** Pages Sent */
             pages_sent: number;
@@ -5261,6 +5426,27 @@ export interface components {
         InboxUpdate: {
             /** Status */
             status?: ("received" | "read" | "archived") | null;
+        };
+        /**
+         * InsufficientBalance
+         * @description The error envelope of 402 insufficient_balance, with its details written out.
+         */
+        InsufficientBalance: {
+            error: {
+                /** @constant */
+                code: "insufficient_balance";
+                correlation_id: string;
+                details: {
+                    /** @description What the wallet holds that is not on hold. */
+                    available_micro: number;
+                    /** @description What this fax holds. */
+                    needed_micro: number;
+                } & {
+                    [key: string]: unknown;
+                };
+                message: string;
+                retryable: boolean;
+            };
         };
         /** Inventory */
         Inventory: {
@@ -5694,6 +5880,30 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** OneTimeCard */
+        OneTimeCard: {
+            /** Brand */
+            brand: string | null;
+            /** Last4 */
+            last4: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OneTimeCheckout */
+        OneTimeCheckout: {
+            /** Amount Micro */
+            amount_micro: number;
+            /** Checkout Url */
+            checkout_url: string;
+            /** Currency */
+            currency: string;
+            /** Expires At */
+            expires_at: string;
+            /** Order Id */
+            order_id: string;
+        } & {
+            [key: string]: unknown;
+        };
         /**
          * OneTimeConfig
          * @description What the public send page and an agent read before an order: whether the product is open here, the
@@ -5729,6 +5939,394 @@ export interface components {
             };
             /** Terms Url */
             terms_url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OneTimeConfirm */
+        OneTimeConfirm: {
+            /**
+             * Token
+             * @description The token of the link in the confirmation mail.
+             */
+            token: string;
+        };
+        /**
+         * OneTimeConfirmed
+         * @description ``signed_in`` says whether this browser now holds a session for the payer; ``me`` is then the same
+         *     object ``GET /v1/auth/me`` answers (the CSRF token included).
+         */
+        OneTimeConfirmed: {
+            /** Me */
+            me?: {
+                [key: string]: unknown;
+            } | null;
+            order: components["schemas"]["OneTimeOrder"];
+            /** Signed In */
+            signed_in: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * OneTimeConfirmSummary
+         * @description What the confirm page shows before the click. ``state`` is ``ok`` while the link can still be used,
+         *     else ``link_used`` or ``link_expired``. Reading it consumes nothing.
+         */
+        OneTimeConfirmSummary: {
+            /** Amount Micro */
+            amount_micro: number;
+            /** Confirm Deadline At */
+            confirm_deadline_at: string | null;
+            /** Currency */
+            currency: string;
+            /** Document Pages */
+            document_pages: number;
+            /** Email */
+            email: string;
+            /** Order Id */
+            order_id: string;
+            /** Sender Name */
+            sender_name: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "ok" | "link_used" | "link_expired";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed";
+            /** To */
+            to: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OneTimeFromQuote */
+        OneTimeFromQuote: {
+            /** Accept Aup */
+            accept_aup: boolean;
+            /**
+             * Approval Id
+             * @description An approved, unused approval request for this quote (POST /v1/approval-requests). A key needs it unless a delegated policy allows the send. A session needs none.
+             */
+            approval_id?: string | null;
+            /**
+             * Delete After Send
+             * @description Delete the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The order, the receipt and the carrier evidence stay; they hold no document content. A fax that ends unknown keeps the document until the carrier reports, or until the retention period ends. Left out, the quote's own delete_after_send applies.
+             */
+            delete_after_send?: boolean | null;
+            /** Email */
+            email?: string | null;
+            /** Quote Id */
+            quote_id: string;
+            /**
+             * Sender Name
+             * @description Printed on the cover sheet. 2 to 120 characters.
+             */
+            sender_name: string;
+            /** Source Ref */
+            source_ref?: string | null;
+        };
+        /**
+         * OneTimeJob
+         * @description The order behind a fax job that a one-time send made: what was authorized, what was charged.
+         */
+        OneTimeJob: {
+            /** Amount Micro */
+            amount_micro?: number | null;
+            /** Captured Micro */
+            captured_micro?: number | null;
+            card?: components["schemas"]["OneTimeCard"] | null;
+            /**
+             * Document Pages
+             * @description The pages of the order's document. The cover sheet is not counted.
+             */
+            document_pages?: number | null;
+            /** Order Id */
+            order_id: string;
+            /**
+             * Refunded Micro
+             * @description What was refunded to the card after the charge, in micro-units.
+             */
+            refunded_micro?: number | null;
+            /** Status */
+            status?: ("draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed") | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * OneTimeOrder
+         * @description One order of the one-time send. ``next`` is what the caller does now: ``checkout`` (open the
+         *     payment), ``confirm`` (the payer clicks the link in the mail), ``wait`` (nothing to do; read again) or
+         *     ``done``. Money is integer micro-USD. ``captured_micro`` is what the card was charged, written only
+         *     once the payment provider confirmed it. ``fax`` is the fax job once the order was released, with the
+         *     carrier's evidence once it has any.
+         */
+        OneTimeOrder: {
+            /** Amount Micro */
+            amount_micro: number;
+            /** Aup Version */
+            aup_version: string;
+            /** Authorized At */
+            authorized_at: string | null;
+            /** Capture Deadline At */
+            capture_deadline_at: string | null;
+            /** Captured Micro */
+            captured_micro: number;
+            card: components["schemas"]["OneTimeCard"] | null;
+            /** Checkout Expires At */
+            checkout_expires_at: string | null;
+            /** Checkout Url */
+            checkout_url: string | null;
+            /** Confirm Deadline At */
+            confirm_deadline_at: string | null;
+            /** Confirm Mail Sent At */
+            confirm_mail_sent_at: string | null;
+            /** Cover */
+            cover: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at: string;
+            /**
+             * Delete After Send
+             * @description The sender asked for the document and the transmitted copy to be deleted the moment the fax ends in delivered, partial or failed.
+             */
+            delete_after_send?: boolean;
+            /**
+             * Document Deleted
+             * @description True once no copy of the document is held: it was deleted after the send, by the retention period or by its owner, or the order ended before it was released and the uploaded file was removed. The order, the fax and the carrier evidence stay; they hold no document content.
+             */
+            document_deleted?: boolean;
+            /**
+             * Document Expires At
+             * @description When the retention period deletes the stored document. Null before the release and once the document is deleted.
+             */
+            document_expires_at?: string | null;
+            /** Document Id */
+            document_id: string | null;
+            /** Document Pages */
+            document_pages: number;
+            /** Document Sha256 */
+            document_sha256: string;
+            /** Email */
+            email: string;
+            /** Email Verified */
+            email_verified: boolean;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Failure Code */
+            failure_code: string | null;
+            /**
+             * Fax
+             * @description The fax job (the FaxJob shape) once the order was released; null before.
+             */
+            fax?: {
+                [key: string]: unknown;
+            } | null;
+            /** Fax Job Id */
+            fax_job_id: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Next
+             * @enum {string}
+             */
+            next: "checkout" | "confirm" | "wait" | "done";
+            price: components["schemas"]["OneTimePrice"];
+            /** Quote Id */
+            quote_id: string | null;
+            /**
+             * Refunded Micro
+             * @description What was refunded to the card after the charge, in micro-units, as the ledger holds it. Zero when nothing was refunded. captured_micro stays what was charged.
+             */
+            refunded_micro?: number;
+            /** Released At */
+            released_at: string | null;
+            /**
+             * Resend Allowed At
+             * @description When the confirmation mail may be asked for again; null when it may not.
+             */
+            resend_allowed_at?: string | null;
+            /** Route */
+            route: string;
+            /** Sender Name */
+            sender_name: string;
+            /** Settled At */
+            settled_at: string | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "web" | "api" | "mcp";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed";
+            /** To */
+            to: string;
+            /** Updated At */
+            updated_at: string;
+            /** Warnings */
+            warnings?: {
+                [key: string]: unknown;
+            }[];
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * OneTimeOrderCreated
+         * @description The create answer: the order plus the status token. The token reads this one order, opens its
+         *     checkout and asks for the confirmation mail again, with no key and no session, for seven days. Send it
+         *     as ``X-FFA-Order-Token`` (or ``?t=``). ``status_url`` is the order's page in the app with the token.
+         */
+        OneTimeOrderCreated: {
+            /** Amount Micro */
+            amount_micro: number;
+            /** Aup Version */
+            aup_version: string;
+            /** Authorized At */
+            authorized_at: string | null;
+            /** Capture Deadline At */
+            capture_deadline_at: string | null;
+            /** Captured Micro */
+            captured_micro: number;
+            card: components["schemas"]["OneTimeCard"] | null;
+            /** Checkout Expires At */
+            checkout_expires_at: string | null;
+            /** Checkout Url */
+            checkout_url: string | null;
+            /** Confirm Deadline At */
+            confirm_deadline_at: string | null;
+            /** Confirm Mail Sent At */
+            confirm_mail_sent_at: string | null;
+            /** Cover */
+            cover: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at: string;
+            /**
+             * Delete After Send
+             * @description The sender asked for the document and the transmitted copy to be deleted the moment the fax ends in delivered, partial or failed.
+             */
+            delete_after_send?: boolean;
+            /**
+             * Document Deleted
+             * @description True once no copy of the document is held: it was deleted after the send, by the retention period or by its owner, or the order ended before it was released and the uploaded file was removed. The order, the fax and the carrier evidence stay; they hold no document content.
+             */
+            document_deleted?: boolean;
+            /**
+             * Document Expires At
+             * @description When the retention period deletes the stored document. Null before the release and once the document is deleted.
+             */
+            document_expires_at?: string | null;
+            /** Document Id */
+            document_id: string | null;
+            /** Document Pages */
+            document_pages: number;
+            /** Document Sha256 */
+            document_sha256: string;
+            /** Email */
+            email: string;
+            /** Email Verified */
+            email_verified: boolean;
+            /**
+             * Environment
+             * @enum {string}
+             */
+            environment: "live" | "test";
+            /** Failure Code */
+            failure_code: string | null;
+            /**
+             * Fax
+             * @description The fax job (the FaxJob shape) once the order was released; null before.
+             */
+            fax?: {
+                [key: string]: unknown;
+            } | null;
+            /** Fax Job Id */
+            fax_job_id: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Next
+             * @enum {string}
+             */
+            next: "checkout" | "confirm" | "wait" | "done";
+            price: components["schemas"]["OneTimePrice"];
+            /** Quote Id */
+            quote_id: string | null;
+            /**
+             * Refunded Micro
+             * @description What was refunded to the card after the charge, in micro-units, as the ledger holds it. Zero when nothing was refunded. captured_micro stays what was charged.
+             */
+            refunded_micro?: number;
+            /** Released At */
+            released_at: string | null;
+            /**
+             * Resend Allowed At
+             * @description When the confirmation mail may be asked for again; null when it may not.
+             */
+            resend_allowed_at?: string | null;
+            /** Route */
+            route: string;
+            /** Sender Name */
+            sender_name: string;
+            /** Settled At */
+            settled_at: string | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "web" | "api" | "mcp";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed";
+            /** Status Token */
+            status_token: string;
+            /** Status Url */
+            status_url: string;
+            /** To */
+            to: string;
+            /** Updated At */
+            updated_at: string;
+            /** Warnings */
+            warnings?: {
+                [key: string]: unknown;
+            }[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** OneTimeOrderPage */
+        OneTimeOrderPage: {
+            /** Items */
+            items: components["schemas"]["OneTimeOrder"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** OneTimePrice */
+        OneTimePrice: {
+            /** Cover Included */
+            cover_included: boolean;
+            /** Currency */
+            currency: string;
+            /** Extra Page Micro */
+            extra_page_micro: number;
+            /** Flat Micro */
+            flat_micro: number;
+            /** Included Pages */
+            included_pages: number;
+            /** Price Version */
+            price_version: string;
         } & {
             [key: string]: unknown;
         };
@@ -6324,6 +6922,11 @@ export interface components {
             captured_micro: number;
             /** Completed At */
             completed_at: string | null;
+            /**
+             * Cover Pages
+             * @description How many of the billable pages are the cover sheet: 0 or 1.
+             */
+            cover_pages?: number;
             /** Created At */
             created_at: string;
             /** Currency */
@@ -6344,6 +6947,8 @@ export interface components {
             generated_at: string;
             /** Note */
             note: string;
+            /** @description Set on the receipt of a fax that a one-time order paid for. It names the order, its status, the card and the amount the card was authorized for. captured_micro in it is the amount charged, written once the payment provider confirmed the capture. For a card order read the money here. Null for a fax paid from the wallet. */
+            one_time?: components["schemas"]["OneTimeJob"] | null;
             /** Pages Sent */
             pages_sent: number;
             /** Provider */
@@ -7224,6 +7829,7 @@ export type InboxItemDetail = components['schemas']['InboxItemDetail'];
 export type InboxItemSummary = components['schemas']['InboxItemSummary'];
 export type InboxPage = components['schemas']['InboxPage'];
 export type InboxUpdate = components['schemas']['InboxUpdate'];
+export type InsufficientBalance = components['schemas']['InsufficientBalance'];
 export type Inventory = components['schemas']['Inventory'];
 export type InventoryNumber = components['schemas']['InventoryNumber'];
 export type Invitation = components['schemas']['Invitation'];
@@ -7249,7 +7855,18 @@ export type OAuthConsentClient = components['schemas']['OAuthConsentClient'];
 export type OAuthConsentDecision = components['schemas']['OAuthConsentDecision'];
 export type OAuthConsentOrganization = components['schemas']['OAuthConsentOrganization'];
 export type OAuthRedirect = components['schemas']['OAuthRedirect'];
+export type OneTimeCard = components['schemas']['OneTimeCard'];
+export type OneTimeCheckout = components['schemas']['OneTimeCheckout'];
 export type OneTimeConfig = components['schemas']['OneTimeConfig'];
+export type OneTimeConfirm = components['schemas']['OneTimeConfirm'];
+export type OneTimeConfirmed = components['schemas']['OneTimeConfirmed'];
+export type OneTimeConfirmSummary = components['schemas']['OneTimeConfirmSummary'];
+export type OneTimeFromQuote = components['schemas']['OneTimeFromQuote'];
+export type OneTimeJob = components['schemas']['OneTimeJob'];
+export type OneTimeOrder = components['schemas']['OneTimeOrder'];
+export type OneTimeOrderCreated = components['schemas']['OneTimeOrderCreated'];
+export type OneTimeOrderPage = components['schemas']['OneTimeOrderPage'];
+export type OneTimePrice = components['schemas']['OneTimePrice'];
 export type OneTimeRoute = components['schemas']['OneTimeRoute'];
 export type Organization = components['schemas']['Organization'];
 export type OrganizationList = components['schemas']['OrganizationList'];
@@ -12692,7 +13309,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The key lacks the scope fax:send (scope_missing). */
+            /** @description The wallet does not cover this fax (insufficient_balance). details names available_micro and needed_micro. Nothing was held. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsufficientBalance"];
+                };
+            };
+            /** @description The key lacks the scope fax:send (scope_missing), or the send needs a person's approval (approval_required). */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -12703,6 +13329,15 @@ export interface operations {
             };
             /** @description Not an id of this organization, or it was deleted (not_found). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The quote expired (quote_expired), already created a fax (quote_consumed), belongs to a one-time order (quote_pricing_mismatch), or the document changed since the quote (document_hash_mismatch). Also idempotency_key_conflict: the Idempotency-Key was used with a different body. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14998,6 +15633,627 @@ export interface operations {
             };
         };
     };
+    list_one_time_orders: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+                status?: ("draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeOrderPage"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks the scope fax:read (scope_missing). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_one_time_order: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Accept Aup
+                     * @description True: the sender accepts the acceptable use policy and the terms the config route names.
+                     */
+                    accept_aup: boolean;
+                    /**
+                     * Delete After Send
+                     * @description Delete the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The order, the receipt and the carrier evidence stay; they hold no document content. A fax that ends unknown keeps the document until the carrier reports, or until the retention period ends. Default: keep the document for the retention period.
+                     */
+                    delete_after_send?: boolean;
+                    /**
+                     * Email
+                     * @description Where the confirmation link, the receipt and the evidence go. Required without a credential; a signed-in session uses its own address; a key may leave it out to use the organization's.
+                     */
+                    email?: string | null;
+                    /** Message */
+                    message?: string | null;
+                    /**
+                     * Sender Name
+                     * @description Printed on the cover sheet. 2 to 120 characters.
+                     */
+                    sender_name: string;
+                    /**
+                     * Source Ref
+                     * @description Where the sender came from (a short tag, never a URL).
+                     */
+                    source_ref?: string | null;
+                    /** Subject */
+                    subject?: string | null;
+                    /**
+                     * Text
+                     * @description The document as plain text or Markdown.
+                     */
+                    text: string;
+                    /**
+                     * Text Format
+                     * @enum {string}
+                     */
+                    text_format?: "text" | "markdown";
+                    /**
+                     * To
+                     * @description The destination fax number, E.164.
+                     */
+                    to: string;
+                    /** To Name */
+                    to_name?: string | null;
+                };
+                "multipart/form-data": {
+                    /**
+                     * Accept Aup
+                     * @description True: the sender accepts the acceptable use policy and the terms the config route names.
+                     */
+                    accept_aup: boolean;
+                    /**
+                     * Delete After Send
+                     * @description Delete the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The order, the receipt and the carrier evidence stay; they hold no document content. A fax that ends unknown keeps the document until the carrier reports, or until the retention period ends. Default: keep the document for the retention period.
+                     */
+                    delete_after_send?: boolean;
+                    /**
+                     * Email
+                     * @description Where the confirmation link, the receipt and the evidence go. Required without a credential; a signed-in session uses its own address; a key may leave it out to use the organization's.
+                     */
+                    email?: string | null;
+                    /**
+                     * Format: binary
+                     * @description The document: PDF, PNG, JPEG or TIFF. Send this or text, not both.
+                     */
+                    file?: string;
+                    /** Message */
+                    message?: string | null;
+                    /**
+                     * Sender Name
+                     * @description Printed on the cover sheet. 2 to 120 characters.
+                     */
+                    sender_name: string;
+                    /**
+                     * Source Ref
+                     * @description Where the sender came from (a short tag, never a URL).
+                     */
+                    source_ref?: string | null;
+                    /** Subject */
+                    subject?: string | null;
+                    /**
+                     * Text
+                     * @description The document as plain text or Markdown.
+                     */
+                    text?: string;
+                    /**
+                     * Text Format
+                     * @enum {string}
+                     */
+                    text_format?: "text" | "markdown";
+                    /**
+                     * To
+                     * @description The destination fax number, E.164.
+                     */
+                    to: string;
+                    /** To Name */
+                    to_name?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeOrderCreated"];
+                };
+            };
+            /** @description A key was sent and lacks fax:send (scope_missing), or the destination is blocked (blocked_destination). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The form was refused (invalid_request), the number is not a fax destination (invalid_destination), the route is not sold one fax at a time (unsupported_destination), or the document is too large (document_too_large). A test key is refused: an order is live. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description One-time sends are switched off on this server (one_time_unavailable). Nothing was created or charged. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_one_time_order: {
+        parameters: {
+            query?: {
+                /** @description The status token, when no header carries it. */
+                t?: string | null;
+            };
+            header?: {
+                /** @description The status token of the order, for a caller without a key or a session. */
+                "X-FFA-Order-Token"?: string;
+            };
+            path: {
+                one_time_order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeOrder"];
+                };
+            };
+            /** @description No such order. A wrong token, another organization's key and an unknown id all answer this (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_one_time_checkout: {
+        parameters: {
+            query?: {
+                /** @description The status token, when no header carries it. */
+                t?: string | null;
+            };
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+                /** @description The status token of the order, for a caller without a key or a session. */
+                "X-FFA-Order-Token"?: string;
+            };
+            path: {
+                one_time_order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeCheckout"];
+                };
+            };
+            /** @description No such order. A wrong token, another organization's key and an unknown id all answer this (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The order is already paid (already_paid), or it ended (order_closed). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description One-time sends are switched off on this server (one_time_unavailable). Nothing was created or charged. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    confirm_one_time_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                one_time_order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OneTimeConfirm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeConfirmed"];
+                };
+            };
+            /** @description The confirmation link is not valid for this order (link_invalid). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The link was already used (link_used), expired (link_expired), or the browser is signed in as someone else (link_other_session). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description One-time sends are switched off on this server (one_time_unavailable). Nothing was created or charged. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_one_time_receipt_pdf: {
+        parameters: {
+            query?: {
+                /** @description The status token, when no header carries it. */
+                t?: string | null;
+            };
+            header?: {
+                /** @description The status token of the order, for a caller without a key or a session. */
+                "X-FFA-Order-Token"?: string;
+            };
+            path: {
+                one_time_order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The receipt as a PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description No such order. A wrong token, another organization's key and an unknown id all answer this (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description No receipt yet: the order has no fax, or the fax has not ended (conflict). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    resend_one_time_confirmation: {
+        parameters: {
+            query?: {
+                /** @description The status token, when no header carries it. */
+                t?: string | null;
+            };
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+                /** @description The status token of the order, for a caller without a key or a session. */
+                "X-FFA-Order-Token"?: string;
+            };
+            path: {
+                one_time_order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeOrder"];
+                };
+            };
+            /** @description No such order. A wrong token, another organization's key and an unknown id all answer this (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The order is not waiting for its confirmation (order_closed). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description One-time sends are switched off on this server (one_time_unavailable). Nothing was created or charged. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_one_time_order_by_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeConfirmSummary"];
+                };
+            };
+            /** @description The confirmation link is not valid (link_invalid). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     get_one_time_config: {
         parameters: {
             query?: never;
@@ -15014,6 +16270,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OneTimeConfig"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_one_time_order_from_quote: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OneTimeFromQuote"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeOrderCreated"];
+                };
+            };
+            /** @description No key, or a key that was revoked or expired (invalid_token). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The key lacks fax:send (scope_missing), or the send has no approval and no policy allows it (approval_required). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description The quote expired (quote_expired), or the document changed since the quote (document_hash_mismatch). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit reached (rate_limited). Retry after the seconds in Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description One-time sends are switched off on this server (one_time_unavailable). Nothing was created or charged. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };

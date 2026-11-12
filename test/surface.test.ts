@@ -140,6 +140,16 @@ const COVERED: Record<string, string> = {
   revoke_invitation: 'members.revokeInvitation',
   list_oauth_grants: 'oauth.listGrants',
   revoke_oauth_grant: 'oauth.revokeGrant',
+  get_one_time_config: 'oneTimeSends.config',
+  create_one_time_order: 'oneTimeSends.create',
+  create_one_time_order_from_quote: 'oneTimeSends.createFromQuote',
+  list_one_time_orders: 'oneTimeSends.list',
+  get_one_time_order: 'oneTimeSends.get',
+  get_one_time_order_by_token: 'oneTimeSends.getByToken',
+  create_one_time_checkout: 'oneTimeSends.checkout',
+  confirm_one_time_order: 'oneTimeSends.confirm',
+  resend_one_time_confirmation: 'oneTimeSends.resendConfirmation',
+  get_one_time_receipt_pdf: 'oneTimeSends.getReceiptPdf',
 };
 
 // These routes have generated declarations. The client currently has no methods for them.
@@ -187,7 +197,6 @@ const GENERATED_ONLY = [
   'get_auth_me',
   'get_auth_providers',
   'get_oauth_authorization',
-  'get_one_time_config',
   'list_passkeys',
   'list_sessions',
   'logout',
@@ -214,9 +223,9 @@ const GENERATED_ONLY = [
 it('accounts for every operationId and retains every existing client method', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const ids = new Set([...yaml.matchAll(/^\s+operationId: (\w+)$/gm)].map((m) => m[1]!));
-  expect(Object.keys(COVERED)).toHaveLength(134);
-  expect(GENERATED_ONLY).toHaveLength(65);
-  expect(ids.size).toBe(199);
+  expect(Object.keys(COVERED)).toHaveLength(144);
+  expect(GENERATED_ONLY).toHaveLength(64);
+  expect(ids.size).toBe(208);
   expect([...ids].sort()).toEqual([...Object.keys(COVERED), ...GENERATED_ONLY].sort());
   const c = new FaxForAgents({ apiKey: 'ffa_test_x' }) as unknown as Record<string, Record<string, unknown>>;
   for (const target of Object.values(COVERED)) {

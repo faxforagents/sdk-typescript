@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.0 (2026-11-12)
+
+New resource `oneTimeSends`: one fax paid by card, with no wallet.
+Its calls are `config`, `create`, `createFromQuote`, `list`, `iter`, `get`, `wait`, `checkout`, `getByToken`, `confirm`, `resendConfirmation` and `getReceiptPdf`.
+`create` sends a file as multipart or text as JSON. `wait` polls until the order's `next` is `done`, or the step passed as `until`.
+`get`, `wait`, `checkout`, `resendConfirmation` and `getReceiptPdf` take `orderToken`, sent as `X-FFA-Order-Token`. The header name is exported as `ORDER_TOKEN_HEADER`.
+`new FaxForAgents({ keyless: true })` builds a client with no API key. It sends no `Authorization` header and can call `oneTimeSends` only.
+
+The saved spec follows the public document at API 1.16.1, 144 public operations. Types are regenerated from it.
+New types: `OneTimeOrder`, `OneTimeOrderCreated`, `OneTimeOrderPage`, `OneTimeFromQuote`, `OneTimeCheckout`, `OneTimeConfirm`, `OneTimeConfirmSummary`, `OneTimeConfirmed`, `OneTimeCard`, `OneTimePrice`, `OneTimeJob` and `InsufficientBalance`. The client exports `OneTimeCreate` and `OneTimeNext`.
+Changed: `FaxJob.one_time` is `OneTimeJob | null`, where 0.3.1 declared `Record<string, unknown> | null`. `Receipt` carries `one_time` too.
+Other type names, fields and optionality are kept. Fields with a server default stay optional.
+
+`PaymentRequiredError.oneTimeOffer` reads `details.one_time_offer` when a server sends it, and is `null` otherwise. API 1.16.1 does not send it.
+The README names price card launch-v2, effective 2026-10-31.
+
 ## 0.3.1 (2026-11-10)
 
 `faxes.list` takes `idempotency_key`, a filter that finds the send made with that key.
