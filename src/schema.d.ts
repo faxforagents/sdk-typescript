@@ -1123,7 +1123,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Label and inbound route of a number */
+        /** Label, inbound route and PDF by mail of a number */
         patch: operations["update_number"];
         trace?: never;
     };
@@ -3111,8 +3111,6 @@ export interface components {
             pages_requested: number;
             /** Price Micro */
             price_micro: number;
-            /** Provider Cost Micro */
-            provider_cost_micro: number;
             /** Schema */
             schema?: {
                 [key: string]: unknown;
@@ -3162,8 +3160,6 @@ export interface components {
         ExtractionPage: {
             /** Confidence */
             confidence: number;
-            /** @description Returned by GET /v1/extractions/{extraction_id}. Declared here until the public schema includes it. */
-            cost_micro?: number;
             /**
              * Escalated
              * @default false
@@ -3842,6 +3838,11 @@ export interface components {
             /** E164 */
             e164: string;
             /**
+             * Email Pdf
+             * @description When true, the notice mail of a fax received on this number carries the PDF as an attachment. Live numbers only. Off by default.
+             */
+            email_pdf?: boolean;
+            /**
              * Environment
              * @enum {string}
              */
@@ -3956,6 +3957,11 @@ export interface components {
         };
         /** NumberUpdate */
         NumberUpdate: {
+            /**
+             * Email Pdf
+             * @description Attach the PDF of each received fax to the notice mail. The mail goes to the verified address of an owner of the organization and to no other address. A PDF over 15 MB is not attached. It needs the scope number:buy. An agent, an OAuth connection and a connected app are refused.
+             */
+            email_pdf?: boolean | null;
             /** Inbound Webhook Id */
             inbound_webhook_id?: string | null;
             /** Label */

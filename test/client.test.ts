@@ -388,6 +388,45 @@ describe('operations added with API 1.12.0', () => {
     expect((await client().numbers.listOrders()).items).toEqual([]);
   });
 
+  it('numbers.update sends email_pdf only when given', async () => {
+    const number = {
+      id: 'num_1', environment: 'live', e164: '+15550001001', country: 'US', number_type: 'local', locality: null,
+      status: 'active', label: null, project_id: null, inbound_webhook_id: null, inbound_status: 'enabled',
+      email_pdf: false, provider: 'carrier', monthly_micro: 2000000, currency: 'USD', order_id: 'nord_1',
+      created_at: '2026-11-13T00:00:00Z', activated_at: '2026-11-13T00:00:00Z', renews_at: null, released_at: null,
+    };
+    const bodies: unknown[] = [];
+    server.use(
+      http.patch(`${BASE}/v1/numbers/num_1`, async ({ request }) => {
+        const body = (await request.json()) as { email_pdf?: boolean };
+        bodies.push(body);
+        return HttpResponse.json({ ...number, email_pdf: body.email_pdf ?? number.email_pdf });
+      }),
+    );
+    expect((await client().numbers.update('num_1', { email_pdf: true })).email_pdf).toBe(true);
+    // false is a value, not an omission: it switches the attachment off.
+    expect((await client().numbers.update('num_1', { email_pdf: false })).email_pdf).toBe(false);
+    await client().numbers.update('num_1', { label: 'front desk' });
+    expect(bodies).toEqual([{ email_pdf: true }, { email_pdf: false }, { label: 'front desk' }]);
+  });
+
+  it('extractions.get reads an extraction without the provider cost', async () => {
+    // API 1.19.0 stopped sending provider_cost_micro and the cost_micro of each page.
+    const extraction = {
+      id: 'ext_1', kind: 'extract', status: 'completed', environment: 'test', document_id: 'doc_1',
+      inbox_item_id: null, schema_id: null, schema: null, options: {}, pages_requested: 1, pages_processed: 1,
+      pages_escalated: 0, document_pages: 1, confidence: 0.95,
+      pages: [{ page: 1, text: 'Fixture text', confidence: 0.95, status: 'ok', model: 'sandbox', warnings: [] }],
+      output: null, models: {}, price_micro: 0, currency: 'USD', error_code: null, created_by: 'key:ffa_test_aaaa',
+      created_at: '2026-11-13T00:00:00Z', started_at: '2026-11-13T00:00:00Z', completed_at: '2026-11-13T00:00:01Z',
+    };
+    server.use(http.get(`${BASE}/v1/extractions/ext_1`, () => HttpResponse.json(extraction)));
+    const got = await client().extractions.get('ext_1');
+    expect(got.price_micro).toBe(0);
+    expect(got).not.toHaveProperty('provider_cost_micro');
+    expect(got.pages[0]).not.toHaveProperty('cost_micro');
+  });
+
   it('setAutoSend puts the body with an idempotency key', async () => {
     const setting = { environment: 'test', enabled: true, max_amount_micro: 5000000, daily_max_jobs: 5, policy_id: 'pol_1', version: 1 };
     let body: unknown;
