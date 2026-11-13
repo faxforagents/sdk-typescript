@@ -3,9 +3,12 @@ import { expectTypeOf, it } from 'vitest';
 
 import type {
   Capabilities,
+  Extraction,
   ExtractionPage,
   FaxJob,
   InboxItemSummary,
+  Number as FaxNumber,
+  NumberUpdate,
   OneTimeJob,
   PolicyEvaluation,
   Quote,
@@ -23,11 +26,23 @@ it('declares the fax and quote fields with their wire types', () => {
   expectTypeOf<PolicyEvaluation['usage']>().toEqualTypeOf<Record<string, number> | null | undefined>();
 });
 
+it('declares email_pdf on a number and on its update body', () => {
+  expectTypeOf<FaxNumber['email_pdf']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<NumberUpdate['email_pdf']>().toEqualTypeOf<boolean | null | undefined>();
+});
+
+it('declares no provider cost on an extraction or its pages', () => {
+  // API 1.19.0 stopped sending both fields. price_micro is what the wallet paid.
+  expectTypeOf<Extract<keyof Declared<Extraction>, 'provider_cost_micro'>>().toBeNever();
+  expectTypeOf<Extract<keyof Declared<ExtractionPage>, 'cost_micro'>>().toBeNever();
+  expectTypeOf<Extract<keyof Declared<Extraction>, 'price_micro'>>().toEqualTypeOf<'price_micro'>();
+  expectTypeOf<Extraction['price_micro']>().toEqualTypeOf<number>();
+});
+
 it('declares extraction accounting and inbox metadata', () => {
   expectTypeOf<ExtractionPage['fast_read']>().toEqualTypeOf<boolean | undefined>();
   expectTypeOf<ExtractionPage['strong_read']>().toEqualTypeOf<boolean | undefined>();
   expectTypeOf<ExtractionPage['words_count']>().toEqualTypeOf<number | undefined>();
-  expectTypeOf<ExtractionPage['cost_micro']>().toEqualTypeOf<number | undefined>();
   expectTypeOf<InboxItemSummary['environment']>().toEqualTypeOf<'live' | 'test' | undefined>();
   expectTypeOf<InboxItemSummary['partial_content']>().toEqualTypeOf<boolean | undefined>();
   expectTypeOf<InboxItemSummary['media_status']>().toEqualTypeOf<string | undefined>();
@@ -50,7 +65,7 @@ it("declares every property in the saved serializer shapes", () => {
   expectTypeOf(capabilities).toExtend<Array<keyof Declared<S.Capabilities>>>();
   const document = ["content_type", "created_at", "deleted_at", "environment", "expires_at", "filename", "id", "page_count", "render_reason", "render_status", "sha256", "size_bytes", "source", "status", "upload_id", "validation"] satisfies Array<keyof Declared<S.Document>>;
   expectTypeOf(document).toExtend<Array<keyof Declared<S.Document>>>();
-  const extractionPage = ["confidence", "cost_micro", "escalated", "fast_read", "language", "model", "page", "status", "strong_read", "text", "warnings", "words_count"] satisfies Array<keyof Declared<S.ExtractionPage>>;
+  const extractionPage = ["confidence", "escalated", "fast_read", "language", "model", "page", "status", "strong_read", "text", "warnings", "words_count"] satisfies Array<keyof Declared<S.ExtractionPage>>;
   expectTypeOf(extractionPage).toExtend<Array<keyof Declared<S.ExtractionPage>>>();
   const faxJob = ["amount_micro", "approval_id", "attempt_count", "billable_pages", "cancel_requested_at", "captured_micro", "client_reference", "completed_at", "cover_pages", "created_at", "currency", "direction", "document_id", "document_sha256", "environment", "evidence", "failure_code", "from", "id", "one_time", "one_time_order_id", "pages_sent", "policy_version_id", "provider", "provider_ref", "quote_id", "route", "state", "to", "transmitted_sha256", "updated_at"] satisfies Array<keyof Declared<S.FaxJob>>;
   expectTypeOf(faxJob).toExtend<Array<keyof Declared<S.FaxJob>>>();
@@ -62,7 +77,7 @@ it("declares every property in the saved serializer shapes", () => {
   expectTypeOf(invoice).toExtend<Array<keyof Declared<S.Invoice>>>();
   const ledgerEntry = ["account", "amount_micro", "created_at", "id", "kind", "memo", "ref_id", "ref_type", "txn_id"] satisfies Array<keyof Declared<S.LedgerEntry>>;
   expectTypeOf(ledgerEntry).toExtend<Array<keyof Declared<S.LedgerEntry>>>();
-  const number = ["activated_at", "country", "created_at", "currency", "e164", "environment", "id", "inbound_status", "inbound_webhook_id", "label", "locality", "monthly_micro", "number_type", "order_id", "project_id", "provider", "released_at", "renews_at", "status"] satisfies Array<keyof Declared<S.Number>>;
+  const number = ["activated_at", "country", "created_at", "currency", "e164", "email_pdf", "environment", "id", "inbound_status", "inbound_webhook_id", "label", "locality", "monthly_micro", "number_type", "order_id", "project_id", "provider", "released_at", "renews_at", "status"] satisfies Array<keyof Declared<S.Number>>;
   expectTypeOf(number).toExtend<Array<keyof Declared<S.Number>>>();
   const policy = ["created_at", "created_by", "current_version_id", "enabled", "id", "name", "purpose", "rules", "updated_at", "version"] satisfies Array<keyof Declared<S.Policy>>;
   expectTypeOf(policy).toExtend<Array<keyof Declared<S.Policy>>>();

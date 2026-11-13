@@ -576,7 +576,10 @@ export class Numbers extends Resource {
   get(numberId: string): Promise<S.Number> {
     return this.h.request('GET', `/v1/numbers/${numberId}`);
   }
-  /** Change the label, project or inbound webhook of a number. Scope: number:buy. */
+  /**
+   * Change the label, project, inbound webhook or `email_pdf` of a number. Scope: number:buy.
+   * `email_pdf: true` attaches the PDF of each received fax to the notice mail. An agent key is refused.
+   */
   update(numberId: string, body: S.NumberUpdate, o: Mut = {}): Promise<S.Number> {
     return this.h.request('PATCH', `/v1/numbers/${numberId}`, { json: body, ...o });
   }
