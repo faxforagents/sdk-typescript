@@ -968,6 +968,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/invoices/{invoice_id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stripe's receipt for a paid invoice */
+        get: operations["get_invoice_receipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ledger": {
         parameters: {
             query?: never;
@@ -1697,7 +1714,10 @@ export interface paths {
         /** The scenario catalog and active fixtures */
         get: operations["list_sandbox_scenarios"];
         put?: never;
-        /** Select the outcome of the next sends */
+        /**
+         * Select the outcome of the next sends
+         * @description The choice lasts 24 hours. A destination has one fixture: a second call for the same destination replaces the first, and a call with no destination replaces the organization-wide one.
+         */
         post: operations["create_sandbox_scenario"];
         delete?: never;
         options?: never;
@@ -1800,6 +1820,23 @@ export interface paths {
         };
         /** Read a top-up session */
         get: operations["get_topup_session"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/topup-sessions/{topup_session_id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stripe's receipt for a paid top-up (manual, setup or automatic) */
+        get: operations["get_topup_receipt"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2516,7 +2553,7 @@ export interface components {
             daily_cap_micro: number;
             /**
              * Threshold Micro
-             * @description Top up when the available balance drops below this.
+             * @description Top up when a hold or a charge leaves the available balance below this. At most 1000 USD, the largest single top-up.
              */
             threshold_micro: number;
         };
@@ -2527,7 +2564,16 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** Balance */
+        /**
+         * Balance
+         * @example {
+         *       "environment": "test",
+         *       "currency": "USD",
+         *       "available_micro": 100000000,
+         *       "held_micro": 0,
+         *       "top_up_url": "https://app.faxforagents.com/app/billing"
+         *     }
+         */
         Balance: {
             /** Available Micro */
             available_micro: number;
@@ -2697,7 +2743,10 @@ export interface components {
             receive: boolean;
             /** Routes */
             routes: string[];
-            /** Scopes */
+            /**
+             * Scopes
+             * @description Every scope the platform defines, the list a new key is made from. It is not what the calling credential holds: GET /v1/me returns that under scopes.
+             */
             scopes: string[];
             /** Send */
             send: boolean;
@@ -2838,7 +2887,29 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** Document */
+        /**
+         * Document
+         * @example {
+         *       "id": "doc_01a1dba3f82e734db276332829bc4f2f",
+         *       "environment": "test",
+         *       "status": "ready",
+         *       "source": "upload",
+         *       "filename": "contract.pdf",
+         *       "content_type": "application/pdf",
+         *       "size_bytes": 551,
+         *       "sha256": "c00b74dede1923d27ba294643d5e79cb5454089e3f1b7b151cc46aa520a2410f",
+         *       "page_count": 2,
+         *       "render_status": "rendered",
+         *       "render_reason": null,
+         *       "validation": {
+         *         "warnings": []
+         *       },
+         *       "upload_id": "up_01a1dba3f80475159f9195dc92d38428",
+         *       "created_at": "2026-11-14T19:58:38.630Z",
+         *       "expires_at": "2026-12-14T19:58:38.739Z",
+         *       "deleted_at": null
+         *     }
+         */
         Document: {
             /** Content Type */
             content_type: string;
@@ -2883,6 +2954,9 @@ export interface components {
         /**
          * DocumentCreate
          * @description Send exactly one of text, markdown, html or upload_id.
+         * @example {
+         *       "text": "Hello from Fax for Agents"
+         *     }
          */
         DocumentCreate: {
             /** Filename */
@@ -3232,6 +3306,9 @@ export interface components {
          * FaxCreate
          * @description M9: an approved request authorizes the send; without one a quote that needs authorization is
          *     evaluated against the caller's delegated policies.
+         * @example {
+         *       "quote_id": "quote_01a1dba3f8b371f6aaa8664b3bf14d20"
+         *     }
          */
         FaxCreate: {
             /**
@@ -3244,7 +3321,53 @@ export interface components {
             /** Quote Id */
             quote_id: string;
         };
-        /** FaxJob */
+        /**
+         * FaxJob
+         * @example {
+         *       "id": "fax_01a1dba3f8dc7609be5d7b497690cf47",
+         *       "environment": "test",
+         *       "direction": "outbound",
+         *       "state": "delivered",
+         *       "failure_code": null,
+         *       "to": "+15550000001",
+         *       "from": null,
+         *       "route": "us_ca",
+         *       "document_id": "doc_01a1dba3f82e734db276332829bc4f2f",
+         *       "document_sha256": "c00b74dede1923d27ba294643d5e79cb5454089e3f1b7b151cc46aa520a2410f",
+         *       "transmitted_sha256": "9f18c276fb5160f70fecb50f8e53768a7aa631e3e2a140447d3cb4f0377eb6e4",
+         *       "quote_id": "quote_01a1dba3f8b371f6aaa8664b3bf14d20",
+         *       "billable_pages": 2,
+         *       "cover_pages": 0,
+         *       "quality": "fine",
+         *       "sender_name": null,
+         *       "delete_after_send": false,
+         *       "pages_sent": 2,
+         *       "amount_micro": 0,
+         *       "captured_micro": 0,
+         *       "currency": "USD",
+         *       "provider": "sandbox",
+         *       "provider_ref": "sbx_311dd5d5bc5dfd76",
+         *       "client_reference": null,
+         *       "attempt_count": 1,
+         *       "created_at": "2026-11-14T19:58:38.794Z",
+         *       "updated_at": "2026-11-14T19:58:38.910Z",
+         *       "completed_at": "2026-11-14T19:58:38.910Z",
+         *       "cancel_requested_at": null,
+         *       "evidence": {
+         *         "quality": "fine",
+         *         "provider": "sandbox",
+         *         "duration_s": 24,
+         *         "pages_sent": 2,
+         *         "pages_total": 2,
+         *         "sender_name": null,
+         *         "completed_at": "2026-11-14T19:58:38.905Z",
+         *         "attempt_number": 1,
+         *         "remote_station_id": "SBX-OK"
+         *       },
+         *       "one_time_order_id": null,
+         *       "one_time": null
+         *     }
+         */
         FaxJob: {
             /** Amount Micro */
             amount_micro: number;
@@ -3437,7 +3560,38 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** InboxItemDetail */
+        /**
+         * InboxItemDetail
+         * @example {
+         *       "id": "inb_01a1dba3f9a170e4bfe4f79df926fce6",
+         *       "from": "+15550000009",
+         *       "to": "+15550100001",
+         *       "pages": 2,
+         *       "status": "received",
+         *       "document_id": "doc_01a1dba3f9a877228761c3894daefe4b",
+         *       "received_at": "2026-11-14T19:58:39.009Z",
+         *       "amount_micro": 0,
+         *       "note": null,
+         *       "environment": "test",
+         *       "number_id": null,
+         *       "project_id": "proj_01a1dba3f790751897c1a738a5631341",
+         *       "partial_content": false,
+         *       "media_status": "stored",
+         *       "duration_secs": null,
+         *       "provider": "sandbox",
+         *       "read_at": null,
+         *       "expires_at": "2027-02-12T19:58:39.009Z",
+         *       "document": {
+         *         "id": "doc_01a1dba3f9a877228761c3894daefe4b",
+         *         "sha256": "e918cbc6023a846d99025bfe490299eb7cb18829b1d9f48fed91e59a15c87ed0",
+         *         "page_count": 2,
+         *         "status": "ready",
+         *         "download": "/v1/inbox/inb_01a1dba3f9a170e4bfe4f79df926fce6/download"
+         *       },
+         *       "text": null,
+         *       "extraction_id": null
+         *     }
+         */
         InboxItemDetail: {
             /**
              * Amount Micro
@@ -3574,7 +3728,34 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** InboxPage */
+        /**
+         * InboxPage
+         * @example {
+         *       "items": [
+         *         {
+         *           "id": "inb_01a1dba3f9a170e4bfe4f79df926fce6",
+         *           "from": "+15550000009",
+         *           "to": "+15550100001",
+         *           "pages": 2,
+         *           "status": "received",
+         *           "document_id": "doc_01a1dba3f9a877228761c3894daefe4b",
+         *           "received_at": "2026-11-14T19:58:39.009Z",
+         *           "amount_micro": 0,
+         *           "note": null,
+         *           "environment": "test",
+         *           "number_id": null,
+         *           "project_id": "proj_01a1dba3f790751897c1a738a5631341",
+         *           "partial_content": false,
+         *           "media_status": "stored",
+         *           "duration_secs": null,
+         *           "provider": "sandbox",
+         *           "read_at": null,
+         *           "expires_at": "2027-02-12T19:58:39.009Z"
+         *         }
+         *       ],
+         *       "next_cursor": null
+         *     }
+         */
         InboxPage: {
             /** Items */
             items: components["schemas"]["InboxItem"][];
@@ -4528,6 +4709,35 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** PaymentReceipt */
+        PaymentReceipt: {
+            /** Amount Micro */
+            amount_micro: number;
+            /** Amount Refunded Micro */
+            amount_refunded_micro: number;
+            /** Currency */
+            currency: string;
+            /** Invoice Id */
+            invoice_id?: string | null;
+            /** Paid At */
+            paid_at: string | null;
+            /** Payment Intent Id */
+            payment_intent_id: string;
+            /**
+             * Pdf Url
+             * @description The same receipt as a PDF.
+             */
+            pdf_url?: string | null;
+            /** Topup Session Id */
+            topup_session_id?: string | null;
+            /**
+             * Url
+             * @description Stripe's hosted receipt for the payment. It says what was paid and when.
+             */
+            url: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** Policy */
         Policy: {
             /** Created At */
@@ -4768,7 +4978,41 @@ export interface components {
             /** Number Id */
             number_id: string;
         };
-        /** Quote */
+        /**
+         * Quote
+         * @example {
+         *       "id": "quote_01a1dba3f8b371f6aaa8664b3bf14d20",
+         *       "environment": "test",
+         *       "document_id": "doc_01a1dba3f82e734db276332829bc4f2f",
+         *       "document_sha256": "c00b74dede1923d27ba294643d5e79cb5454089e3f1b7b151cc46aa520a2410f",
+         *       "to": "+15550000001",
+         *       "from": null,
+         *       "route": "us_ca",
+         *       "document_pages": 2,
+         *       "cover_pages": 0,
+         *       "billable_pages": 2,
+         *       "amount_micro": 0,
+         *       "currency": "USD",
+         *       "price_version": "launch-v3",
+         *       "per_page_micro": 0,
+         *       "route_label": "United States and Canada",
+         *       "cover": null,
+         *       "quality": "fine",
+         *       "sender_name": null,
+         *       "delete_after_send": false,
+         *       "authorization_required": false,
+         *       "warnings": [
+         *         {
+         *           "code": "sandbox",
+         *           "message": "test key: sandbox provider, not charged"
+         *         }
+         *       ],
+         *       "expires_at": "2026-11-14T20:08:38.771Z",
+         *       "expired": false,
+         *       "consumed_by_job_id": null,
+         *       "created_at": "2026-11-14T19:58:38.762Z"
+         *     }
+         */
         Quote: {
             /** Amount Micro */
             amount_micro: number;
@@ -4842,7 +5086,13 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** QuoteCreate */
+        /**
+         * QuoteCreate
+         * @example {
+         *       "document_id": "doc_01a1dba3f82e734db276332829bc4f2f",
+         *       "to": "+15550000001"
+         *     }
+         */
         QuoteCreate: {
             /**
              * Cover
@@ -4880,7 +5130,67 @@ export interface components {
              */
             to: string;
         };
-        /** Receipt */
+        /**
+         * Receipt
+         * @example {
+         *       "fax_job_id": "fax_01a1dba3f8dc7609be5d7b497690cf47",
+         *       "state": "delivered",
+         *       "failure_code": null,
+         *       "to": "+15550000001",
+         *       "from": null,
+         *       "document_sha256": "c00b74dede1923d27ba294643d5e79cb5454089e3f1b7b151cc46aa520a2410f",
+         *       "transmitted_sha256": "9f18c276fb5160f70fecb50f8e53768a7aa631e3e2a140447d3cb4f0377eb6e4",
+         *       "billable_pages": 2,
+         *       "cover_pages": 0,
+         *       "pages_sent": 2,
+         *       "amount_micro": 0,
+         *       "captured_micro": 0,
+         *       "currency": "USD",
+         *       "provider": "sandbox",
+         *       "created_at": "2026-11-14T19:58:38.794Z",
+         *       "completed_at": "2026-11-14T19:58:38.910Z",
+         *       "evidence": {
+         *         "quality": "fine",
+         *         "provider": "sandbox",
+         *         "duration_s": 24,
+         *         "pages_sent": 2,
+         *         "pages_total": 2,
+         *         "sender_name": null,
+         *         "completed_at": "2026-11-14T19:58:38.905Z",
+         *         "attempt_number": 1,
+         *         "remote_station_id": "SBX-OK"
+         *       },
+         *       "attempts": [
+         *         {
+         *           "id": "att_01a1dba3f93171b4b1f537d98d422723",
+         *           "fax_job_id": "fax_01a1dba3f8dc7609be5d7b497690cf47",
+         *           "attempt_number": 1,
+         *           "provider": "sandbox",
+         *           "provider_ref": "sbx_311dd5d5bc5dfd76",
+         *           "status": "delivered",
+         *           "pages_sent": 2,
+         *           "failure_code": null,
+         *           "evidence": {
+         *             "quality": "fine",
+         *             "provider": "sandbox",
+         *             "duration_s": 24,
+         *             "pages_sent": 2,
+         *             "pages_total": 2,
+         *             "sender_name": null,
+         *             "completed_at": "2026-11-14T19:58:38.905Z",
+         *             "attempt_number": 1,
+         *             "remote_station_id": "SBX-OK"
+         *           },
+         *           "error": null,
+         *           "started_at": "2026-11-14T19:58:38.860Z",
+         *           "finished_at": "2026-11-14T19:58:38.907Z"
+         *         }
+         *       ],
+         *       "note": "Delivery evidence as the carrier reported it. It is not legal proof of acceptance by the recipient.",
+         *       "generated_at": "2026-11-14T19:58:38.943Z",
+         *       "one_time": null
+         *     }
+         */
         Receipt: {
             /** Amount Micro */
             amount_micro: number;
@@ -4969,7 +5279,14 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** SandboxInboundCreate */
+        /**
+         * SandboxInboundCreate
+         * @example {
+         *       "to": "+15550100001",
+         *       "from": "+15550000009",
+         *       "pages": 2
+         *     }
+         */
         SandboxInboundCreate: {
             /** From */
             from?: string | null;
@@ -5243,20 +5560,45 @@ export interface components {
              */
             sha256?: string | null;
         };
-        /** UploadCreate */
+        /**
+         * UploadCreate
+         * @example {
+         *       "filename": "contract.pdf",
+         *       "size_bytes": 551
+         *     }
+         */
         UploadCreate: {
             /**
              * Content Type
-             * @description application/pdf, image/png, image/jpeg or image/tiff. An image becomes 8-bit gray letter pages, since fax is monochrome. A frame wider than it is tall is rotated. A frame above 300 dpi letter is downsampled. Every TIFF frame is a page. PNG and JPEG take the first frame. The bytes must be the declared type.
-             * @default application/pdf
+             * @description application/pdf, image/png, image/jpeg or image/tiff. An image becomes 8-bit gray letter pages, since fax is monochrome. A frame wider than it is tall is rotated. A frame above 300 dpi letter is downsampled. Every TIFF frame is a page. PNG and JPEG take the first frame. The bytes must be the declared type. Left out, the type is read from the filename: .pdf, .png, .jpg, .jpeg, .tif or .tiff. A name with no known ending is taken as application/pdf. A filename that ends in an office, text or other image format is refused here with unsupported_format.
              */
-            content_type: string;
+            content_type?: string | null;
             /** Filename */
             filename: string;
-            /** Size Bytes */
+            /**
+             * Size Bytes
+             * @description The exact number of bytes of the file. The session is refused at complete with 409 conflict when the bytes received differ.
+             */
             size_bytes: number;
         };
-        /** UploadSession */
+        /**
+         * UploadSession
+         * @example {
+         *       "id": "up_01a1dba3f80475159f9195dc92d38428",
+         *       "status": "pending",
+         *       "filename": "contract.pdf",
+         *       "content_type": "application/pdf",
+         *       "declared_size": 551,
+         *       "received_size": 0,
+         *       "sha256": null,
+         *       "created_at": "2026-11-14T19:58:38.595Z",
+         *       "expires_at": "2026-11-14T20:58:38.596Z",
+         *       "completed_at": null,
+         *       "upload_url": "https://api.faxforagents.com/v1/uploads/up_01a1dba3f80475159f9195dc92d38428/content?exp=1794689918&sig=3f6c...",
+         *       "upload_method": "PUT",
+         *       "upload_url_expires_at": "2026-11-14T20:58:38.596Z"
+         *     }
+         */
         UploadSession: {
             /** Completed At */
             completed_at: string | null;
@@ -5376,7 +5718,22 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** Webhook */
+        /**
+         * Webhook
+         * @example {
+         *       "id": "wh_01a1dba3fb7f70a2b6be610f4ee731d5",
+         *       "url": "https://example.com/hooks/fax",
+         *       "description": null,
+         *       "event_types": [
+         *         "fax.delivered",
+         *         "fax.failed"
+         *       ],
+         *       "status": "active",
+         *       "previous_secret_expires_at": null,
+         *       "created_at": "2026-11-14T19:58:39.486Z",
+         *       "updated_at": "2026-11-14T19:58:39.486Z"
+         *     }
+         */
         Webhook: {
             /** Created At */
             created_at: string;
@@ -5397,7 +5754,16 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** WebhookCreate */
+        /**
+         * WebhookCreate
+         * @example {
+         *       "url": "https://example.com/hooks/fax",
+         *       "event_types": [
+         *         "fax.delivered",
+         *         "fax.failed"
+         *       ]
+         *     }
+         */
         WebhookCreate: {
             /** Description */
             description?: string | null;
@@ -5427,7 +5793,23 @@ export interface components {
             /** Url */
             url?: string | null;
         };
-        /** WebhookWithSecret */
+        /**
+         * WebhookWithSecret
+         * @example {
+         *       "id": "wh_01a1dba3fb7f70a2b6be610f4ee731d5",
+         *       "url": "https://example.com/hooks/fax",
+         *       "description": null,
+         *       "event_types": [
+         *         "fax.delivered",
+         *         "fax.failed"
+         *       ],
+         *       "status": "active",
+         *       "previous_secret_expires_at": null,
+         *       "created_at": "2026-11-14T19:58:39.486Z",
+         *       "updated_at": "2026-11-14T19:58:39.486Z",
+         *       "secret": "whsec_..."
+         *     }
+         */
         WebhookWithSecret: {
             /** Created At */
             created_at: string;
@@ -5466,6 +5848,15 @@ export interface components {
         };
         /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. */
         Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description What the call asks for is no longer kept. document_expired and inbox_item_expired: the document or the received fax passed its retention date. organization_deleted: the organization is being deleted. */
+        Gone: {
             headers: {
                 [name: string]: unknown;
             };
@@ -5644,6 +6035,7 @@ export type OrganizationList = components['schemas']['OrganizationList'];
 export type OrganizationPatch = components['schemas']['OrganizationPatch'];
 export type OrganizationSummary = components['schemas']['OrganizationSummary'];
 export type PagePreview = components['schemas']['PagePreview'];
+export type PaymentReceipt = components['schemas']['PaymentReceipt'];
 export type Policy = components['schemas']['Policy'];
 export type PolicyCreate = components['schemas']['PolicyCreate'];
 export type PolicyEvaluation = components['schemas']['PolicyEvaluation'];
@@ -5695,6 +6087,7 @@ export type WebhookUpdate = components['schemas']['WebhookUpdate'];
 export type WebhookWithSecret = components['schemas']['WebhookWithSecret'];
 export type ResponseConflict = components['responses']['Conflict'];
 export type ResponseForbidden = components['responses']['Forbidden'];
+export type ResponseGone = components['responses']['Gone'];
 export type ResponseNotFound = components['responses']['NotFound'];
 export type ResponsePayloadTooLarge = components['responses']['PayloadTooLarge'];
 export type ResponsePaymentRequired = components['responses']['PaymentRequired'];
@@ -5733,6 +6126,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -5765,6 +6159,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -5792,6 +6188,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -5827,6 +6224,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -5857,6 +6256,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -5892,6 +6292,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -5925,6 +6327,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -5965,6 +6368,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -5996,6 +6401,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6027,6 +6433,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6064,6 +6471,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6084,6 +6492,15 @@ export interface operations {
             };
         };
         responses: {
+            /** @description The quote already has a pending request. It is returned as it stands and no second request is made. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalRequest"];
+                };
+            };
             /** @description Successful Response */
             201: {
                 headers: {
@@ -6097,6 +6514,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6124,6 +6543,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6159,6 +6579,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6194,6 +6616,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6229,6 +6653,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6262,6 +6688,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -6295,6 +6722,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -6327,6 +6756,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6360,6 +6790,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -6389,6 +6820,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -6415,6 +6847,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -6447,6 +6880,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6480,6 +6915,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -6512,6 +6948,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6547,6 +6985,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6616,6 +7056,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6650,6 +7091,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6677,6 +7120,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6747,6 +7191,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6781,6 +7226,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6808,6 +7255,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6844,6 +7292,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6877,6 +7326,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -6906,6 +7356,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6937,6 +7388,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -6963,6 +7415,7 @@ export interface operations {
                 content?: never;
             };
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
         };
     };
@@ -6989,6 +7442,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7016,6 +7470,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7069,6 +7524,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7107,6 +7563,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7140,6 +7597,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -7180,6 +7638,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7207,6 +7667,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7245,6 +7706,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7279,6 +7741,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7306,6 +7770,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7341,6 +7806,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7374,6 +7841,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
@@ -7410,6 +7879,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7449,6 +7919,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7507,6 +7978,8 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
@@ -7543,6 +8016,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7570,6 +8044,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7601,6 +8076,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
@@ -7637,6 +8113,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7665,6 +8142,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7693,6 +8171,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7730,6 +8209,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7757,6 +8237,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7788,6 +8269,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7823,6 +8305,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7849,6 +8333,7 @@ export interface operations {
                 content?: never;
             };
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
         };
     };
@@ -7876,6 +8361,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7909,6 +8395,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -7949,6 +8436,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7978,6 +8467,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8006,6 +8496,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -8034,6 +8525,37 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    get_invoice_receipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentReceipt"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -8071,6 +8593,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8135,6 +8658,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -8163,6 +8687,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8198,6 +8723,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8237,6 +8764,7 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -8271,6 +8799,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -8304,6 +8833,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             /** @description Live keys only: this server has no carrier configured, so live quotes, sends and number operations are refused (live_provider_unavailable, retryable false). Nothing was held or consumed. Test keys keep working against the sandbox. */
@@ -8340,6 +8870,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8375,6 +8906,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8402,6 +8934,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8437,6 +8970,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8472,6 +9007,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -8501,6 +9038,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8530,6 +9068,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8567,6 +9106,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8708,6 +9248,8 @@ export interface operations {
             };
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             /** @description The form was refused (invalid_request), the number is not a fax destination (invalid_destination), the route is not sold one fax at a time (unsupported_destination), or the document is too large (document_too_large). A test key is refused: an order is live. */
             422: {
                 headers: {
@@ -8758,6 +9300,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8813,6 +9356,8 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -8860,6 +9405,8 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -8903,6 +9450,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8947,6 +9495,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -8983,6 +9532,8 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9016,6 +9567,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9086,6 +9638,8 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -9136,6 +9690,7 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -9160,6 +9715,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -9192,6 +9748,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9225,6 +9783,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -9265,6 +9824,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9302,6 +9863,7 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9339,6 +9901,7 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9372,6 +9935,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -9412,6 +9976,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9439,6 +10005,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9474,6 +10041,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9501,6 +10070,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9533,6 +10103,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9566,6 +10137,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9599,6 +10172,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -9631,6 +10205,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -9659,6 +10235,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9692,6 +10269,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -9734,6 +10313,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -9772,6 +10353,7 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9813,6 +10395,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9846,6 +10430,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -9886,6 +10471,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9927,6 +10514,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9983,6 +10572,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -10012,6 +10602,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -10049,6 +10640,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10083,6 +10675,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
@@ -10111,8 +10705,39 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    get_topup_receipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topup_session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentReceipt"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+            503: components["responses"]["ServiceUnavailable"];
         };
     };
     create_upload: {
@@ -10152,6 +10777,7 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -10184,6 +10810,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10219,6 +10846,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10251,6 +10880,7 @@ export interface operations {
             };
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -10291,6 +10921,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10332,6 +10963,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10359,6 +10992,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10422,6 +11056,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10453,6 +11088,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10486,6 +11122,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -10526,6 +11163,8 @@ export interface operations {
                 };
             };
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10557,6 +11196,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10592,6 +11232,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10623,6 +11265,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -10654,6 +11297,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };

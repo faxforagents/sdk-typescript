@@ -84,7 +84,9 @@ export class Documents extends Resource {
   }
   /**
    * Open an upload session with a signed PUT URL (25 MiB, one hour). `content_type` is application/pdf,
-   * image/png, image/jpeg or image/tiff. Scope: document:write.
+   * image/png, image/jpeg or image/tiff. Left out, the API reads the type from the filename and the
+   * session says which it took. A filename of another format is refused here with `unsupported_format`.
+   * Scope: document:write.
    */
   createUpload(body: S.UploadCreate, o: Mut = {}): Promise<S.UploadSession> {
     return this.h.request('POST', '/v1/uploads', { json: body, ...o });
@@ -297,6 +299,13 @@ export class Billing extends Resource {
   getTopupSession(topupSessionId: string): Promise<S.TopupSession> {
     return this.h.request('GET', `/v1/topup-sessions/${topupSessionId}`);
   }
+  /**
+   * The payment receipt of a paid top-up, an automatic one included. `url` is the hosted receipt.
+   * ConflictError while the top-up is not paid. Scope: billing:read.
+   */
+  getTopupReceipt(topupSessionId: string): Promise<S.PaymentReceipt> {
+    return this.h.request('GET', `/v1/topup-sessions/${topupSessionId}/receipt`);
+  }
   /** Auto top-up settings. Scope: billing:read. */
   listAutoTopups(): Promise<S.AutoTopupList> {
     return this.h.request('GET', '/v1/auto-topups');
@@ -344,6 +353,13 @@ export class Billing extends Resource {
   /** One invoice. Scope: billing:read. */
   getInvoice(invoiceId: string): Promise<S.Invoice> {
     return this.h.request('GET', `/v1/invoices/${invoiceId}`);
+  }
+  /**
+   * The payment receipt of a paid invoice. `url` is the hosted receipt. ConflictError while the invoice
+   * is not paid. Scope: billing:read.
+   */
+  getInvoiceReceipt(invoiceId: string): Promise<S.PaymentReceipt> {
+    return this.h.request('GET', `/v1/invoices/${invoiceId}/receipt`);
   }
   /** A hosted Checkout for the Agent workspace subscription. Scope: billing:write. */
   createSubscriptionCheckout(o: Mut = {}): Promise<S.SubscriptionCheckout> {
