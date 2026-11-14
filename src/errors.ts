@@ -89,9 +89,30 @@ export class PaymentRequiredError extends APIError {
 /** 403: the key lacks the scope (details.scope), or an agent key tried to administer. */
 export class ScopeError extends APIError {}
 /** 404 not_found: not an id of this organization, or deleted. */
-export class NotFoundError extends APIError {}
+export class NotFoundError extends APIError {
+  /**
+   * `details.field`: the request field whose id was not found, else null. `quotes.create` takes two ids.
+   * The value is `document_id` or `from`, the sender number. Servers send it since API 1.20.5.
+   */
+  get field(): string | null {
+    const details = this.details as { field?: unknown } | null | undefined;
+    const name = details && typeof details === 'object' ? details.field : null;
+    return typeof name === 'string' ? name : null;
+  }
+}
 /** 409: the resource refuses this change (quote_consumed, not_cancelable). */
-export class ConflictError extends APIError {}
+export class ConflictError extends APIError {
+  /**
+   * `details.state`: the state the resource is in, else null. `faxes.getReceipt` on a fax that has not
+   * ended answers 409 with the fax state here. Read the fax until it has ended, then ask again. Servers
+   * send it since API 1.20.5.
+   */
+  get state(): string | null {
+    const details = this.details as { state?: unknown } | null | undefined;
+    const value = details && typeof details === 'object' ? details.state : null;
+    return typeof value === 'string' ? value : null;
+  }
+}
 /** 429 rate_limited. retryAfter is the seconds the API asked for. */
 export class RateLimitedError extends APIError {}
 /** 5xx: the API failed. The client already retried. */

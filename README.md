@@ -79,6 +79,8 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
 - `documents.upload(bytes, { filename })` runs the whole upload path for a PDF or an image (PNG, JPG,
   TIFF): the upload session, the signed PUT with the content type read from the filename, the sha256
   check, the document. An image becomes gray letter pages.
+- `documents.createUpload({ filename, size_bytes })` needs no `content_type`. The API reads the type
+  from the filename and refuses a filename of another format at once with `unsupported_format`.
 - `faxes.wait(faxId)` and `approvals.wait(approvalId)` poll with a timeout.
 - `verifyWebhook(secret, headers, body)` checks the Standard Webhooks signature on a delivery.
 - Types are generated from the public OpenAPI document with openapi-typescript. Money is an integer
@@ -106,7 +108,7 @@ names the scope each call needs.
 | `ffa.faxes` | `create`, `list`, `iter`, `get`, `wait`, `listEvents`, `listAttempts`, `getReceipt`, `getReceiptPdf`, `cancel` |
 | `ffa.webhooks` | `list`, `create`, `update`, `delete`, `rotateSecret`, `test`, `listDeliveries`, `replayDelivery` |
 | `ffa.events` | `list`, `iter` |
-| `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, auto top-ups, budgets, `usage`, exports, invoices, subscriptions, `createPortalSession` |
+| `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, auto top-ups, budgets, `usage`, exports, invoices, `getInvoiceReceipt`, `getTopupReceipt`, subscriptions, `createPortalSession` |
 | `ffa.platform` | `capabilities`, `serviceStatus` |
 | `ffa.sandbox` | `listScenarios`, `createScenario`, `createInboundFax`, `reset` |
 | `ffa.approvals` | `request`, `requestHelp`, `list`, `iter`, `get`, `wait`, `approve`, `reject`, `revoke` |
@@ -149,6 +151,10 @@ try {
 `PaymentRequiredError` (402), `InvalidRequestError` (400, 422), `RateLimitedError` (429) and
 `ServerError` (5xx) all extend `APIError`. `APIConnectionError` and `APITimeoutError` mean the API was
 not reached.
+
+`NotFoundError.field` names the id that was not found when the API says which: on a quote it is
+`document_id` or `from`. `ConflictError.state` is the state of a fax whose receipt was asked for
+before the fax ended. Both are `null` when the API sent no such detail.
 
 Every refusal is the same envelope, a 422 for a field that fails validation included. A 413
 `payload_too_large` is a plain `APIError`: the body is over the limit of its route. The published
@@ -282,8 +288,8 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.20.0.
-It holds the paths and schemas of that document and nothing else: 145 operations in 115 paths.
+`spec/openapi.yaml` follows the public document at API version 1.20.5.
+It holds the paths and schemas of that document and nothing else: 147 operations in 117 paths.
 Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
 A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
 Fields the server gives a default stay optional in the types.

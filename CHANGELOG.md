@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.6.1 (2026-11-15)
+
+Follows API 1.20.5. The saved spec has 147 operations and the types are regenerated from it.
+
+New: `billing.getInvoiceReceipt(invoiceId)` and `billing.getTopupReceipt(topupSessionId)`.
+Each returns the new type `PaymentReceipt`. `url` is the hosted receipt and `pdf_url` the same receipt as a PDF.
+Both need the scope `billing:read`. A payment that was not made throws `ConflictError`.
+
+Changed: `UploadCreate.content_type` is optional and `string | null`. It was a required string.
+`documents.createUpload({ filename, size_bytes })` now compiles. The API reads the type from the filename, so `scan.png` opens as `image/png`.
+A filename of an unsupported format, such as `letter.docx`, throws `InvalidRequestError` with the code `unsupported_format` on this call.
+`documents.upload` names the type itself, as before.
+
+New: `NotFoundError.field` is `details.field`. On `quotes.create` it is `document_id` or `from`, the id that was not found.
+New: `ConflictError.state` is `details.state`. `faxes.getReceipt` on a fax that has not ended carries the fax state there.
+Both are `null` when the server sent no such detail.
+
+The response types of most operations name 410 with the new shared response `Gone`. Every operation with a body names 413.
+`POST /v1/approval-requests` names 200 beside 201. A repeated request returns the open one.
+The API now refuses an auto top-up threshold above 1000 USD and an agent `contact_email` that is not an address. Both throw `InvalidRequestError`.
+Other type names, fields and optionality are kept.
+
 ## 0.6.0 (2026-11-13)
 
 Follows API 1.20.0. The saved spec has 145 operations and the types are regenerated from it.

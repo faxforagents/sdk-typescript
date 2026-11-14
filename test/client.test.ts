@@ -504,3 +504,119 @@ describe('filters added in 0.3.1', () => {
     expect(urls).toEqual([`${BASE}/v1/policies/effective?connection_id=ogr_1`, `${BASE}/v1/policies/effective`]);
   });
 });
+
+describe('API 1.20.5', () => {
+  const session = {
+    id: 'upl_' + '6'.repeat(32),
+    status: 'open',
+    filename: 'scan.png',
+    content_type: 'image/png',
+    declared_size: 9,
+    received_size: 0,
+    sha256: null,
+    created_at: '2026-11-14T00:00:00Z',
+    expires_at: '2026-11-14T01:00:00Z',
+    completed_at: null,
+  };
+  const receipt = {
+    url: 'https://pay.example.test/receipts/1',
+    pdf_url: 'https://pay.example.test/receipts/1/pdf',
+    amount_micro: 25_000_000,
+    amount_refunded_micro: 0,
+    currency: 'USD',
+    payment_intent_id: 'pi_1',
+    paid_at: '2026-11-14T19:15:26Z',
+  };
+
+  it('createUpload needs no content_type and sends none', async () => {
+    const bodies: unknown[] = [];
+    server.use(
+      http.post(`${BASE}/v1/uploads`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json(session, { status: 201 });
+      }),
+    );
+    const opened = await client().documents.createUpload({ filename: 'scan.png', size_bytes: 9 });
+    expect(opened.content_type).toBe('image/png');
+    await client().documents.createUpload({ filename: 'scan.png', size_bytes: 9, content_type: 'image/png' });
+    expect(bodies).toEqual([
+      { filename: 'scan.png', size_bytes: 9 },
+      { filename: 'scan.png', size_bytes: 9, content_type: 'image/png' },
+    ]);
+  });
+
+  it('createUpload refuses an office filename at once', async () => {
+    server.use(http.post(`${BASE}/v1/uploads`, () => HttpResponse.json(apiError('unsupported_format', 'letter.docx is not a PDF or an image'), { status: 422 })));
+    const err = await client({ maxRetries: 0 })
+      .documents.createUpload({ filename: 'letter.docx', size_bytes: 9 })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(InvalidRequestError);
+    expect((err as InvalidRequestError).code).toBe('unsupported_format');
+  });
+
+  it('reads the payment receipt of an invoice and of a top-up', async () => {
+    const seen: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/invoices/in_1/receipt`, ({ request }) => {
+        seen.push(`${request.method} ${new URL(request.url).pathname} ${request.headers.get('idempotency-key')}`);
+        return HttpResponse.json({ ...receipt, invoice_id: 'in_1' });
+      }),
+      http.get(`${BASE}/v1/topup-sessions/tus_1/receipt`, ({ request }) => {
+        seen.push(`${request.method} ${new URL(request.url).pathname} ${request.headers.get('idempotency-key')}`);
+        return HttpResponse.json({ ...receipt, topup_session_id: 'tus_1' });
+      }),
+    );
+    const paid = await client().billing.getInvoiceReceipt('in_1');
+    expect(paid).toMatchObject({ url: receipt.url, amount_micro: 25_000_000, invoice_id: 'in_1' });
+    expect(paid.topup_session_id).toBeUndefined();
+    const added = await client().billing.getTopupReceipt('tus_1');
+    expect(added.topup_session_id).toBe('tus_1');
+    expect(added.pdf_url).toBe(receipt.pdf_url);
+    expect(seen).toEqual(['GET /v1/invoices/in_1/receipt null', 'GET /v1/topup-sessions/tus_1/receipt null']);
+  });
+
+  it('an unpaid top-up has no receipt', async () => {
+    server.use(http.get(`${BASE}/v1/topup-sessions/tus_2/receipt`, () => HttpResponse.json(apiError('conflict', 'this top-up was not paid', { status: 'open' }), { status: 409 })));
+    const err = await client()
+      .billing.getTopupReceipt('tus_2')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect((err as ConflictError).details).toEqual({ status: 'open' });
+    expect((err as ConflictError).state).toBeNull();
+  });
+
+  it('NotFoundError.field names the id a quote did not find', async () => {
+    server.use(
+      http.post(`${BASE}/v1/fax-quotes`, async ({ request }) => {
+        const body = (await request.json()) as { from?: string };
+        return HttpResponse.json(apiError('not_found', 'no', { field: body.from ? 'from' : 'document_id' }), { status: 404 });
+      }),
+      http.get(`${BASE}/v1/faxes/fax_x`, () => HttpResponse.json(apiError('not_found', 'no', null), { status: 404 })),
+    );
+    const doc = await client()
+      .quotes.create({ document_id: 'doc_' + '0'.repeat(32), to: '+15550000001' })
+      .catch((e: unknown) => e);
+    expect(doc).toBeInstanceOf(NotFoundError);
+    expect((doc as NotFoundError).field).toBe('document_id');
+    const sender = await client()
+      .quotes.create({ document_id: 'doc_' + '2'.repeat(32), to: '+15550000001', from: '+14155550199' })
+      .catch((e: unknown) => e);
+    expect((sender as NotFoundError).field).toBe('from');
+    // an older server sends no details, and a field that is not a name is not returned
+    const plain = await client()
+      .faxes.get('fax_x')
+      .catch((e: unknown) => e);
+    expect((plain as NotFoundError).field).toBeNull();
+    expect(new NotFoundError({ status: 404, code: 'not_found', message: 'no', details: { field: 7 } }).field).toBeNull();
+  });
+
+  it('ConflictError.state names the fax state of an early receipt', async () => {
+    server.use(http.get(`${BASE}/v1/faxes/fax_y/receipt`, () => HttpResponse.json(apiError('conflict', 'no receipt yet: the fax is active', { state: 'active' }), { status: 409 })));
+    const err = await client()
+      .faxes.getReceipt('fax_y')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect(err).toMatchObject({ state: 'active', code: 'conflict', retryable: false });
+    expect(new ConflictError({ status: 409, code: 'quote_consumed', message: 'used' }).state).toBeNull();
+  });
+});
