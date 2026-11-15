@@ -6655,7 +6655,7 @@ export interface components {
             auto_topup_id: string | null;
             /**
              * Checkout Status
-             * @description Stripe's own state of the hosted Checkout, read from Stripe when a read of an open top-up asks with check_checkout=true. complete: the payment was made at Stripe, and the wallet is credited when Stripe's event arrives, usually within seconds. processing: the person finished at Stripe with a payment method that confirms later, such as a bank debit, which can take days. Null when not asked, or when Stripe could not be read.
+             * @description Stripe's own state of the hosted Checkout, read from Stripe when a read of an open top-up asks with check_checkout=true. complete: the payment was made at Stripe, and the wallet is credited when Stripe's event arrives, usually within seconds. processing: the person finished at Stripe with a payment method that confirms later, such as a bank debit, which can take days. Null when not asked, when the top-up is not open (Stripe is asked about an open top-up only), or when Stripe could not be read.
              */
             checkout_status?: ("open" | "complete" | "processing" | "expired") | null;
             /** Completed At */
@@ -13023,7 +13023,15 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
+            /** @description The webhook of this delivery was deleted, so nothing can be sent to it again. error.code is conflict and error.details.reason is "webhook_deleted". Replay a delivery of a webhook that still exists. idempotency_key_conflict: the Idempotency-Key was used with a different request, or that request is still being processed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
