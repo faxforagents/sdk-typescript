@@ -82,10 +82,12 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
 - `documents.createUpload({ filename, size_bytes })` needs no `content_type`. The API reads the type
   from the filename and refuses a filename of another format at once with `unsupported_format`.
 - `billing.statement()` reads the wallet one line per event, with the balance after each line.
-  `billing.statementCsv()` returns the same lines as CSV text.
+  `{ type }` keeps one type of line, and `{ kind }`, its older name, still works. `billing.statementCsv()`
+  returns the same lines as CSV text.
 - `faxes.list({ q })` finds a fax by its number or by the start of its id. `documents.list({ q })`
   finds a document by file name, or a received fax's file by the sender's number.
 - `oneTimeSends.preview({ file })` counts the pages of a document before any order exists, with no key.
+  `oneTimeSends.checkCover({ message })` says whether a cover message fits on its page.
 - `faxes.wait(faxId)` and `approvals.wait(approvalId)` poll with a timeout.
 - `verifyWebhook(secret, headers, body)` checks the Standard Webhooks signature on a delivery.
 - Types are generated from the public OpenAPI document with openapi-typescript. Money is an integer
@@ -113,7 +115,7 @@ names the scope each call needs.
 | `ffa.faxes` | `create`, `list`, `iter`, `get`, `wait`, `listEvents`, `listAttempts`, `getReceipt`, `getReceiptPdf`, `cancel` |
 | `ffa.webhooks` | `list`, `create`, `update`, `delete`, `rotateSecret`, `test`, `listDeliveries`, `getDelivery`, `replayDelivery` |
 | `ffa.events` | `list`, `iter` |
-| `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `statement`, `iterStatement`, `statementCsv`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, auto top-ups, budgets, `deleteBudget`, `usage`, exports, invoices, `getInvoiceReceipt`, `getTopupReceipt`, subscriptions, `createPortalSession` |
+| `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `statement`, `iterStatement`, `statementCsv`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, `cancelTopupSession`, auto top-ups, budgets, `deleteBudget`, `usage`, exports, invoices, `getInvoiceReceipt`, `getTopupReceipt`, subscriptions, `createPortalSession` |
 | `ffa.platform` | `capabilities`, `serviceStatus` |
 | `ffa.sandbox` | `listScenarios`, `createScenario`, `createInboundFax`, `reset` |
 | `ffa.approvals` | `request`, `requestHelp`, `list`, `iter`, `get`, `wait`, `approve`, `reject`, `revoke` |
@@ -125,7 +127,7 @@ names the scope each call needs.
 | `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `listDataRequests`, `withdrawDataDeletion`, `downloadExportArchive` |
 | `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `resendInvitation`, `linkInvitation`, `revokeInvitation` |
 | `ffa.oauth` | `listGrants`, `iterGrants`, `revokeGrant` |
-| `ffa.oneTimeSends` | `config`, `preview`, `create`, `createFromQuote`, `list`, `iter`, `get`, `getPage`, `wait`, `checkout`, `readByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
+| `ffa.oneTimeSends` | `config`, `preview`, `checkCover`, `create`, `createFromQuote`, `list`, `iter`, `get`, `getPage`, `wait`, `checkout`, `readByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
 
 `ffa.request('GET', '/v1/anything')` reaches an operation the resources do not cover yet.
 
@@ -209,8 +211,8 @@ const pdf = await ffa.oneTimeSends.getReceiptPdf(order.id, { orderToken });
 ```
 
 `order.next` names the step that is waiting: `checkout`, `confirm`, `wait` or `done`. `wait` polls until
-`done`, or until the step you pass as `until`. The card is authorized at checkout and charged only when
-the carrier confirms delivery.
+`done`, or until the step you pass as `until`. The card is held at checkout. A failed fax costs nothing,
+and a fax that stops part way costs the price of the pages the carrier confirms.
 
 The status token goes in the `X-FFA-Order-Token` header. It reads the order, opens its checkout, mails
 the confirmation again and downloads the receipt. A client with a live key of the order's organization
@@ -293,10 +295,11 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.20.6.
-It holds the paths and schemas of that document and nothing else: 161 operations in 128 paths.
+`spec/openapi.yaml` follows the public document at API version 1.20.9.
+It holds the paths and schemas of that document and nothing else: 163 operations in 130 paths.
 Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
 A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
+0.8.0 replaced five of them with the public declarations, such as `Quote.policy_evaluation`.
 Fields the server gives a default stay optional in the types.
 To refresh it, take the public document, keep those fields, then run `npm run gen:types`.
 Every operation has a client method. `test/surface.test.ts` lists them and fails on an internal path.

@@ -24,8 +24,16 @@ type Mut = { idempotencyKey?: string };
 type Page = { cursor?: string; limit?: number };
 type DocumentQuery = NonNullable<S.operations['list_documents']['parameters']['query']>;
 type DocumentFilter = Pick<DocumentQuery, 'source' | 'exclude_source' | 'q'>;
-/** The filters of the wallet statement: one kind of line, and UTC days YYYY-MM-DD, both included. */
-type StatementFilter = { kind?: S.StatementLine['type']; from?: string; to?: string };
+/**
+ * The filters of the wallet statement: one type of line, and UTC days YYYY-MM-DD, both included. `kind`
+ * is the older name of `type`.
+ */
+type StatementFilter = {
+  type?: S.StatementLine['type'];
+  kind?: S.StatementLine['type'];
+  from?: string;
+  to?: string;
+};
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -68,7 +76,10 @@ export class Identity extends Resource {
   createApiKey(body: S.ApiKeyCreate, o: Mut = {}): Promise<S.ApiKeyWithSecret> {
     return this.h.request('POST', '/v1/api-keys', { json: body, ...o });
   }
-  /** A new secret. The old one works 24 more hours. Scope: key:admin. */
+  /**
+   * A new secret. The old one works 24 more hours. Scope: key:admin. A key that expired cannot be
+   * rotated. It throws ConflictError with `details.reason` key_expired. Create a new key to replace it.
+   */
   rotateApiKey(keyId: string, o: Mut = {}): Promise<S.ApiKeyWithSecret> {
     return this.h.request('POST', `/v1/api-keys/${keyId}/rotate`, o);
   }
@@ -301,7 +312,8 @@ export class Billing extends Resource {
   }
   /**
    * The wallet statement, newest first: one line per event with the balance after it. Scope:
-   * billing:read. `kind` keeps one kind of line, a value of `StatementLine.type`. `from` and `to` are
+   * billing:read. `type` keeps the lines of one type, a value of `StatementLine.type`. `kind` is the same
+   * filter by its older name. Two different types in both throw InvalidRequestError. `from` and `to` are
    * UTC days, YYYY-MM-DD, both included. `listLedger` stays the double-entry record.
    */
   statement(p: Page & StatementFilter = {}): Promise<S.StatementPage> {
@@ -341,8 +353,18 @@ export class Billing extends Resource {
     return this.h.request('GET', `/v1/topup-sessions/${topupSessionId}`);
   }
   /**
+   * Cancel an open top-up, so nobody can pay its hosted Checkout any more. It reads `canceled`. Scope:
+   * billing:write, never an agent key. Canceling a setup payment also turns off the auto top-up that
+   * waited on it. A top-up already canceled or expired comes back as it is. One that was paid, declined
+   * or charged off session throws ConflictError, with the top-up's status in `details.status`.
+   */
+  cancelTopupSession(topupSessionId: string, o: Mut = {}): Promise<S.TopupSession> {
+    return this.h.request('POST', `/v1/topup-sessions/${topupSessionId}/cancel`, o);
+  }
+  /**
    * The payment receipt of a paid top-up, an automatic one included. `url` is the hosted receipt.
-   * ConflictError while the top-up is not paid. Scope: billing:read.
+   * `pdf_url` is null for an automatic top-up, which has no invoice and no PDF. ConflictError while
+   * the top-up is not paid. Scope: billing:read.
    */
   getTopupReceipt(topupSessionId: string): Promise<S.PaymentReceipt> {
     return this.h.request('GET', `/v1/topup-sessions/${topupSessionId}/receipt`);
@@ -982,6 +1004,16 @@ export class OneTimeSends extends Resource {
     });
   }
   /**
+   * Measure the room the cover sheet leaves for its message, before an order is made. Nothing is
+   * stored. It works without an API key. Pass the cover fields typed so far, as `create` takes them,
+   * and leave out the rest. `fits` says whether the message fits on the one cover page, and
+   * `lines_left` how many more lines fit. When it runs over, `fits_chars` is how much of its start
+   * fits. `create` refuses a cover that does not fit.
+   */
+  checkCover(body: S.OneTimeCoverCheck = {}): Promise<S.OneTimeCoverRoom> {
+    return this.h.request('POST', '/v1/one-time-sends/cover-checks', { json: body });
+  }
+  /**
    * Create an order from exactly one of `file` or `text`. Nothing is charged or sent. `email` is required
    * without a key. A test key is refused: an order is always live. Scope with a key: fax:send.
    */
@@ -1057,7 +1089,8 @@ export class OneTimeSends extends Resource {
   }
   /**
    * Open the hosted card payment and return its `checkout_url`. Scope with a key: fax:send. The card is
-   * authorized on that page and charged only when the carrier confirms delivery. A second call answers
+   * held on that page, not charged. A failed fax costs nothing. A fax that stops part way is charged the
+   * price of the pages the carrier confirms, and the rest of the hold is released. A second call answers
    * the same page while it can still be paid.
    *
    * An order whose `aup_accepted` is false needs `acceptAup: true` once: the person who pays accepts
