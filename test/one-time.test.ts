@@ -397,3 +397,48 @@ describe('one-time sends', () => {
     expect((withOffer as PaymentRequiredError).topUpUrl).toBe('https://app.faxforagents.com/app/billing');
   });
 });
+
+describe('one-time preview and pages (API 1.20.6)', () => {
+  const inspection = { document_pages: 3, thumbnail_png_base64: 'iVBORw0KGgo=', warnings: [] };
+
+  it('counts the pages of a text or a file with no key', async () => {
+    const seen: Array<{ type: string | null; auth: string | null; body: string }> = [];
+    server.use(
+      http.post(`${ROOT}/preview`, async ({ request }) => {
+        seen.push({
+          type: request.headers.get('content-type'),
+          auth: request.headers.get('authorization'),
+          body: await request.text(),
+        });
+        return HttpResponse.json(inspection);
+      }),
+    );
+    const found = await keyless().oneTimeSends.preview({ text: '# Hello', text_format: 'markdown' });
+    expect(found).toEqual(inspection);
+    await keyless().oneTimeSends.preview({ file: new TextEncoder().encode('%PDF-1.7'), filename: 'letter.pdf' });
+    expect(seen[0]).toEqual({ type: 'application/json', auth: null, body: '{"text":"# Hello","text_format":"markdown"}' });
+    expect(seen[1]?.type).toMatch(/^multipart\/form-data/);
+    expect(seen[1]?.body).toContain('filename="letter.pdf"');
+    expect(seen[1]?.body).toContain('application/pdf');
+    expect(() => keyless().oneTimeSends.preview({})).toThrow('exactly one');
+    expect(() => keyless().oneTimeSends.preview({ file: new Uint8Array([1]), text: 'both' })).toThrow('exactly one');
+  });
+
+  it('returns a page of the order as PNG bytes with the status token', async () => {
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    let token: string | null = null;
+    server.use(
+      http.get(`${ROOT}/${ORDER}/pages/1`, ({ request }) => {
+        token = request.headers.get(ORDER_TOKEN_HEADER);
+        return new HttpResponse(png, { headers: { 'content-type': 'image/png' } });
+      }),
+      http.get(`${ROOT}/${ORDER}/pages/9`, () => HttpResponse.json(apiError('not_found', 'this page cannot be shown'), { status: 404 })),
+    );
+    expect(await keyless().oneTimeSends.getPage(ORDER, 1, { orderToken: TOKEN })).toEqual(png);
+    expect(token).toBe(TOKEN);
+    const err = await keyless()
+      .oneTimeSends.getPage(ORDER, 9, { orderToken: TOKEN })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(NotFoundError);
+  });
+});

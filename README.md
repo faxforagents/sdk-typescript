@@ -81,6 +81,11 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
   check, the document. An image becomes gray letter pages.
 - `documents.createUpload({ filename, size_bytes })` needs no `content_type`. The API reads the type
   from the filename and refuses a filename of another format at once with `unsupported_format`.
+- `billing.statement()` reads the wallet one line per event, with the balance after each line.
+  `billing.statementCsv()` returns the same lines as CSV text.
+- `faxes.list({ q })` finds a fax by its number or by the start of its id. `documents.list({ q })`
+  finds a document by file name, or a received fax's file by the sender's number.
+- `oneTimeSends.preview({ file })` counts the pages of a document before any order exists, with no key.
 - `faxes.wait(faxId)` and `approvals.wait(approvalId)` poll with a timeout.
 - `verifyWebhook(secret, headers, body)` checks the Standard Webhooks signature on a delivery.
 - Types are generated from the public OpenAPI document with openapi-typescript. Money is an integer
@@ -103,24 +108,24 @@ names the scope each call needs.
 | Resource | Calls |
 |---|---|
 | `ffa.identity` | `me`, `listApiKeys`, `createApiKey`, `rotateApiKey`, `revokeApiKey` |
-| `ffa.documents` | `create`, `upload`, `createUpload`, `putUploadContent`, `completeUpload`, `cancelUpload`, `list`, `iter`, `get`, `delete`, `getValidation`, `getDownload`, `download`, `listPages` |
+| `ffa.documents` | `create`, `upload`, `createUpload`, `putUploadContent`, `completeUpload`, `cancelUpload`, `list`, `iter`, `get`, `rename`, `delete`, `getValidation`, `getDownload`, `download`, `listPages` |
 | `ffa.quotes` | `create`, `get` |
 | `ffa.faxes` | `create`, `list`, `iter`, `get`, `wait`, `listEvents`, `listAttempts`, `getReceipt`, `getReceiptPdf`, `cancel` |
-| `ffa.webhooks` | `list`, `create`, `update`, `delete`, `rotateSecret`, `test`, `listDeliveries`, `replayDelivery` |
+| `ffa.webhooks` | `list`, `create`, `update`, `delete`, `rotateSecret`, `test`, `listDeliveries`, `getDelivery`, `replayDelivery` |
 | `ffa.events` | `list`, `iter` |
-| `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, auto top-ups, budgets, `usage`, exports, invoices, `getInvoiceReceipt`, `getTopupReceipt`, subscriptions, `createPortalSession` |
+| `ffa.billing` | `balance`, `listLedger`, `iterLedger`, `statement`, `iterStatement`, `statementCsv`, `iterTopupSessions`, `iterInvoices`, settings, top-ups, auto top-ups, budgets, `deleteBudget`, `usage`, exports, invoices, `getInvoiceReceipt`, `getTopupReceipt`, subscriptions, `createPortalSession` |
 | `ffa.platform` | `capabilities`, `serviceStatus` |
 | `ffa.sandbox` | `listScenarios`, `createScenario`, `createInboundFax`, `reset` |
 | `ffa.approvals` | `request`, `requestHelp`, `list`, `iter`, `get`, `wait`, `approve`, `reject`, `revoke` |
-| `ffa.policies` | `list`, `create`, `effective`, `getAutoSend`, `setAutoSend`, `get`, `update`, `listVersions`, `evaluate` |
-| `ffa.agents` | `list`, `create`, `get`, `update`, `createKey`, `activity` |
+| `ffa.policies` | `list`, `create`, `effective`, `getAutoSend`, `setAutoSend`, `get`, `update`, `listVersions`, `evaluate`, `checkRules` |
+| `ffa.agents` | `list`, `create`, `get`, `update`, `archive`, `createKey`, `activity` |
 | `ffa.inbox` | `list`, `iter`, `get`, `update`, `delete`, `getDownload`, `download` |
-| `ffa.numbers` | `coverage`, `inventory`, `createOrder`, `listOrders`, `getOrder`, `list`, `get`, `update`, `release`, `checkPortability`, `listPortOrders`, `createPortOrder`, `getPortOrder`, `createPortOutRequest`, `verifySender` |
+| `ffa.numbers` | `coverage`, `inventory`, `createOrder`, `listOrders`, `getOrder`, `dismissOrder`, `list`, `get`, `update`, `release`, `checkPortability`, `listPortOrders`, `createPortOrder`, `getPortOrder`, `createPortOutRequest`, `verifySender` |
 | `ffa.extractions` | `create`, `list`, `iter`, `get`, `correct`, `classify`, `listClassifications`, `iterClassifications`, `getClassification`, `summarize`, `listSummaries`, `iterSummaries`, `getSummary`, `listSchemas`, `createSchema`, `getSchema` |
-| `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `downloadExportArchive` |
-| `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `revokeInvitation` |
+| `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `listDataRequests`, `withdrawDataDeletion`, `downloadExportArchive` |
+| `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `resendInvitation`, `linkInvitation`, `revokeInvitation` |
 | `ffa.oauth` | `listGrants`, `iterGrants`, `revokeGrant` |
-| `ffa.oneTimeSends` | `config`, `create`, `createFromQuote`, `list`, `iter`, `get`, `wait`, `checkout`, `readByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
+| `ffa.oneTimeSends` | `config`, `preview`, `create`, `createFromQuote`, `list`, `iter`, `get`, `getPage`, `wait`, `checkout`, `readByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
 
 `ffa.request('GET', '/v1/anything')` reaches an operation the resources do not cover yet.
 
@@ -131,7 +136,7 @@ only when the carrier's evidence is on the attempt, and `fax.evidence` holds it.
 `unknown` never retransmit on their own. Whether to resend is a human decision.
 
 Sandbox destinations: `+15550000001` delivered, `+15550000002` busy then delivered, `+15550000003`
-partial, `+15550000004` no answer, `+15550000005` unknown, `+15550000006` provider timeout,
+partial (a one-page fax ends failed), `+15550000004` no answer, `+15550000005` unknown, `+15550000006` provider timeout,
 `+15550000007` invalid number. Any other `+1` number is delivered.
 
 ## Errors
@@ -288,8 +293,8 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.20.5.
-It holds the paths and schemas of that document and nothing else: 147 operations in 117 paths.
+`spec/openapi.yaml` follows the public document at API version 1.20.6.
+It holds the paths and schemas of that document and nothing else: 161 operations in 128 paths.
 Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
 A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
 Fields the server gives a default stay optional in the types.

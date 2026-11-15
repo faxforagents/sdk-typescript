@@ -33,7 +33,8 @@ export interface paths {
         get: operations["get_agent"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Archive an agent: its keys are revoked, it leaves the list and its name is free again */
+        delete: operations["archive_agent"];
         options?: never;
         head?: never;
         /** Change an agent. Disabling revokes its keys */
@@ -66,7 +67,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Mint a key for the agent (bounded scopes, secret shown once) */
+        /** Create a key for the agent (bounded scopes, secret shown once) */
         post: operations["create_agent_key"];
         delete?: never;
         options?: never;
@@ -190,7 +191,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Reject with a reason */
+        /** Reject with a reason (a help request closes without one) */
         post: operations["reject_request"];
         delete?: never;
         options?: never;
@@ -330,7 +331,8 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /** Remove a cap: deleted when it never charged a hold, archived when it has history */
+        delete: operations["delete_budget"];
         options?: never;
         head?: never;
         /** Change a cap's limit or status */
@@ -474,7 +476,8 @@ export interface paths {
         delete: operations["delete_document"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Rename a document */
+        patch: operations["rename_document"];
         trace?: never;
     };
     "/v1/documents/{document_id}/content": {
@@ -854,7 +857,7 @@ export interface paths {
         get: operations["get_inbox_item"];
         put?: never;
         post?: never;
-        /** Delete a received fax */
+        /** Delete a received fax: its file and the text read from it */
         delete: operations["delete_inbox_item"];
         options?: never;
         head?: never;
@@ -929,6 +932,43 @@ export interface paths {
         post?: never;
         /** Withdraw an invitation */
         delete: operations["revoke_invitation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invitations/{invitation_id}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make a new link for an open invitation, to hand over yourself (the old link stops working)
+         * @description No mail is sent. The link is shown once, like a key's secret: the server keeps only its hash. It joins the organization only for a person signed in with the invited address.
+         */
+        post: operations["link_invitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invitations/{invitation_id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send an open invitation again: a new link for 7 days, and the old link stops working */
+        post: operations["resend_invitation"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1109,6 +1149,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/number-orders/{order_id}/dismissals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Put a failed number order away
+         * @description Sets dismissed_at on an order that failed. The order stays in the list. An order that did not fail answers 409 conflict.
+         */
+        post: operations["dismiss_number_order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/numbers": {
         parameters: {
             query?: never;
@@ -1275,6 +1335,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/one-time-sends/{one_time_order_id}/pages/{page_number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One page of a one-time order as a picture: the cover sheet, then the document
+         * @description Page 1 is the cover sheet. Before the fax is released the cover is drawn from the order as it will be printed, and the other pages from the uploaded document. After the release the pages are the file that went to the carrier. order.preview says how many pages can be asked for. 404 not_found for a page that does not exist or a copy that is no longer held (deleted after the send, or after its retention). A key or session of the order's organization may read it, and so may the status token, as the header or as ?t=.
+         */
+        get: operations["get_one_time_order_page"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/one-time-sends/{one_time_order_id}/receipt.pdf": {
         parameters: {
             query?: never;
@@ -1400,6 +1480,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/one-time-sends/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Count the pages of a document before an order is made
+         * @description Reads a file (or text) exactly as the create would and answers its page count and its first page as a small picture, or the create's own refusal: too_many_pages, encrypted_pdf, unsupported_format, document_too_large and the other document codes. The price of the document follows from the count and the route of GET /one-time-sends/config. Nothing is stored: no order, no account, no file. No credential is needed. Idempotency-Key is accepted but ignored: the call changes nothing, so a repeat reads the file again.
+         */
+        post: operations["preview_one_time_document"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/organization/export-archives/{token}": {
         parameters: {
             query?: never;
@@ -1476,6 +1576,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/organizations/current/data-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The organization's export and deletion requests and where each stands */
+        get: operations["list_data_requests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/organizations/current/deletion-requests": {
         parameters: {
             query?: never;
@@ -1488,6 +1605,26 @@ export interface paths {
         /** Ask for the organization and its data to be deleted (owner) */
         post: operations["request_data_deletion"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/current/deletion-requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Withdraw an open deletion request (owner)
+         * @description Works while the request is open. Once a person at Fax for Agents has started the deletion the organization answers 410 to every call, this one included.
+         */
+        delete: operations["withdraw_data_deletion"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1589,8 +1726,28 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Dry run: would the calling key's policies allow this send? Never executes */
+        /** Dry run: would the policies of the caller, or of a named key, agent or app, allow this send? */
         post: operations["create_policy_evaluation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policy-rule-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check a draft's destination lists against each other. Writes nothing
+         * @description For the editor of a policy: which numbers of allowed_destinations are already allowed by one of allowed_countries or allowed_country_prefixes. Routed with the rate card, the way an evaluation routes a destination. Entries that are not numbers the card serves are left out. Nothing is stored and no policy is read. Idempotency-Key is accepted but ignored: a repeat checks the lists again.
+         */
+        post: operations["create_policy_rule_check"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1751,6 +1908,43 @@ export interface paths {
         };
         /** Customer-safe availability */
         get: operations["get_service_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The wallet statement: one line per event with the balance after it, newest first
+         * @description The customer's reading of the wallet. ``GET /v1/ledger`` stays the double-entry record.
+         */
+        get: operations["get_statement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/statement.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The wallet statement as CSV: every line the filters select */
+        get: operations["get_statement_csv"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2004,6 +2198,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/webhook-deliveries/{delivery_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One delivery with the body that was sent (no secrets) */
+        get: operations["get_webhook_delivery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/webhook-deliveries/{delivery_id}/replay": {
         parameters: {
             query?: never;
@@ -2097,6 +2308,11 @@ export interface components {
     schemas: {
         /** Agent */
         Agent: {
+            /**
+             * Archived At
+             * @description Set on an archived agent: disabled for good and left out of the list.
+             */
+            archived_at?: string | null;
             /** Budget Id */
             budget_id: string | null;
             /** Budgets */
@@ -2138,6 +2354,11 @@ export interface components {
             action: string;
             /** Actor */
             actor: string;
+            /**
+             * Actor Label
+             * @description The actor in words: a member's email, the agent's name, an API key's prefix.
+             */
+            actor_label?: string;
             /** Correlation Id */
             correlation_id: string | null;
             /** Created At */
@@ -2161,6 +2382,22 @@ export interface components {
             items: components["schemas"]["AgentActivity"][];
             /** Next Cursor */
             next_cursor?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** AgentArchived */
+        AgentArchived: {
+            /** Archived */
+            archived: boolean;
+            /**
+             * Deleted
+             * @description Always false: an agent has history and its row is kept.
+             */
+            deleted: boolean;
+            /** Id */
+            id: string;
+            /** Keys Revoked */
+            keys_revoked: number;
         } & {
             [key: string]: unknown;
         };
@@ -2224,6 +2461,23 @@ export interface components {
             policy_ids?: string[] | null;
             /** Purpose */
             purpose?: string | null;
+        };
+        /** AlreadyAllowed */
+        AlreadyAllowed: {
+            /**
+             * Countries
+             * @description The listed countries whose route serves this number.
+             */
+            countries: string[];
+            /** Number */
+            number: string;
+            /**
+             * Prefixes
+             * @description The listed prefixes this number's route carries.
+             */
+            prefixes: string[];
+        } & {
+            [key: string]: unknown;
         };
         /** ApiKey */
         ApiKey: {
@@ -2339,6 +2593,26 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /** ApprovalDocument */
+        ApprovalDocument: {
+            /**
+             * Filename
+             * @description The file's name; null when the document row is gone.
+             */
+            filename: string | null;
+            /** Id */
+            id: string;
+            /** Page Count */
+            page_count: number | null;
+            /**
+             * State
+             * @description available: the document is the one the request binds. deleted: it was deleted. changed: its sha256 is no longer the bound one. A send with this approval is refused in the last two.
+             * @enum {string}
+             */
+            state: "available" | "deleted" | "changed";
+        } & {
+            [key: string]: unknown;
+        };
         /** ApprovalRequest */
         ApprovalRequest: {
             /** Bound */
@@ -2353,6 +2627,13 @@ export interface components {
             decided_at: string | null;
             /** Decided By */
             decided_by: string | null;
+            /**
+             * Decided By Name
+             * @description The decider, named the same way.
+             */
+            decided_by_name?: string | null;
+            /** @description The document a send request binds (bound.document_id). null for a help request. */
+            document?: components["schemas"]["ApprovalDocument"] | null;
             /** Expires At */
             expires_at: string | null;
             /** Id */
@@ -2375,6 +2656,11 @@ export interface components {
             reason: string | null;
             /** Requested By */
             requested_by: string;
+            /**
+             * Requested By Name
+             * @description The requester as people read it: the key's label, the agent's name, the connected app's name or the person's address. null when the actor has no row in the organization any more.
+             */
+            requested_by_name?: string | null;
             /**
              * Status
              * @enum {string}
@@ -2571,6 +2857,7 @@ export interface components {
          *       "currency": "USD",
          *       "available_micro": 100000000,
          *       "held_micro": 0,
+         *       "held_jobs": 0,
          *       "top_up_url": "https://app.faxforagents.com/app/billing"
          *     }
          */
@@ -2584,6 +2871,11 @@ export interface components {
              * @enum {string}
              */
             environment: "live" | "test";
+            /**
+             * Held Jobs
+             * @description How many fax jobs still have their hold in place: queued, sending, or ended unknown and waiting for a reconcile. Their holds add up to held_micro.
+             */
+            held_jobs?: number;
             /** Held Micro */
             held_micro: number;
             /**
@@ -2624,6 +2916,11 @@ export interface components {
         Budget: {
             /** Agent Id */
             agent_id: string | null;
+            /**
+             * Archived At
+             * @description Set on a removed budget that has history. It is disabled for good.
+             */
+            archived_at?: string | null;
             /** Created At */
             created_at: string;
             /**
@@ -2697,10 +2994,37 @@ export interface components {
             /** Status */
             status?: ("active" | "disabled") | null;
         };
+        /** BudgetRemoved */
+        BudgetRemoved: {
+            /**
+             * Archived
+             * @description True when the budget has history: disabled and hidden, row kept.
+             */
+            archived: boolean;
+            /**
+             * Deleted
+             * @description True when the budget never charged a hold and its row is gone.
+             */
+            deleted: boolean;
+            /** Id */
+            id: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** Capabilities */
         Capabilities: {
+            /**
+             * Admin Scopes
+             * @description The scopes that administer the organization: keys, webhooks, billing, members, policies, agents, approval decisions and number purchases. An agent's own key never carries one.
+             */
+            admin_scopes?: string[];
             /** Approvals */
             approvals: boolean;
+            /**
+             * Default Scopes
+             * @description The scopes a key gets when POST /v1/api-keys names none.
+             */
+            default_scopes?: string[];
             /**
              * Environment
              * @enum {string}
@@ -2833,6 +3157,43 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * DataRequest
+         * @description An export or deletion request of the organization and where it stands.
+         */
+        DataRequest: {
+            /** Closed At */
+            closed_at: string | null;
+            /** Created At */
+            created_at: string;
+            /**
+             * Due At
+             * @description 30 days after the request: when it is answered at the latest.
+             */
+            due_at: string;
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "export" | "deletion";
+            /**
+             * Status
+             * @description open until a person at Fax for Agents answers it; withdrawn by an owner; else closed.
+             * @enum {string}
+             */
+            status: "open" | "closed" | "withdrawn";
+        } & {
+            [key: string]: unknown;
+        };
+        /** DataRequestList */
+        DataRequestList: {
+            /** Items */
+            items: components["schemas"]["DataRequest"][];
+        } & {
+            [key: string]: unknown;
+        };
         /** Deleted */
         Deleted: {
             /**
@@ -2875,6 +3236,68 @@ export interface components {
             status: string;
             /** Webhook Id */
             webhook_id: string;
+            /**
+             * Webhook Url
+             * @description The destination's URL, kept after the destination is deleted.
+             */
+            webhook_url?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** DeliveryDetail */
+        DeliveryDetail: {
+            /** Attempt */
+            attempt: number;
+            /** Created At */
+            created_at: string;
+            /** Delivered At */
+            delivered_at: string | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Error */
+            error: string | null;
+            /** Event Id */
+            event_id: string;
+            /** Event Type */
+            event_type: string;
+            /** Id */
+            id: string;
+            /** Next Attempt At */
+            next_attempt_at: string | null;
+            /**
+             * Payload
+             * @description The JSON body that is sent, the same at every attempt.
+             */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Replay Of */
+            replay_of: string | null;
+            /**
+             * Request Headers
+             * @description The headers every attempt carries. webhook-id is the event id. webhook-timestamp and webhook-signature are made at each attempt and are not stored, so their values here say what they hold. The signing secret is never returned.
+             */
+            request_headers: {
+                [key: string]: string;
+            };
+            /** Response Status */
+            response_status: number | null;
+            /** Schedule S */
+            schedule_s: number[];
+            /** Status */
+            status: string;
+            /**
+             * Webhook Deleted
+             * @description True when the destination was deleted since.
+             */
+            webhook_deleted: boolean;
+            /** Webhook Id */
+            webhook_id: string;
+            /**
+             * Webhook Url
+             * @description The destination's URL, kept after the destination is deleted.
+             */
+            webhook_url?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -2904,6 +3327,8 @@ export interface components {
          *       "validation": {
          *         "warnings": []
          *       },
+         *       "converted_from": null,
+         *       "received": null,
          *       "upload_id": "up_01a1dba3f80475159f9195dc92d38428",
          *       "created_at": "2026-11-14T19:58:38.630Z",
          *       "expires_at": "2026-12-14T19:58:38.739Z",
@@ -2913,6 +3338,8 @@ export interface components {
         Document: {
             /** Content Type */
             content_type: string;
+            /** Converted From */
+            converted_from?: string | null;
             /** Created At */
             created_at: string;
             /** Deleted At */
@@ -2930,6 +3357,7 @@ export interface components {
             id: string;
             /** Page Count */
             page_count: number;
+            received?: components["schemas"]["DocumentReceived"] | null;
             /** Render Reason */
             render_reason: string | null;
             /** Render Status */
@@ -2986,6 +3414,8 @@ export interface components {
             items: components["schemas"]["Document"][];
             /** Next Cursor */
             next_cursor?: string | null;
+            /** Total */
+            total?: number | null;
         } & {
             [key: string]: unknown;
         };
@@ -3003,6 +3433,28 @@ export interface components {
             render_status: string;
         } & {
             [key: string]: unknown;
+        };
+        /**
+         * DocumentReceived
+         * @description The received fax a document is the file of.
+         */
+        DocumentReceived: {
+            /** From */
+            from?: string | null;
+            /** Inbox Item Id */
+            inbox_item_id: string;
+            /** Received At */
+            received_at: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** DocumentUpdate */
+        DocumentUpdate: {
+            /**
+             * Filename
+             * @description The new file name. The stored file is a PDF: a name without .pdf gets it added.
+             */
+            filename: string;
         };
         /** DocumentValidation */
         DocumentValidation: {
@@ -3522,6 +3974,8 @@ export interface components {
             environment: "live" | "test";
             /** Expires At */
             expires_at?: string | null;
+            /** File Deleted At */
+            file_deleted_at?: string | null;
             /** From */
             from?: string | null;
             /** Id */
@@ -3577,6 +4031,7 @@ export interface components {
          *       "project_id": "proj_01a1dba3f790751897c1a738a5631341",
          *       "partial_content": false,
          *       "media_status": "stored",
+         *       "file_deleted_at": null,
          *       "duration_secs": null,
          *       "provider": "sandbox",
          *       "read_at": null,
@@ -3616,6 +4071,8 @@ export interface components {
             expires_at?: string | null;
             /** Extraction Id */
             extraction_id?: string | null;
+            /** File Deleted At */
+            file_deleted_at?: string | null;
             /** From */
             from?: string | null;
             /** Id */
@@ -3747,13 +4204,15 @@ export interface components {
          *           "project_id": "proj_01a1dba3f790751897c1a738a5631341",
          *           "partial_content": false,
          *           "media_status": "stored",
+         *           "file_deleted_at": null,
          *           "duration_secs": null,
          *           "provider": "sandbox",
          *           "read_at": null,
          *           "expires_at": "2027-02-12T19:58:39.009Z"
          *         }
          *       ],
-         *       "next_cursor": null
+         *       "next_cursor": null,
+         *       "unread": 1
          *     }
          */
         InboxPage: {
@@ -3761,6 +4220,8 @@ export interface components {
             items: components["schemas"]["InboxItem"][];
             /** Next Cursor */
             next_cursor?: string | null;
+            /** Unread */
+            unread?: number;
         } & {
             [key: string]: unknown;
         };
@@ -3810,7 +4271,10 @@ export interface components {
             country: string;
             /** Items */
             items: components["schemas"]["InventoryNumber"][];
-            /** Locality */
+            /**
+             * Locality
+             * @description The area that was searched for. Null in test: test numbers are made up and have no city.
+             */
             locality: string | null;
             /** Note */
             note: string;
@@ -3835,6 +4299,11 @@ export interface components {
             monthly_micro: number;
             /** Number Type */
             number_type: string;
+            /**
+             * Owned
+             * @description True when your organization already holds this number. An order of it is refused.
+             */
+            owned?: boolean;
             /** Setup Micro */
             setup_micro: number;
         } & {
@@ -3875,6 +4344,20 @@ export interface components {
              * @enum {string}
              */
             role: "owner" | "admin" | "member" | "viewer";
+        };
+        /** InvitationLink */
+        InvitationLink: {
+            /** Expires At */
+            expires_at: string;
+            /** Id */
+            id: string;
+            /**
+             * Url
+             * @description The new invitation link. Shown once.
+             */
+            url: string;
+        } & {
+            [key: string]: unknown;
         };
         /** InvitationList */
         InvitationList: {
@@ -4074,6 +4557,11 @@ export interface components {
             created_at: string;
             /** Currency */
             currency: string;
+            /**
+             * Dismissed At
+             * @description When a person put this failed order away. Null until then.
+             */
+            dismissed_at?: string | null;
             /** E164 */
             e164: string | null;
             /**
@@ -4149,6 +4637,26 @@ export interface components {
             label?: string | null;
             /** Project Id */
             project_id?: string | null;
+        };
+        /**
+         * OneTimeAttempts
+         * @description The tries of an order's fax while it is still going out. A busy line or one that does not answer
+         *     is dialed again (``max`` tries in all, about ``retry_delay_seconds`` apart). ``last_failure_code`` is
+         *     why the last finished try did not get through, null when no try has ended.
+         */
+        OneTimeAttempts: {
+            /** Last Failure Code */
+            last_failure_code: string | null;
+            /** Last Finished At */
+            last_finished_at: string | null;
+            /** Made */
+            made: number;
+            /** Max */
+            max: number;
+            /** Retry Delay Seconds */
+            retry_delay_seconds: number;
+        } & {
+            [key: string]: unknown;
         };
         /** OneTimeCard */
         OneTimeCard: {
@@ -4303,12 +4811,34 @@ export interface components {
             source_ref?: string | null;
         };
         /**
+         * OneTimeInspection
+         * @description What a file would be as a one-time order's document: its page count, and its first page as a small
+         *     PNG (base64, null when this server cannot draw one). Nothing is stored and no order is made.
+         */
+        OneTimeInspection: {
+            /** Document Pages */
+            document_pages: number;
+            /** Thumbnail Png Base64 */
+            thumbnail_png_base64: string | null;
+            /** Warnings */
+            warnings?: {
+                [key: string]: unknown;
+            }[];
+        } & {
+            [key: string]: unknown;
+        };
+        /**
          * OneTimeJob
          * @description The order behind a fax job that a one-time send made: what was authorized, what was charged.
          */
         OneTimeJob: {
             /** Amount Micro */
             amount_micro?: number | null;
+            /**
+             * Authorized At
+             * @description On a receipt: when the card was held.
+             */
+            authorized_at?: string | null;
             /** Captured Micro */
             captured_micro?: number | null;
             card?: components["schemas"]["OneTimeCard"] | null;
@@ -4317,13 +4847,40 @@ export interface components {
              * @description The pages of the order's document. The cover sheet is not counted.
              */
             document_pages?: number | null;
+            /**
+             * Email
+             * @description On a receipt: the address the order was made with.
+             */
+            email?: string | null;
+            /**
+             * Failure Code
+             * @description On a receipt: why the order ended unpaid.
+             */
+            failure_code?: string | null;
             /** Order Id */
             order_id: string;
+            /**
+             * Price
+             * @description On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.
+             */
+            price?: {
+                [key: string]: number;
+            } | null;
             /**
              * Refunded Micro
              * @description What was refunded to the card after the charge, in micro-units.
              */
             refunded_micro?: number | null;
+            /**
+             * Sender Name
+             * @description On a receipt: the sender's name.
+             */
+            sender_name?: string | null;
+            /**
+             * Settled At
+             * @description On a receipt: when the payment provider confirmed the charge, or the release.
+             */
+            settled_at?: string | null;
             /** Status */
             status?: ("draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed") | null;
         } & {
@@ -4340,6 +4897,8 @@ export interface components {
         OneTimeOrder: {
             /** Amount Micro */
             amount_micro: number;
+            /** @description The tries of the order's fax while it has not ended: how many were made, of how many, and why the last one did not get through. Null before the fax exists and once it ended. */
+            attempts?: components["schemas"]["OneTimeAttempts"] | null;
             /**
              * Aup Accepted
              * @description Whether a person accepted the acceptable use policy and the terms for this order. False for an order a key created until the payer accepts on the order's page; the checkout needs it.
@@ -4416,6 +4975,8 @@ export interface components {
              * @enum {string}
              */
             next: "checkout" | "confirm" | "wait" | "done";
+            /** @description Whether the order's pages can be looked at (the cover sheet and the document). Present on the read of one order; null in a list and in the create's answer. */
+            preview?: components["schemas"]["OneTimePreview"] | null;
             price: components["schemas"]["OneTimePrice"];
             /** @description The wait for a carrier line while the order has not ended and its fax is not on a line yet. Null for an ended order, a fax that is sending, and a test order. */
             queue?: components["schemas"]["OneTimeQueue"] | null;
@@ -4474,6 +5035,8 @@ export interface components {
         OneTimeOrderCreated: {
             /** Amount Micro */
             amount_micro: number;
+            /** @description The tries of the order's fax while it has not ended: how many were made, of how many, and why the last one did not get through. Null before the fax exists and once it ended. */
+            attempts?: components["schemas"]["OneTimeAttempts"] | null;
             /**
              * Aup Accepted
              * @description Whether a person accepted the acceptable use policy and the terms for this order. False for an order a key created until the payer accepts on the order's page; the checkout needs it.
@@ -4550,6 +5113,8 @@ export interface components {
              * @enum {string}
              */
             next: "checkout" | "confirm" | "wait" | "done";
+            /** @description Whether the order's pages can be looked at (the cover sheet and the document). Present on the read of one order; null in a list and in the create's answer. */
+            preview?: components["schemas"]["OneTimePreview"] | null;
             price: components["schemas"]["OneTimePrice"];
             /** @description The wait for a carrier line while the order has not ended and its fax is not on a line yet. Null for an ended order, a fax that is sending, and a test order. */
             queue?: components["schemas"]["OneTimeQueue"] | null;
@@ -4607,6 +5172,27 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * OneTimePreview
+         * @description Whether the pages of an order can be looked at, and how many. ``draft``: the cover sheet as it
+         *     will be printed and the uploaded document, before the fax is released. ``sent``: the file that went
+         *     to the carrier, cover sheet first. ``deleted``: no copy is held any more (the sender asked for the
+         *     deletion, the retention ended, or the order ended before a fax was made). ``unavailable``: nothing
+         *     to show right now. Page ``n`` is ``GET /v1/one-time-sends/{id}/pages/{n}``, 1 to ``pages``.
+         */
+        OneTimePreview: {
+            /** Cover Pages */
+            cover_pages: number;
+            /** Pages */
+            pages: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "draft" | "sent" | "deleted" | "unavailable";
+        } & {
+            [key: string]: unknown;
+        };
         /** OneTimePrice */
         OneTimePrice: {
             /** Cover Included */
@@ -4635,6 +5221,11 @@ export interface components {
             estimated_wait_minutes: number;
             /** Jobs Ahead */
             jobs_ahead: number;
+            /**
+             * Paused
+             * @description An operator has paused sends on this route. A fax to it is kept and goes out when the route is resumed; no time can be estimated. A one-time order that is not sent within 48 hours of its release is canceled and the card is not charged.
+             */
+            paused?: boolean;
             /** Queued */
             queued: boolean;
         } & {
@@ -4693,6 +5284,11 @@ export interface components {
              * @enum {string}
              */
             role: "owner" | "admin" | "member" | "viewer";
+            /**
+             * Suspended At
+             * @description Set while a review has paused sending for the whole organization. A send answers `account_suspended` until it is cleared. Reads keep working.
+             */
+            suspended_at?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -4794,6 +5390,11 @@ export interface components {
         };
         /** PolicyEvaluation */
         PolicyEvaluation: {
+            /**
+             * Approval Required
+             * @description What a send of this plan by that caller would need: true when a person has to approve it. false when a policy allows it, and for a test send by a caller no policy binds.
+             */
+            approval_required?: boolean | null;
             /** Decision */
             decision: string;
             /** Denials */
@@ -4819,6 +5420,16 @@ export interface components {
             reason: string;
             /** Rule */
             rule: string | null;
+            /**
+             * Subject
+             * @description The caller the plan was evaluated for: the calling principal, or the key, agent or connected app the request named.
+             */
+            subject?: string | null;
+            /**
+             * Under Policy
+             * @description Whether any policy binds that caller. false with decision deny means no policy applies, not that a policy refused the plan.
+             */
+            under_policy?: boolean | null;
             /** @description Returned by POST /v1/policy-evaluations when a bound policy has usage. */
             usage?: {
                 [key: string]: number;
@@ -4831,12 +5442,27 @@ export interface components {
         /** PolicyEvaluationCreate */
         PolicyEvaluationCreate: {
             /**
+             * Agent Id
+             * @description Evaluate as this agent of your organization (bindings to single keys excluded).
+             */
+            agent_id?: string | null;
+            /**
+             * Connection Id
+             * @description Evaluate as this connected app (an OAuth grant, GET /v1/oauth/grants), in the connection's environment. A signed-in person may name their own.
+             */
+            connection_id?: string | null;
+            /**
              * Document Id
              * @description Or plan: this document ...
              */
             document_id?: string | null;
             /** From */
             from?: string | null;
+            /**
+             * Key Id
+             * @description Evaluate as this API key of your organization instead of the caller, in the key's environment. Choose at most one of key_id, agent_id and connection_id.
+             */
+            key_id?: string | null;
             /**
              * Quote Id
              * @description Evaluate an existing quote.
@@ -4854,6 +5480,25 @@ export interface components {
             items: components["schemas"]["Policy"][];
         } & {
             [key: string]: unknown;
+        };
+        /** PolicyRuleCheck */
+        PolicyRuleCheck: {
+            /**
+             * Already Allowed
+             * @description The listed numbers a listed country or prefix allows anyway. A destination passes a policy when it matches any of the three lists, so for these numbers the number list adds nothing.
+             */
+            already_allowed: components["schemas"]["AlreadyAllowed"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** PolicyRuleCheckCreate */
+        PolicyRuleCheckCreate: {
+            /** Allowed Countries */
+            allowed_countries?: string[];
+            /** Allowed Country Prefixes */
+            allowed_country_prefixes?: string[];
+            /** Allowed Destinations */
+            allowed_destinations?: string[];
         };
         /** PolicyUpdate */
         PolicyUpdate: {
@@ -4874,6 +5519,11 @@ export interface components {
             created_at: string;
             /** Created By */
             created_by: string;
+            /**
+             * Created By Name
+             * @description Who wrote the version as people read it: a person's address or a key's label.
+             */
+            created_by_name?: string | null;
             /** Enabled */
             enabled: boolean;
             /** Id */
@@ -5001,6 +5651,7 @@ export interface components {
          *       "sender_name": null,
          *       "delete_after_send": false,
          *       "authorization_required": false,
+         *       "route_paused": false,
          *       "warnings": [
          *         {
          *           "code": "sandbox",
@@ -5075,6 +5726,11 @@ export interface components {
              * @default
              */
             route_label: string;
+            /**
+             * Route Paused
+             * @description An operator has paused sends on this quote's route. A fax sent now is accepted and stays queued until the route is resumed. Read when the quote is answered, not stored.
+             */
+            route_paused?: boolean;
             /** Sender Name */
             sender_name?: string | null;
             /** To */
@@ -5138,6 +5794,7 @@ export interface components {
          *       "failure_code": null,
          *       "to": "+15550000001",
          *       "from": null,
+         *       "sender_name": null,
          *       "document_sha256": "c00b74dede1923d27ba294643d5e79cb5454089e3f1b7b151cc46aa520a2410f",
          *       "transmitted_sha256": "9f18c276fb5160f70fecb50f8e53768a7aa631e3e2a140447d3cb4f0377eb6e4",
          *       "billable_pages": 2,
@@ -5147,6 +5804,7 @@ export interface components {
          *       "captured_micro": 0,
          *       "currency": "USD",
          *       "provider": "sandbox",
+         *       "provider_ref": "sbx_311dd5d5bc5dfd76",
          *       "created_at": "2026-11-14T19:58:38.794Z",
          *       "completed_at": "2026-11-14T19:58:38.910Z",
          *       "evidence": {
@@ -5188,6 +5846,12 @@ export interface components {
          *       ],
          *       "note": "Delivery evidence as the carrier reported it. It is not legal proof of acceptance by the recipient.",
          *       "generated_at": "2026-11-14T19:58:38.943Z",
+         *       "seller": {
+         *         "name": "JSB Holdings LLC",
+         *         "address": "8 The Green, Dover, DE 19901, US",
+         *         "product": "Fax for Agents",
+         *         "email": "hello@faxforagents.com"
+         *       },
          *       "one_time": null
          *     }
          */
@@ -5233,6 +5897,18 @@ export interface components {
             pages_sent: number;
             /** Provider */
             provider: string;
+            /**
+             * Provider Ref
+             * @description The carrier's own reference for the last attempt, when it gave one.
+             */
+            provider_ref?: string | null;
+            /** @description The company that issues the receipt. */
+            seller?: components["schemas"]["Seller"] | null;
+            /**
+             * Sender Name
+             * @description The sender name the fax was sent with, when one was given.
+             */
+            sender_name?: string | null;
             /** State */
             state: string;
             /** To */
@@ -5252,6 +5928,13 @@ export interface components {
         };
         /** Requested */
         Requested: {
+            /** Created At */
+            created_at?: string | null;
+            /**
+             * Id
+             * @description The request, as `GET .../data-requests` lists it.
+             */
+            id?: string | null;
             /**
              * Kind
              * @enum {string}
@@ -5353,6 +6036,22 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /**
+         * Seller
+         * @description The company a receipt is issued by.
+         */
+        Seller: {
+            /** Address */
+            address: string;
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /** Product */
+            product: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** SenderVerification */
         SenderVerification: {
             /** Created At */
@@ -5418,6 +6117,48 @@ export interface components {
             expires_at: string;
             /** Url */
             url: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StatementLine */
+        StatementLine: {
+            /**
+             * Amount Micro
+             * @description Signed the way the wallet moved: positive is money in.
+             */
+            amount_micro: number;
+            /**
+             * Balance After Micro
+             * @description The available balance right after this line.
+             */
+            balance_after_micro: number;
+            /** Created At */
+            created_at: string;
+            /**
+             * Description
+             * @description What happened, in plain words. Never an account name.
+             */
+            description: string;
+            /** Id */
+            id: string;
+            /** Ref Id */
+            ref_id: string | null;
+            /** Ref Type */
+            ref_type: string | null;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "topup" | "fax" | "received_fax" | "number" | "extraction" | "release" | "refund" | "dispute" | "credit" | "adjustment" | "other";
+        } & {
+            [key: string]: unknown;
+        };
+        /** StatementPage */
+        StatementPage: {
+            /** Items */
+            items: components["schemas"]["StatementLine"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
         } & {
             [key: string]: unknown;
         };
@@ -5729,6 +6470,7 @@ export interface components {
          *         "fax.failed"
          *       ],
          *       "status": "active",
+         *       "failing": false,
          *       "previous_secret_expires_at": null,
          *       "created_at": "2026-11-14T19:58:39.486Z",
          *       "updated_at": "2026-11-14T19:58:39.486Z"
@@ -5741,6 +6483,11 @@ export interface components {
             description: string | null;
             /** Event Types */
             event_types: string[];
+            /**
+             * Failing
+             * @description True when the latest delivery this destination was sent did not get a 2xx answer. It turns false with the next delivery that does.
+             */
+            failing?: boolean;
             /** Id */
             id: string;
             /** Previous Secret Expires At */
@@ -5804,6 +6551,7 @@ export interface components {
          *         "fax.failed"
          *       ],
          *       "status": "active",
+         *       "failing": false,
          *       "previous_secret_expires_at": null,
          *       "created_at": "2026-11-14T19:58:39.486Z",
          *       "updated_at": "2026-11-14T19:58:39.486Z",
@@ -5817,6 +6565,11 @@ export interface components {
             description: string | null;
             /** Event Types */
             event_types: string[];
+            /**
+             * Failing
+             * @description True when the latest delivery this destination was sent did not get a 2xx answer. It turns false with the next delivery that does.
+             */
+            failing?: boolean;
             /** Id */
             id: string;
             /** Previous Secret Expires At */
@@ -5936,15 +6689,18 @@ export interface components {
 export type Agent = components['schemas']['Agent'];
 export type AgentActivity = components['schemas']['AgentActivity'];
 export type AgentActivityPage = components['schemas']['AgentActivityPage'];
+export type AgentArchived = components['schemas']['AgentArchived'];
 export type AgentCreate = components['schemas']['AgentCreate'];
 export type AgentKeyCreate = components['schemas']['AgentKeyCreate'];
 export type AgentList = components['schemas']['AgentList'];
 export type AgentUpdate = components['schemas']['AgentUpdate'];
+export type AlreadyAllowed = components['schemas']['AlreadyAllowed'];
 export type ApiKey = components['schemas']['ApiKey'];
 export type ApiKeyCreate = components['schemas']['ApiKeyCreate'];
 export type ApiKeyList = components['schemas']['ApiKeyList'];
 export type ApiKeyWithSecret = components['schemas']['ApiKeyWithSecret'];
 export type ApprovalDecision = components['schemas']['ApprovalDecision'];
+export type ApprovalDocument = components['schemas']['ApprovalDocument'];
 export type ApprovalRequest = components['schemas']['ApprovalRequest'];
 export type ApprovalRequestCreate = components['schemas']['ApprovalRequestCreate'];
 export type ApprovalRequestPage = components['schemas']['ApprovalRequestPage'];
@@ -5962,18 +6718,24 @@ export type Budget = components['schemas']['Budget'];
 export type BudgetCreate = components['schemas']['BudgetCreate'];
 export type BudgetList = components['schemas']['BudgetList'];
 export type BudgetPatch = components['schemas']['BudgetPatch'];
+export type BudgetRemoved = components['schemas']['BudgetRemoved'];
 export type Capabilities = components['schemas']['Capabilities'];
 export type ClassificationCreate = components['schemas']['ClassificationCreate'];
 export type Correction = components['schemas']['Correction'];
 export type CorrectionCreate = components['schemas']['CorrectionCreate'];
 export type Coverage = components['schemas']['Coverage'];
+export type DataRequest = components['schemas']['DataRequest'];
+export type DataRequestList = components['schemas']['DataRequestList'];
 export type Deleted = components['schemas']['Deleted'];
 export type Delivery = components['schemas']['Delivery'];
+export type DeliveryDetail = components['schemas']['DeliveryDetail'];
 export type DeliveryPage = components['schemas']['DeliveryPage'];
 export type Document = components['schemas']['Document'];
 export type DocumentCreate = components['schemas']['DocumentCreate'];
 export type DocumentPage = components['schemas']['DocumentPage'];
 export type DocumentPages = components['schemas']['DocumentPages'];
+export type DocumentReceived = components['schemas']['DocumentReceived'];
+export type DocumentUpdate = components['schemas']['DocumentUpdate'];
 export type DocumentValidation = components['schemas']['DocumentValidation'];
 export type EffectivePolicies = components['schemas']['EffectivePolicies'];
 export type ErrorBody = components['schemas']['ErrorBody'];
@@ -6001,6 +6763,7 @@ export type Inventory = components['schemas']['Inventory'];
 export type InventoryNumber = components['schemas']['InventoryNumber'];
 export type Invitation = components['schemas']['Invitation'];
 export type InvitationCreate = components['schemas']['InvitationCreate'];
+export type InvitationLink = components['schemas']['InvitationLink'];
 export type InvitationList = components['schemas']['InvitationList'];
 export type Invoice = components['schemas']['Invoice'];
 export type InvoicePage = components['schemas']['InvoicePage'];
@@ -6016,6 +6779,7 @@ export type NumberOrder = components['schemas']['NumberOrder'];
 export type NumberOrderCreate = components['schemas']['NumberOrderCreate'];
 export type NumberOrderList = components['schemas']['NumberOrderList'];
 export type NumberUpdate = components['schemas']['NumberUpdate'];
+export type OneTimeAttempts = components['schemas']['OneTimeAttempts'];
 export type OneTimeCard = components['schemas']['OneTimeCard'];
 export type OneTimeCheckout = components['schemas']['OneTimeCheckout'];
 export type OneTimeConfig = components['schemas']['OneTimeConfig'];
@@ -6023,10 +6787,12 @@ export type OneTimeConfirm = components['schemas']['OneTimeConfirm'];
 export type OneTimeConfirmed = components['schemas']['OneTimeConfirmed'];
 export type OneTimeConfirmSummary = components['schemas']['OneTimeConfirmSummary'];
 export type OneTimeFromQuote = components['schemas']['OneTimeFromQuote'];
+export type OneTimeInspection = components['schemas']['OneTimeInspection'];
 export type OneTimeJob = components['schemas']['OneTimeJob'];
 export type OneTimeOrder = components['schemas']['OneTimeOrder'];
 export type OneTimeOrderCreated = components['schemas']['OneTimeOrderCreated'];
 export type OneTimeOrderPage = components['schemas']['OneTimeOrderPage'];
+export type OneTimePreview = components['schemas']['OneTimePreview'];
 export type OneTimePrice = components['schemas']['OneTimePrice'];
 export type OneTimeQueue = components['schemas']['OneTimeQueue'];
 export type OneTimeRoute = components['schemas']['OneTimeRoute'];
@@ -6041,6 +6807,8 @@ export type PolicyCreate = components['schemas']['PolicyCreate'];
 export type PolicyEvaluation = components['schemas']['PolicyEvaluation'];
 export type PolicyEvaluationCreate = components['schemas']['PolicyEvaluationCreate'];
 export type PolicyList = components['schemas']['PolicyList'];
+export type PolicyRuleCheck = components['schemas']['PolicyRuleCheck'];
+export type PolicyRuleCheckCreate = components['schemas']['PolicyRuleCheckCreate'];
 export type PolicyUpdate = components['schemas']['PolicyUpdate'];
 export type PolicyVersion = components['schemas']['PolicyVersion'];
 export type PolicyVersionList = components['schemas']['PolicyVersionList'];
@@ -6062,10 +6830,13 @@ export type SandboxReset = components['schemas']['SandboxReset'];
 export type SandboxScenarioCreate = components['schemas']['SandboxScenarioCreate'];
 export type SandboxScenarios = components['schemas']['SandboxScenarios'];
 export type SchemaCreate = components['schemas']['SchemaCreate'];
+export type Seller = components['schemas']['Seller'];
 export type SenderVerification = components['schemas']['SenderVerification'];
 export type SenderVerificationCreate = components['schemas']['SenderVerificationCreate'];
 export type ServiceStatus = components['schemas']['ServiceStatus'];
 export type SignedUrl = components['schemas']['SignedUrl'];
+export type StatementLine = components['schemas']['StatementLine'];
+export type StatementPage = components['schemas']['StatementPage'];
 export type Subscription = components['schemas']['Subscription'];
 export type SubscriptionCheckout = components['schemas']['SubscriptionCheckout'];
 export type SubscriptionList = components['schemas']['SubscriptionList'];
@@ -6099,7 +6870,10 @@ export type $defs = Record<string, never>;
 export interface operations {
     list_agents: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Also list archived agents. */
+                include_archived?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6127,6 +6901,7 @@ export interface operations {
                 };
             };
             410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -6188,6 +6963,38 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    archive_agent: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                agent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentArchived"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -6443,6 +7250,7 @@ export interface operations {
             query?: {
                 cursor?: string | null;
                 limit?: number;
+                /** @description pending, approved, used, rejected, revoked or expired. used finds the approvals a send consumed; their status reads approved and consumed_by_job_id names the fax. */
                 status?: string | null;
             };
             header?: never;
@@ -6888,7 +7696,10 @@ export interface operations {
     };
     list_budgets: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Also list removed budgets with history. */
+                include_archived?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6916,6 +7727,7 @@ export interface operations {
                 };
             };
             410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -6950,6 +7762,38 @@ export interface operations {
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
             413: components["responses"]["PayloadTooLarge"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    delete_budget: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                budget_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetRemoved"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7264,7 +8108,13 @@ export interface operations {
         parameters: {
             query?: {
                 cursor?: string | null;
+                /** @description Leave this source out; "inbound" lists the documents you made. */
+                exclude_source?: ("upload" | "image" | "text" | "markdown" | "html" | "inbound") | null;
                 limit?: number;
+                /** @description Part of a file name, or of the sender's number for a received fax. */
+                q?: string | null;
+                /** @description Only documents of this source; "inbound" is the files of received faxes. */
+                source?: ("upload" | "image" | "text" | "markdown" | "html" | "inbound") | null;
             };
             header?: never;
             path?: never;
@@ -7389,6 +8239,43 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    rename_document: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Document"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -7891,6 +8778,8 @@ export interface operations {
                 /** @description Find the send job using its Idempotency-Key. This lookup requires the stored replay record. An empty result does not prove no fax was sent. */
                 idempotency_key?: string | null;
                 limit?: number;
+                /** @description Find faxes by destination or by id. Text that starts with fax_ is the beginning of a job id. Anything else is read as a fax number in any spelling: its digits are looked for anywhere in the destination. Combines with state. */
+                q?: string | null;
                 state?: string | null;
             };
             header?: never;
@@ -8179,6 +9068,8 @@ export interface operations {
     list_inbox: {
         parameters: {
             query?: {
+                /** @description false leaves archived faxes out; true lists only those. */
+                archived?: boolean | null;
                 cursor?: string | null;
                 limit?: number;
                 status?: ("received" | "read" | "archived") | null;
@@ -8462,6 +9353,70 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    link_invitation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                invitation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationLink"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    resend_invitation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                invitation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Invitation"];
+                };
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
@@ -8870,6 +9825,38 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    dismiss_number_order: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NumberOrder"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -9412,6 +10399,41 @@ export interface operations {
             503: components["responses"]["ServiceUnavailable"];
         };
     };
+    get_one_time_order_page: {
+        parameters: {
+            query?: {
+                /** @description The status token, when no header carries it. */
+                t?: string | null;
+            };
+            header?: {
+                /** @description The status token of the order, for a caller without a key or a session. */
+                "X-FFA-Order-Token"?: string;
+            };
+            path: {
+                one_time_order_id: string;
+                page_number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The page as a PNG */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": unknown;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
     get_one_time_receipt_pdf: {
         parameters: {
             query?: {
@@ -9645,6 +10667,52 @@ export interface operations {
             503: components["responses"]["ServiceUnavailable"];
         };
     };
+    preview_one_time_document: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The text of the fax. */
+                    text: string;
+                    /** @enum {string} */
+                    text_format?: "text" | "markdown";
+                };
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description The document: PDF, PNG, JPEG or TIFF. Send this or text.
+                     */
+                    file?: string;
+                    /** @description The text of the fax, in place of a file. */
+                    text?: string;
+                    /** @enum {string} */
+                    text_format?: "text" | "markdown";
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeInspection"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            413: components["responses"]["PayloadTooLarge"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
     download_export_archive: {
         parameters: {
             query?: {
@@ -9830,6 +10898,39 @@ export interface operations {
             429: components["responses"]["TooManyRequests"];
         };
     };
+    list_data_requests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRequestList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            410: components["responses"]["Gone"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
     request_data_deletion: {
         parameters: {
             query?: never;
@@ -9862,6 +10963,38 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    withdraw_data_deletion: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRequest"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
@@ -10138,6 +11271,44 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
+            413: components["responses"]["PayloadTooLarge"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    create_policy_rule_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyRuleCheckCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyRuleCheck"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -10548,6 +11719,90 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    get_statement: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                /** @description First UTC day, YYYY-MM-DD, included. */
+                from?: string | null;
+                /** @description One kind of line: topup, fax, received_fax, number, extraction, release, refund, dispute, credit, adjustment, other. */
+                kind?: string | null;
+                limit?: number;
+                /** @description Last UTC day, YYYY-MM-DD, included. */
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    get_statement_csv: {
+        parameters: {
+            query?: {
+                /** @description First UTC day, YYYY-MM-DD, included. */
+                from?: string | null;
+                /** @description One kind of line: topup, fax, received_fax, number, extraction, release, refund, dispute, credit, adjustment, other. */
+                kind?: string | null;
+                /** @description Last UTC day, YYYY-MM-DD, included. */
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -11056,6 +12311,34 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    get_webhook_delivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                delivery_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
