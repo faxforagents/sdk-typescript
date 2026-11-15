@@ -3334,6 +3334,11 @@ export interface components {
              */
             status: string;
             /**
+             * Webhook Deleted
+             * @description True when the destination was deleted since. The deliveries that were waiting are not sent, and no delivery to it can be replayed.
+             */
+            webhook_deleted?: boolean;
+            /**
              * Webhook Id
              * @description The destination the event is sent to.
              */
@@ -3426,7 +3431,7 @@ export interface components {
             status: string;
             /**
              * Webhook Deleted
-             * @description True when the destination was deleted since.
+             * @description True when the destination was deleted since. The deliveries that were waiting are not sent, and no delivery to it can be replayed.
              */
             webhook_deleted: boolean;
             /**
@@ -4811,7 +4816,7 @@ export interface components {
         NumberUpdate: {
             /**
              * Email Pdf
-             * @description Attach the PDF of each received fax to the notice mail. The mail goes to the verified address of an owner of the organization and to no other address. A PDF over 15 MB is not attached. It needs the scope number:buy. An agent, an OAuth connection and a connected app are refused.
+             * @description Attach the PDF of each received fax to the notice mail. The mail goes to the verified address of an owner of the organization and to no other address. A PDF over 15 MiB is not attached. It needs the scope number:buy. An agent, an OAuth connection and a connected app are refused.
              */
             email_pdf?: boolean | null;
             /** Inbound Webhook Id */
@@ -4969,8 +4974,8 @@ export interface components {
         /**
          * OneTimeCoverCheck
          * @description The fields a one-time order prints on its cover sheet, as a form holds them before the order exists.
-         *     Every field may be empty. The limits of the create apply (cover.to_name 120 characters, cover.subject
-         *     200, cover.message 2,000).
+         *     Every field may be empty. to_name, subject and message have the create's limits, and a longer one is
+         *     refused as the create refuses it: 422 invalid_request on cover.
          */
         OneTimeCoverCheck: {
             /**
@@ -4978,21 +4983,30 @@ export interface components {
              * @description Printed in the From line.
              */
             email?: string | null;
-            /** Message */
+            /**
+             * Message
+             * @description The note printed under the Message heading. It has to fit on the one cover page. At most 2,000 characters, not counting spaces at either end.
+             */
             message?: string | null;
             /**
              * Sender Name
              * @description Printed in the From line.
              */
             sender_name?: string | null;
-            /** Subject */
+            /**
+             * Subject
+             * @description Printed in a Subject line when it is given. At most 200 characters, not counting spaces at either end.
+             */
             subject?: string | null;
             /**
              * To
              * @description The destination, when one is typed.
              */
             to?: string | null;
-            /** To Name */
+            /**
+             * To Name
+             * @description The recipient's name, printed in the To line. At most 120 characters, not counting spaces at either end.
+             */
             to_name?: string | null;
         };
         /**
@@ -5675,7 +5689,10 @@ export interface components {
              * @description The policy that allowed the plan, or the first one that denied it. Null when none binds.
              */
             policy_id: string | null;
-            /** Policy Name */
+            /**
+             * Policy Name
+             * @description The name of that policy. Null when none binds.
+             */
             policy_name: string | null;
             /**
              * Policy Version Id
@@ -5704,7 +5721,10 @@ export interface components {
             under_policy?: boolean | null;
             /** @description On allow: the deciding policy's counters for the day and the month before this send. */
             usage?: components["schemas"]["PolicyUsage"] | null;
-            /** Version */
+            /**
+             * Version
+             * @description The number of that version: 1 for the policy's first rules, one more for each change. Null when none binds.
+             */
             version: number | null;
         } & {
             [key: string]: unknown;
@@ -5803,13 +5823,25 @@ export interface components {
          * @description What the deciding policy had counted before the send it was asked about, in UTC periods.
          */
         PolicyUsage: {
-            /** Day Amount Micro */
+            /**
+             * Day Amount Micro
+             * @description The amount of those sends in micro-USD, as priced when the policy allowed each one. A fax that fails later still counts.
+             */
             day_amount_micro: number;
-            /** Day Jobs */
+            /**
+             * Day Jobs
+             * @description Sends this policy allowed so far in the current UTC day.
+             */
             day_jobs: number;
-            /** Month Amount Micro */
+            /**
+             * Month Amount Micro
+             * @description The amount of this month's sends in micro-USD, counted the same way as the day's.
+             */
             month_amount_micro: number;
-            /** Month Jobs */
+            /**
+             * Month Jobs
+             * @description Sends this policy allowed so far in the current UTC month.
+             */
             month_jobs: number;
         } & {
             [key: string]: unknown;
@@ -5842,7 +5874,10 @@ export interface components {
              * @description The policy that allowed the plan, or the first one that denied it. Null when none binds.
              */
             policy_id: string | null;
-            /** Policy Name */
+            /**
+             * Policy Name
+             * @description The name of that policy. Null when none binds.
+             */
             policy_name: string | null;
             /**
              * Policy Version Id
@@ -5861,7 +5896,10 @@ export interface components {
             rule: string | null;
             /** @description On allow: the deciding policy's counters for the day and the month before this send. */
             usage?: components["schemas"]["PolicyUsage"] | null;
-            /** Version */
+            /**
+             * Version
+             * @description The number of that version: 1 for the policy's first rules, one more for each change. Null when none binds.
+             */
             version: number | null;
         } & {
             [key: string]: unknown;
@@ -6615,6 +6653,11 @@ export interface components {
             amount_micro: number;
             /** Auto Topup Id */
             auto_topup_id: string | null;
+            /**
+             * Checkout Status
+             * @description Stripe's own state of the hosted Checkout, read from Stripe when a read of an open top-up asks with check_checkout=true. complete: the payment was made at Stripe, and the wallet is credited when Stripe's event arrives, usually within seconds. processing: the person finished at Stripe with a payment method that confirms later, such as a bank debit, which can take days. Null when not asked, or when Stripe could not be read.
+             */
+            checkout_status?: ("open" | "complete" | "processing" | "expired") | null;
             /** Completed At */
             completed_at: string | null;
             /** Created At */
@@ -6960,7 +7003,7 @@ export interface components {
         };
     };
     responses: {
-        /** @description The resource is in a state that refuses the call, or the Idempotency-Key was used with a different request (idempotency_key_conflict). error.code names the state. */
+        /** @description The resource is in a state that refuses the call. A state with a code of its own is named by error.code, for example quote_expired. Otherwise error.code is conflict and error.message says what is in the way. idempotency_key_conflict: the Idempotency-Key was used with a different request, or that request is still being processed. */
         Conflict: {
             headers: {
                 [name: string]: unknown;
@@ -6978,7 +7021,7 @@ export interface components {
                 "application/json": components["schemas"]["ErrorEnvelope"];
             };
         };
-        /** @description What the call asks for is no longer kept. document_expired and inbox_item_expired: the document or the received fax passed its retention date. organization_deleted: the organization is being deleted. */
+        /** @description organization_deleted: the organization is being deleted, so the call is refused. */
         Gone: {
             headers: {
                 [name: string]: unknown;
@@ -7613,7 +7656,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            /** @description The key expired, so it cannot be rotated (conflict, with details.reason key_expired and details.expires_at). Create a new key to replace it. Also idempotency_key_conflict: the Idempotency-Key was used with a different body. */
+            /** @description The key expired, so it cannot be rotated. error.code is conflict, error.details.reason is "key_expired" and error.details.expires_at says when it expired. Create a new key to replace it. idempotency_key_conflict: the Idempotency-Key was used with a different request, or that request is still being processed. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -7909,7 +7952,15 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             402: components["responses"]["PaymentRequired"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
@@ -8007,7 +8058,15 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             402: components["responses"]["PaymentRequired"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
@@ -8588,7 +8647,15 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            410: components["responses"]["Gone"];
+            /** @description document_expired: the document passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8656,7 +8723,15 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
-            410: components["responses"]["Gone"];
+            /** @description document_expired: the document passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -8684,7 +8759,15 @@ export interface operations {
                 content?: never;
             };
             404: components["responses"]["NotFound"];
-            410: components["responses"]["Gone"];
+            /** @description document_expired: the document passed its retention date and is no longer kept. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
         };
     };
@@ -8711,7 +8794,15 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            410: components["responses"]["Gone"];
+            /** @description document_expired: the document passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8739,7 +8830,15 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            410: components["responses"]["Gone"];
+            /** @description document_expired: the document passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -8793,7 +8892,15 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            410: components["responses"]["Gone"];
+            /** @description document_expired: the document passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9510,7 +9617,15 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            410: components["responses"]["Gone"];
+            /** @description inbox_item_expired: the received fax passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9542,7 +9657,15 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
-            410: components["responses"]["Gone"];
+            /** @description inbox_item_expired: the received fax passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9578,7 +9701,15 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
-            410: components["responses"]["Gone"];
+            /** @description inbox_item_expired: the received fax passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -9606,7 +9737,15 @@ export interface operations {
                 content?: never;
             };
             404: components["responses"]["NotFound"];
-            410: components["responses"]["Gone"];
+            /** @description inbox_item_expired: the received fax passed its retention date and is no longer kept. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
         };
     };
@@ -9634,7 +9773,15 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
-            410: components["responses"]["Gone"];
+            /** @description inbox_item_expired: the received fax passed its retention date and is no longer kept. organization_deleted: the organization is being deleted, so the call is refused. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
         };
@@ -9831,7 +9978,15 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
@@ -9860,7 +10015,15 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
@@ -9889,7 +10052,15 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
@@ -12268,7 +12439,15 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             402: components["responses"]["PaymentRequired"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
@@ -12341,7 +12520,15 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             402: components["responses"]["PaymentRequired"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             410: components["responses"]["Gone"];
@@ -12353,7 +12540,10 @@ export interface operations {
     };
     get_topup_session: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Ask Stripe about the Checkout of an open top-up and answer its state as checkout_status. The page Stripe returns the person to asks it, because the event that credits the wallet can arrive seconds after the payment. */
+                check_checkout?: boolean;
+            };
             header?: never;
             path: {
                 topup_session_id: string;
@@ -12403,9 +12593,17 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
+            /** @description The credential is valid and is not allowed to do this. scope_missing puts the scope in error.details.scope. Other codes are agent_forbidden and approval_required. A session can also meet csrf_invalid and reauth_required. A test key, or a session switched to Test, gets environment_not_billable here: the test wallet is never funded, so billing takes live. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             404: components["responses"]["NotFound"];
-            /** @description The top-up has no open Checkout to cancel: it was paid, declined or charged off session (conflict, with details.status). details.reason is paid when it was paid before the cancel. Also idempotency_key_conflict: the Idempotency-Key was used with a different body. */
+            /** @description The top-up has no open Checkout to cancel: it was paid, declined or charged off session. error.code is conflict and error.details.status is the top-up's status. error.details.reason is "paid" when the payment came in before the cancel. idempotency_key_conflict: the Idempotency-Key was used with a different request, or that request is still being processed. */
             409: {
                 headers: {
                     [name: string]: unknown;

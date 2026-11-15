@@ -257,7 +257,11 @@ export class Webhooks extends Resource {
   update(webhookId: string, body: S.WebhookUpdate, o: Mut = {}): Promise<S.Webhook> {
     return this.h.request('PATCH', `/v1/webhooks/${webhookId}`, { json: body, ...o });
   }
-  /** Remove a destination. Scope: webhook:admin. */
+  /**
+   * Remove a destination. Scope: webhook:admin. The deliveries that were waiting for it end at once, as
+   * `failed` with no next attempt. Every delivery to it then reads `webhook_deleted` true and cannot be
+   * replayed.
+   */
   delete(webhookId: string, o: Mut = {}): Promise<S.Deleted> {
     return this.h.request('DELETE', `/v1/webhooks/${webhookId}`, o);
   }
@@ -280,7 +284,11 @@ export class Webhooks extends Resource {
   getDelivery(deliveryId: string): Promise<S.DeliveryDetail> {
     return this.h.request('GET', `/v1/webhook-deliveries/${deliveryId}`);
   }
-  /** Deliver the event again with the same event id. Scope: webhook:admin. */
+  /**
+   * Deliver the event again with the same event id. Scope: webhook:admin. A delivery whose
+   * `webhook_deleted` is true cannot be replayed. It throws ConflictError with `details.reason`
+   * webhook_deleted.
+   */
   replayDelivery(deliveryId: string, o: Mut = {}): Promise<S.Delivery> {
     return this.h.request('POST', `/v1/webhook-deliveries/${deliveryId}/replay`, { json: {}, ...o });
   }
@@ -348,15 +356,24 @@ export class Billing extends Resource {
   iterTopupSessions(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.TopupSession, void, undefined> {
     return paginate((cursor) => this.listTopupSessions({ ...p, cursor }));
   }
-  /** Read a top-up session. Scope: billing:read. */
-  getTopupSession(topupSessionId: string): Promise<S.TopupSession> {
-    return this.h.request('GET', `/v1/topup-sessions/${topupSessionId}`);
+  /**
+   * Read a top-up session. Scope: billing:read. `check_checkout: true` also asks Stripe about the hosted
+   * Checkout of an open top-up. Its state is in `checkout_status`: `open`, `complete`, `processing` or
+   * `expired`. `complete` means the person paid, and the wallet is credited when Stripe's event arrives.
+   * `processing` means they paid with a method that confirms later, such as a bank debit.
+   * `checkout_status` is null when not asked, for a top-up that is not open, or when Stripe could not be
+   * read. The read changes nothing. Left out or false, no query parameter is sent.
+   */
+  getTopupSession(topupSessionId: string, p: { check_checkout?: boolean } = {}): Promise<S.TopupSession> {
+    const params = p.check_checkout ? { check_checkout: true } : undefined;
+    return this.h.request('GET', `/v1/topup-sessions/${topupSessionId}`, { params });
   }
   /**
    * Cancel an open top-up, so nobody can pay its hosted Checkout any more. It reads `canceled`. Scope:
    * billing:write, never an agent key. Canceling a setup payment also turns off the auto top-up that
    * waited on it. A top-up already canceled or expired comes back as it is. One that was paid, declined
    * or charged off session throws ConflictError, with the top-up's status in `details.status`.
+   * `details.reason` is `paid` when the payment came in before the cancel.
    */
   cancelTopupSession(topupSessionId: string, o: Mut = {}): Promise<S.TopupSession> {
     return this.h.request('POST', `/v1/topup-sessions/${topupSessionId}/cancel`, o);
@@ -1008,7 +1025,9 @@ export class OneTimeSends extends Resource {
    * stored. It works without an API key. Pass the cover fields typed so far, as `create` takes them,
    * and leave out the rest. `fits` says whether the message fits on the one cover page, and
    * `lines_left` how many more lines fit. When it runs over, `fits_chars` is how much of its start
-   * fits. `create` refuses a cover that does not fit.
+   * fits. `create` refuses a cover that does not fit. `to_name`, `subject` and `message` have the limits
+   * of `create`: 120, 200 and 2,000 characters, not counting spaces at either end. A longer one throws
+   * InvalidRequestError, as `create` does.
    */
   checkCover(body: S.OneTimeCoverCheck = {}): Promise<S.OneTimeCoverRoom> {
     return this.h.request('POST', '/v1/one-time-sends/cover-checks', { json: body });

@@ -15,6 +15,7 @@ import {
 } from '../src/index.js';
 import type {
   DataRequest,
+  Delivery,
   DeliveryDetail,
   Invitation,
   NumberOrder,
@@ -1101,5 +1102,80 @@ describe('API 1.20.8', () => {
     const receipt = await client().billing.getTopupReceipt('tus_auto');
     expect(receipt.pdf_url).toBeNull();
     expect(receipt.url).toMatch(/\/receipts\/payment\/1$/);
+  });
+});
+
+describe('API 1.20.10', () => {
+  const session: TopupSession = {
+    id: 'tus_' + '8'.repeat(32),
+    environment: 'live',
+    kind: 'manual',
+    amount_micro: 25_000_000,
+    currency: 'USD',
+    status: 'open',
+    url: 'https://checkout.example.test/c/pay_1',
+    stripe_session_id: 'cs_test_1',
+    stripe_payment_intent_id: null,
+    auto_topup_id: null,
+    error: null,
+    created_at: '2026-11-15T09:00:00Z',
+    expires_at: '2026-11-16T09:00:00Z',
+    completed_at: null,
+  };
+  const delivery: Delivery = {
+    id: 'dlv_1',
+    webhook_id: 'wh_1',
+    webhook_url: 'https://example.com/hooks/fax',
+    event_id: 'evt_1',
+    event_type: 'fax.delivered',
+    attempt: 1,
+    status: 'failed',
+    response_status: null,
+    error: 'the webhook was deleted',
+    duration_ms: null,
+    replay_of: null,
+    schedule_s: [0, 60, 300],
+    next_attempt_at: null,
+    created_at: '2026-11-15T09:00:00Z',
+    delivered_at: null,
+    webhook_deleted: true,
+  };
+
+  it('asks Stripe about the Checkout of a top-up only when told', async () => {
+    const queries: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/topup-sessions/${session.id}`, ({ request }) => {
+        const search = new URL(request.url).search;
+        queries.push(search);
+        if (search) return HttpResponse.json({ ...session, checkout_status: 'complete' });
+        return HttpResponse.json(queries.length === 1 ? { ...session, checkout_status: null } : session);
+      }),
+    );
+    expect((await client().billing.getTopupSession(session.id)).checkout_status).toBeNull();
+    const paid = await client().billing.getTopupSession(session.id, { check_checkout: true });
+    expect(paid).toMatchObject({ status: 'open', checkout_status: 'complete' });
+    expect((await client().billing.getTopupSession(session.id, { check_checkout: false })).checkout_status).toBeUndefined();
+    expect(queries).toEqual(['', '?check_checkout=true', '']);
+  });
+
+  it('reads webhook_deleted on a delivery and refuses to replay one to a deleted webhook', async () => {
+    const { webhook_deleted: _, ...older } = { ...delivery, id: 'dlv_2', status: 'delivered', error: null };
+    const replays: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/webhook-deliveries`, () => HttpResponse.json({ items: [delivery, older], next_cursor: null })),
+      http.post(`${BASE}/v1/webhook-deliveries/:id/replay`, ({ params }) => {
+        replays.push(String(params.id));
+        return HttpResponse.json(apiError('conflict', 'the webhook of this delivery was deleted', { reason: 'webhook_deleted' }), { status: 409 });
+      }),
+    );
+    const page = await client().webhooks.listDeliveries({ webhook_id: 'wh_1' });
+    expect(page.items[0]).toMatchObject({ webhook_deleted: true, next_attempt_at: null });
+    expect(page.items[1]!.webhook_deleted).toBeUndefined();
+    const err = await client()
+      .webhooks.replayDelivery('dlv_1')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect(err).toMatchObject({ status: 409, code: 'conflict', details: { reason: 'webhook_deleted' } });
+    expect(replays).toEqual(['dlv_1']);
   });
 });
