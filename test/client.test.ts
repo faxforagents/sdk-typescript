@@ -13,6 +13,7 @@ import {
   ScopeError,
   ServerError,
 } from '../src/index.js';
+import type { DataRequest, DeliveryDetail, Invitation, NumberOrder, StatementLine } from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, document, faxJob, http, quote, sequence, server } from './helpers.js';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -618,5 +619,330 @@ describe('API 1.20.5', () => {
     expect(err).toBeInstanceOf(ConflictError);
     expect(err).toMatchObject({ state: 'active', code: 'conflict', retryable: false });
     expect(new ConflictError({ status: 409, code: 'quote_consumed', message: 'used' }).state).toBeNull();
+  });
+});
+
+describe('API 1.20.6', () => {
+  const line: StatementLine = {
+    id: 'led_9',
+    created_at: '2026-11-15T09:00:00Z',
+    type: 'topup',
+    description: 'Top-up',
+    amount_micro: 25_000_000,
+    balance_after_micro: 125_000_000,
+    ref_type: 'topup_session',
+    ref_id: 'tus_1',
+  };
+
+  it('reads the statement as pages, follows the cursor and returns the CSV as text', async () => {
+    const queries: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/statement`, ({ request }) => {
+        const url = new URL(request.url);
+        queries.push(url.search);
+        if (!url.searchParams.get('cursor')) {
+          return HttpResponse.json({ items: [line], next_cursor: 'led_9' });
+        }
+        return HttpResponse.json({ items: [{ ...line, id: 'led_8', type: 'fax' }], next_cursor: null });
+      }),
+      http.get(`${BASE}/v1/statement.csv`, ({ request }) => {
+        queries.push(new URL(request.url).search);
+        return new HttpResponse('date,type,amount\n2026-11-15,topup,25.00\n', {
+          headers: { 'content-type': 'text/csv; charset=utf-8' },
+        });
+      }),
+    );
+    const page = await client().billing.statement({ kind: 'topup', from: '2026-11-01', to: '2026-11-15', limit: 10 });
+    expect(page.items[0]?.balance_after_micro).toBe(125_000_000);
+    expect(page.next_cursor).toBe('led_9');
+    const ids: string[] = [];
+    for await (const item of client().billing.iterStatement({ from: '2026-11-01' })) ids.push(item.id);
+    expect(ids).toEqual(['led_9', 'led_8']);
+    const csv = await client().billing.statementCsv({ to: '2026-11-15' });
+    expect(csv.split('\n')[1]).toBe('2026-11-15,topup,25.00');
+    expect(queries).toEqual([
+      '?kind=topup&from=2026-11-01&to=2026-11-15&limit=10',
+      '?from=2026-11-01',
+      '?from=2026-11-01&cursor=led_9',
+      '?to=2026-11-15',
+    ]);
+  });
+
+  it('renames a document and filters the list by source and text', async () => {
+    const id = document().id;
+    let sent: { body: unknown; key: string | null } | undefined;
+    const searches: string[] = [];
+    server.use(
+      http.patch(`${BASE}/v1/documents/${id}`, async ({ request }) => {
+        sent = { body: await request.json(), key: request.headers.get('idempotency-key') };
+        return HttpResponse.json(document({ filename: 'contract.pdf' }));
+      }),
+      http.get(`${BASE}/v1/documents`, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json({ items: [document({ source: 'inbound' })], next_cursor: null, total: 1 });
+      }),
+    );
+    const renamed = await client().documents.rename(id, { filename: 'contract' }, { idempotencyKey: 'k-rename' });
+    expect(renamed.filename).toBe('contract.pdf');
+    expect(sent).toEqual({ body: { filename: 'contract' }, key: 'k-rename' });
+    const page = await client().documents.list({ source: 'inbound', q: '+1415' });
+    expect(page.total).toBe(1);
+    const all = [];
+    for await (const doc of client().documents.iter({ exclude_source: 'inbound', limit: 5 })) all.push(doc);
+    expect(all).toHaveLength(1);
+    expect(searches).toEqual(['?source=inbound&q=%2B1415', '?exclude_source=inbound&limit=5']);
+  });
+
+  it('finds faxes by number or job id and filters the inbox by archived', async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/faxes`, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json({ items: [faxJob({ state: 'failed' })], next_cursor: null });
+      }),
+      http.get(`${BASE}/v1/inbox`, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json({ items: [], next_cursor: null, unread: 3 });
+      }),
+    );
+    const page = await client().faxes.list({ q: 'fax_1111', state: 'failed' });
+    expect(page.items[0]?.state).toBe('failed');
+    for await (const job of client().faxes.iter({ q: '(555) 000-0001' })) expect(job.state).toBe('failed');
+    const inbox = await client().inbox.list({ archived: false });
+    expect(inbox.unread).toBe(3);
+    expect(searches).toEqual(['?q=fax_1111&state=failed', '?q=%28555%29+000-0001', '?archived=false']);
+  });
+
+  it('reads one webhook delivery with what was sent', async () => {
+    const detail: DeliveryDetail = {
+      id: 'dlv_1',
+      webhook_id: 'wh_1',
+      webhook_url: 'https://example.com/hooks/fax',
+      event_id: 'evt_1',
+      event_type: 'fax.delivered',
+      attempt: 1,
+      status: 'delivered',
+      response_status: 200,
+      error: null,
+      duration_ms: 84,
+      replay_of: null,
+      schedule_s: [0, 60, 300],
+      next_attempt_at: null,
+      created_at: '2026-11-15T09:00:00Z',
+      delivered_at: '2026-11-15T09:00:01Z',
+      webhook_deleted: false,
+      request_headers: { 'webhook-id': 'evt_1' },
+      payload: { type: 'fax.delivered' },
+    };
+    server.use(http.get(`${BASE}/v1/webhook-deliveries/dlv_1`, () => HttpResponse.json(detail)));
+    const got = await client().webhooks.getDelivery('dlv_1');
+    expect(got.request_headers['webhook-id']).toBe('evt_1');
+    expect(got.payload).toEqual({ type: 'fax.delivered' });
+  });
+
+  it('removes a budget, archives an agent and lists the archived ones', async () => {
+    const calls: string[] = [];
+    server.use(
+      http.delete(`${BASE}/v1/budgets/bud_1`, ({ request }) => {
+        calls.push(`DELETE budget ${request.headers.get('idempotency-key')?.length}`);
+        return HttpResponse.json({ id: 'bud_1', deleted: false, archived: true });
+      }),
+      http.delete(`${BASE}/v1/agents/agent_1`, ({ request }) => {
+        calls.push(`DELETE agent ${request.headers.get('idempotency-key')}`);
+        return HttpResponse.json({ id: 'agent_1', deleted: false, archived: true, keys_revoked: 2 });
+      }),
+      http.get(`${BASE}/v1/budgets`, ({ request }) => {
+        calls.push(`GET budgets ${new URL(request.url).search}`);
+        return HttpResponse.json({ items: [] });
+      }),
+      http.get(`${BASE}/v1/agents`, ({ request }) => {
+        calls.push(`GET agents ${new URL(request.url).search}`);
+        return HttpResponse.json({ items: [] });
+      }),
+    );
+    expect(await client().billing.deleteBudget('bud_1')).toEqual({ id: 'bud_1', deleted: false, archived: true });
+    expect((await client().agents.archive('agent_1', { idempotencyKey: 'k-archive' })).keys_revoked).toBe(2);
+    await client().billing.listBudgets({ include_archived: true });
+    await client().billing.listBudgets();
+    await client().agents.list({ include_archived: true });
+    expect(calls).toEqual([
+      'DELETE budget 36',
+      'DELETE agent k-archive',
+      'GET budgets ?include_archived=true',
+      'GET budgets ',
+      'GET agents ?include_archived=true',
+    ]);
+  });
+
+  it('dismisses a failed number order, and a conflict for any other', async () => {
+    const order: NumberOrder = {
+      id: 'nor_1',
+      environment: 'test',
+      status: 'failed',
+      e164: '+15550001000',
+      country: 'US',
+      number_type: 'local',
+      number_id: null,
+      number: null,
+      provider: 'sandbox',
+      recurring_charge_micro: 2_000_000,
+      recurring_period: 'month',
+      first_month_hold_micro: 2_000_000,
+      currency: 'USD',
+      error: 'Sandbox carrier refused this number order.',
+      created_at: '2026-11-15T09:00:00Z',
+      completed_at: '2026-11-15T09:00:05Z',
+      dismissed_at: '2026-11-15T10:00:00Z',
+    };
+    let body: string | undefined;
+    server.use(
+      http.post(
+        `${BASE}/v1/number-orders/nor_1/dismissals`,
+        sequence(
+          () => HttpResponse.json(order),
+          () => HttpResponse.json(apiError('conflict', 'this order did not fail'), { status: 409 }),
+        ),
+      ),
+      http.post(`${BASE}/v1/number-orders/nor_2/dismissals`, async ({ request }) => {
+        body = await request.text();
+        return HttpResponse.json(order);
+      }),
+    );
+    expect((await client().numbers.dismissOrder('nor_1')).dismissed_at).toBe('2026-11-15T10:00:00Z');
+    const err = await client()
+      .numbers.dismissOrder('nor_1')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    await client().numbers.dismissOrder('nor_2');
+    expect(body).toBe('');
+  });
+
+  it('checks the lists of a draft policy and evaluates a plan for an agent', async () => {
+    const bodies: unknown[] = [];
+    server.use(
+      http.post(`${BASE}/v1/policy-rule-checks`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json({ already_allowed: [{ number: '+14155550100', countries: ['US'], prefixes: [] }] });
+      }),
+      http.post(`${BASE}/v1/policy-evaluations`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json({
+          decision: 'allow',
+          rule: null,
+          reason: 'allowed by policy',
+          policy_id: 'pol_1',
+          policy_version_id: 'polv_1',
+          policy_name: 'US only',
+          version: 1,
+          denials: [],
+          plan: {},
+          subject: 'agent_1',
+          under_policy: true,
+          approval_required: false,
+        });
+      }),
+    );
+    const check = await client().policies.checkRules({
+      allowed_destinations: ['+14155550100', '+447700900123'],
+      allowed_countries: ['US'],
+    });
+    expect(check.already_allowed[0]?.number).toBe('+14155550100');
+    const result = await client().policies.evaluate({ to: '+15550000001', agent_id: 'agent_1' });
+    expect(result).toMatchObject({ subject: 'agent_1', under_policy: true, approval_required: false });
+    expect(bodies).toEqual([
+      { allowed_destinations: ['+14155550100', '+447700900123'], allowed_countries: ['US'] },
+      { to: '+15550000001', agent_id: 'agent_1' },
+    ]);
+  });
+
+  it('mails an invitation again and makes a link to hand over', async () => {
+    const invitation: Invitation = {
+      id: 'inv_1',
+      email: 'sam@example.com',
+      role: 'member',
+      invited_by: 'user_1',
+      created_at: '2026-11-15T09:00:00Z',
+      expires_at: '2026-11-22T09:00:00Z',
+      accepted_at: null,
+    };
+    const keys: Array<string | null> = [];
+    server.use(
+      http.post(`${BASE}/v1/invitations/inv_1/resend`, ({ request }) => {
+        keys.push(request.headers.get('idempotency-key'));
+        return HttpResponse.json(invitation);
+      }),
+      http.post(`${BASE}/v1/invitations/inv_1/link`, ({ request }) => {
+        keys.push(request.headers.get('idempotency-key'));
+        return HttpResponse.json({ id: 'inv_1', url: 'https://app.example.test/join/abc', expires_at: invitation.expires_at });
+      }),
+    );
+    expect((await client().members.resendInvitation('inv_1')).expires_at).toBe('2026-11-22T09:00:00Z');
+    expect((await client().members.linkInvitation('inv_1', { idempotencyKey: 'k-link' })).url).toBe(
+      'https://app.example.test/join/abc',
+    );
+    expect(keys[0]).toHaveLength(36);
+    expect(keys[1]).toBe('k-link');
+  });
+
+  it('lists the data requests and withdraws a deletion', async () => {
+    const open: DataRequest = {
+      id: 'orq_1',
+      kind: 'deletion',
+      status: 'open',
+      created_at: '2026-11-15T09:00:00Z',
+      due_at: '2026-12-15T09:00:00Z',
+      closed_at: null,
+    };
+    server.use(
+      http.get(`${BASE}/v1/organizations/current/data-requests`, () => HttpResponse.json({ items: [open] })),
+      http.delete(
+        `${BASE}/v1/organizations/current/deletion-requests/orq_1`,
+        sequence(
+          () => HttpResponse.json({ ...open, status: 'withdrawn', closed_at: '2026-11-15T10:00:00Z' }),
+          () => HttpResponse.json(apiError('conflict', 'not open any more', { reason: 'request_closed' }), { status: 409 }),
+        ),
+      ),
+    );
+    expect((await client().organizations.listDataRequests()).items[0]?.status).toBe('open');
+    expect((await client().organizations.withdrawDataDeletion('orq_1')).status).toBe('withdrawn');
+    const err = await client()
+      .organizations.withdrawDataDeletion('orq_1')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect((err as ConflictError).details).toEqual({ reason: 'request_closed' });
+  });
+
+  it('finds the used approvals and closes a help request without a reason', async () => {
+    const bodies: unknown[] = [];
+    let search = '';
+    server.use(
+      http.get(`${BASE}/v1/approval-requests`, ({ request }) => {
+        search = new URL(request.url).search;
+        return HttpResponse.json({ items: [], next_cursor: null });
+      }),
+      http.post(`${BASE}/v1/approval-requests/apr_1/reject`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json({
+          id: 'apr_1',
+          kind: 'help',
+          status: 'rejected',
+          quote_id: null,
+          bound: {},
+          message: 'Which number should I use?',
+          requested_by: 'key_1',
+          decided_by: 'user_1',
+          reason: null,
+          consumed_by_job_id: null,
+          created_at: '2026-11-15T09:00:00Z',
+          expires_at: '2026-11-16T09:00:00Z',
+          decided_at: '2026-11-15T09:05:00Z',
+        });
+      }),
+    );
+    await client().approvals.list({ status: 'used' });
+    expect(search).toBe('?status=used');
+    expect((await client().approvals.reject('apr_1')).status).toBe('rejected');
+    await client().approvals.reject('apr_1', { reason: 'wrong number' });
+    expect(bodies).toEqual([{}, { reason: 'wrong number' }]);
   });
 });

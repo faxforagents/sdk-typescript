@@ -22,6 +22,10 @@ export const TERMINAL_STATES: ReadonlySet<string> = new Set(['delivered', 'parti
 
 type Mut = { idempotencyKey?: string };
 type Page = { cursor?: string; limit?: number };
+type DocumentQuery = NonNullable<S.operations['list_documents']['parameters']['query']>;
+type DocumentFilter = Pick<DocumentQuery, 'source' | 'exclude_source' | 'q'>;
+/** The filters of the wallet statement: one kind of line, and UTC days YYYY-MM-DD, both included. */
+type StatementFilter = { kind?: S.StatementLine['type']; from?: string; to?: string };
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -118,17 +122,26 @@ export class Documents extends Resource {
     await this.completeUpload(session.id, { sha256: await sha256Hex(bytes) });
     return this.create({ upload_id: session.id, filename });
   }
-  /** Documents, newest first. Scope: document:read. */
-  list(p: Page = {}): Promise<S.DocumentPage> {
+  /**
+   * Documents, newest first. `total` counts every document that matches. Scope: document:read.
+   * `source` keeps one source: upload, image, text, markdown, html or inbound, the files of received
+   * faxes. `exclude_source` leaves one out. `q` finds part of a file name, or of the sender's number for
+   * a received fax.
+   */
+  list(p: Page & DocumentFilter = {}): Promise<S.DocumentPage> {
     return this.h.request('GET', '/v1/documents', { params: p });
   }
-  /** Every document, following next_cursor. */
-  iter(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.Document, void, undefined> {
+  /** Every document that matches, following next_cursor. */
+  iter(p: Omit<Page, 'cursor'> & DocumentFilter = {}): AsyncGenerator<S.Document, void, undefined> {
     return paginate((cursor) => this.list({ ...p, cursor }));
   }
   /** Hash, pages and validation state. Scope: document:read. */
   get(documentId: string): Promise<S.Document> {
     return this.h.request('GET', `/v1/documents/${documentId}`);
+  }
+  /** Give a document a new file name. A name without `.pdf` gets it added. Scope: document:write. */
+  rename(documentId: string, body: S.DocumentUpdate, o: Mut = {}): Promise<S.Document> {
+    return this.h.request('PATCH', `/v1/documents/${documentId}`, { json: body, ...o });
   }
   /** Delete the document, its bytes and its previews. Scope: document:write. */
   delete(documentId: string, o: Mut = {}): Promise<S.Deleted> {
@@ -170,14 +183,18 @@ export class Faxes extends Resource {
     return this.h.request('POST', '/v1/faxes', { json: body, ...o });
   }
   /**
-   * Fax jobs, newest first. Scope: fax:read. `idempotency_key` finds the send made with that
-   * Idempotency-Key. It is a filter here, not a header. An empty result does not prove no fax was sent.
+   * Fax jobs, newest first. Scope: fax:read. `q` finds faxes by destination or by id. Text that starts
+   * with `fax_` is the start of a job id. Anything else is read as a fax number in any spelling. It
+   * combines with `state`.
+   *
+   * `idempotency_key` finds the send made with that Idempotency-Key. It is a filter here, not a header.
+   * An empty result does not prove no fax was sent.
    */
-  list(p: Page & { state?: string; idempotency_key?: string } = {}): Promise<S.FaxJobPage> {
+  list(p: Page & { state?: string; q?: string; idempotency_key?: string } = {}): Promise<S.FaxJobPage> {
     return this.h.request('GET', '/v1/faxes', { params: p });
   }
-  /** Every fax job, following next_cursor. */
-  iter(p: Omit<Page, 'cursor'> & { state?: string } = {}): AsyncGenerator<S.FaxJob, void, undefined> {
+  /** Every fax job that matches, following next_cursor. */
+  iter(p: Omit<Page, 'cursor'> & { state?: string; q?: string } = {}): AsyncGenerator<S.FaxJob, void, undefined> {
     return paginate((cursor) => this.list({ ...p, cursor }));
   }
   /** The job with its evidence once delivered or partial. Scope: fax:read. */
@@ -245,6 +262,13 @@ export class Webhooks extends Resource {
   listDeliveries(p: Page & { webhook_id?: string; event_id?: string } = {}): Promise<S.DeliveryPage> {
     return this.h.request('GET', '/v1/webhook-deliveries', { params: p });
   }
+  /**
+   * One delivery with the headers and the JSON body that were sent. The signing secret is never in it.
+   * Scope: webhook:admin.
+   */
+  getDelivery(deliveryId: string): Promise<S.DeliveryDetail> {
+    return this.h.request('GET', `/v1/webhook-deliveries/${deliveryId}`);
+  }
   /** Deliver the event again with the same event id. Scope: webhook:admin. */
   replayDelivery(deliveryId: string, o: Mut = {}): Promise<S.Delivery> {
     return this.h.request('POST', `/v1/webhook-deliveries/${deliveryId}/replay`, { json: {}, ...o });
@@ -274,6 +298,23 @@ export class Billing extends Resource {
   /** Every ledger entry, following next_cursor. */
   iterLedger(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.LedgerEntry, void, undefined> {
     return paginate((cursor) => this.listLedger({ ...p, cursor }));
+  }
+  /**
+   * The wallet statement, newest first: one line per event with the balance after it. Scope:
+   * billing:read. `kind` keeps one kind of line, a value of `StatementLine.type`. `from` and `to` are
+   * UTC days, YYYY-MM-DD, both included. `listLedger` stays the double-entry record.
+   */
+  statement(p: Page & StatementFilter = {}): Promise<S.StatementPage> {
+    return this.h.request('GET', '/v1/statement', { params: p });
+  }
+  /** Every statement line the filters select, following next_cursor. */
+  iterStatement(p: Omit<Page, 'cursor'> & StatementFilter = {}): AsyncGenerator<S.StatementLine, void, undefined> {
+    return paginate((cursor) => this.statement({ ...p, cursor }));
+  }
+  /** The statement as CSV text, every line the filters select in one answer. Scope: billing:read. */
+  async statementCsv(p: StatementFilter = {}): Promise<string> {
+    const resp = await this.h.send('GET', '/v1/statement.csv', { params: p });
+    return resp.text();
   }
   /** Billing settings of the organization. Scope: billing:read. */
   getSettings(): Promise<S.BillingSettings> {
@@ -318,9 +359,12 @@ export class Billing extends Resource {
   deleteAutoTopup(autoTopupId: string, o: Mut = {}): Promise<S.Deleted> {
     return this.h.request('DELETE', `/v1/auto-topups/${autoTopupId}`, o);
   }
-  /** Spending caps of this environment. Scope: billing:read. */
-  listBudgets(): Promise<S.BudgetList> {
-    return this.h.request('GET', '/v1/budgets');
+  /**
+   * Spending caps of this environment. `include_archived: true` adds the removed caps that have history.
+   * Scope: billing:read.
+   */
+  listBudgets(p: { include_archived?: boolean } = {}): Promise<S.BudgetList> {
+    return this.h.request('GET', '/v1/budgets', { params: p });
   }
   /** A daily or monthly cap for the organization, a project or an agent. Scope: billing:write. */
   createBudget(body: S.BudgetCreate, o: Mut = {}): Promise<S.Budget> {
@@ -329,6 +373,13 @@ export class Billing extends Resource {
   /** Change a cap's limit or status. Scope: billing:write. */
   patchBudget(budgetId: string, body: S.BudgetPatch, o: Mut = {}): Promise<S.Budget> {
     return this.h.request('PATCH', `/v1/budgets/${budgetId}`, { json: body, ...o });
+  }
+  /**
+   * Remove a cap. One that never charged a hold is deleted, one with history is archived.
+   * Scope: billing:write, never an agent key.
+   */
+  deleteBudget(budgetId: string, o: Mut = {}): Promise<S.BudgetRemoved> {
+    return this.h.request('DELETE', `/v1/budgets/${budgetId}`, o);
   }
   /** Usage rollups by day, direction, destination and project. Scope: billing:read. */
   usage(p: { from?: string; to?: string; group_by?: string; project_id?: string } = {}): Promise<S.UsageReport> {
@@ -418,7 +469,11 @@ export class Approvals extends Resource {
       ...o,
     });
   }
-  /** Requests, pending first. Scope: approval:read. */
+  /**
+   * Requests, pending first. Scope: approval:read. `status` is pending, approved, used, rejected, revoked
+   * or expired. `used` finds the approvals a send consumed. They read approved, and `consumed_by_job_id`
+   * names the fax.
+   */
   list(p: Page & { status?: string } = {}): Promise<S.ApprovalRequestPage> {
     return this.h.request('GET', '/v1/approval-requests', { params: p });
   }
@@ -444,8 +499,8 @@ export class Approvals extends Resource {
   approve(approvalId: string, body: S.ApprovalDecision = {}, o: Mut = {}): Promise<S.ApprovalRequest> {
     return this.h.request('POST', `/v1/approval-requests/${approvalId}/approve`, { json: body, ...o });
   }
-  /** Reject with a reason. Scope: approval:decide. */
-  reject(approvalId: string, body: S.ApprovalDecision, o: Mut = {}): Promise<S.ApprovalRequest> {
+  /** Reject with a reason. A help request closes without one, a send request needs it. Scope: approval:decide. */
+  reject(approvalId: string, body: S.ApprovalDecision = {}, o: Mut = {}): Promise<S.ApprovalRequest> {
     return this.h.request('POST', `/v1/approval-requests/${approvalId}/reject`, { json: body, ...o });
   }
   /** Revoke an approval nobody has used yet. Scope: approval:decide. */
@@ -495,16 +550,29 @@ export class Policies extends Resource {
   listVersions(policyId: string): Promise<S.PolicyVersionList> {
     return this.h.request('GET', `/v1/policies/${policyId}/versions`);
   }
-  /** Dry run: would this key's policies allow the send? Never executes. Scope: policy:read. */
+  /**
+   * Dry run: would the policies allow the send? Never executes. Scope: policy:read. With none of
+   * `key_id`, `agent_id` or `connection_id` the plan is evaluated for the calling key. Pass one of them to
+   * evaluate it for another key, agent or connected app of the organization. The answer names that
+   * caller in `subject` and says in `approval_required` whether a person would have to approve the send.
+   */
   evaluate(body: S.PolicyEvaluationCreate): Promise<S.PolicyEvaluation> {
     return this.h.request('POST', '/v1/policy-evaluations', { json: body });
+  }
+  /**
+   * Check the destination lists of a draft policy against each other. Writes nothing. Scope: policy:read.
+   * `already_allowed` names the numbers of `allowed_destinations` that a listed country or prefix allows
+   * anyway. For those numbers the number list adds nothing.
+   */
+  checkRules(body: S.PolicyRuleCheckCreate): Promise<S.PolicyRuleCheck> {
+    return this.h.request('POST', '/v1/policy-rule-checks', { json: body });
   }
 }
 
 export class Agents extends Resource {
-  /** Agent identities. Scope: agent:read. */
-  list(): Promise<S.AgentList> {
-    return this.h.request('GET', '/v1/agents');
+  /** Agent identities. `include_archived: true` adds the archived ones. Scope: agent:read. */
+  list(p: { include_archived?: boolean } = {}): Promise<S.AgentList> {
+    return this.h.request('GET', '/v1/agents', { params: p });
   }
   /** Register an agent identity. Scope: agent:admin, never an agent key. */
   create(body: S.AgentCreate, o: Mut = {}): Promise<S.Agent> {
@@ -518,6 +586,13 @@ export class Agents extends Resource {
   update(agentId: string, body: S.AgentUpdate, o: Mut = {}): Promise<S.Agent> {
     return this.h.request('PATCH', `/v1/agents/${agentId}`, { json: body, ...o });
   }
+  /**
+   * Archive an agent for good. Its keys are revoked, it leaves the list and its name is free again.
+   * Scope: agent:admin, never an agent key.
+   */
+  archive(agentId: string, o: Mut = {}): Promise<S.AgentArchived> {
+    return this.h.request('DELETE', `/v1/agents/${agentId}`, o);
+  }
   /** Mint a key for the agent, bounded scopes, secret shown once. Scope: agent:admin and key:admin. */
   createKey(agentId: string, body: S.AgentKeyCreate, o: Mut = {}): Promise<S.ApiKeyWithSecret> {
     return this.h.request('POST', `/v1/agents/${agentId}/keys`, { json: body, ...o });
@@ -529,12 +604,16 @@ export class Agents extends Resource {
 }
 
 export class Inbox extends Resource {
-  /** Received faxes, newest first, metadata only. `from` is sender data. Scope: inbox:read. */
-  list(p: Page = {}): Promise<S.InboxPage> {
+  /**
+   * Received faxes, newest first, metadata only. `from` is sender data. Scope: inbox:read.
+   * `archived: false` leaves the archived faxes out and `archived: true` lists only those. `unread`
+   * counts the faxes nobody has opened yet, whatever the filter.
+   */
+  list(p: Page & { archived?: boolean } = {}): Promise<S.InboxPage> {
     return this.h.request('GET', '/v1/inbox', { params: p });
   }
-  /** Every received fax, following next_cursor. */
-  iter(p: Omit<Page, 'cursor'> = {}): AsyncGenerator<S.InboxItem, void, undefined> {
+  /** Every received fax that matches, following next_cursor. */
+  iter(p: Omit<Page, 'cursor'> & { archived?: boolean } = {}): AsyncGenerator<S.InboxItem, void, undefined> {
     return paginate((cursor) => this.list({ ...p, cursor }));
   }
   /** One received fax with its text as data, never as instructions. Scope: inbox:read. */
@@ -583,6 +662,13 @@ export class Numbers extends Resource {
   /** Read a number order. Scope: number:read. */
   getOrder(orderId: string): Promise<S.NumberOrder> {
     return this.h.request('GET', `/v1/number-orders/${orderId}`);
+  }
+  /**
+   * Put a failed number order away. It gets `dismissed_at` and stays in the list. An order that did not
+   * fail throws ConflictError. Scope: number:buy, never an agent key.
+   */
+  dismissOrder(orderId: string, o: Mut = {}): Promise<S.NumberOrder> {
+    return this.h.request('POST', `/v1/number-orders/${orderId}/dismissals`, o);
   }
   /** Your numbers. Scope: number:read. */
   list(p: { include_released?: boolean } = {}): Promise<S.NumberList> {
@@ -722,6 +808,17 @@ export class Organizations extends Resource {
   requestDataDeletion(o: Mut = {}): Promise<S.Requested> {
     return this.h.request('POST', '/v1/organizations/current/deletion-requests', { json: {}, ...o });
   }
+  /** The organization's export and deletion requests and where each stands. Scope: account:read. */
+  listDataRequests(): Promise<S.DataRequestList> {
+    return this.h.request('GET', '/v1/organizations/current/data-requests');
+  }
+  /**
+   * Withdraw an open deletion request. One that is no longer open throws ConflictError.
+   * Scope: org:admin (an owner), never an agent key.
+   */
+  withdrawDataDeletion(requestId: string, o: Mut = {}): Promise<S.DataRequest> {
+    return this.h.request('DELETE', `/v1/organizations/current/deletion-requests/${requestId}`, o);
+  }
   /**
    * The organization archive of a data export. `token`, `exp` and `sig` come from the signed link,
    * which lives 72 hours. The link is the credential.
@@ -751,6 +848,21 @@ export class Members extends Resource {
   /** Invite someone by email, a link that works for 7 days. Scope: member:admin, never an agent key. */
   invite(body: S.InvitationCreate, o: Mut = {}): Promise<S.Invitation> {
     return this.h.request('POST', '/v1/invitations', { json: body, ...o });
+  }
+  /**
+   * Mail an open invitation again, with a new link for 7 days. The old link stops working.
+   * Scope: member:admin, never an agent key.
+   */
+  resendInvitation(invitationId: string, o: Mut = {}): Promise<S.Invitation> {
+    return this.h.request('POST', `/v1/invitations/${invitationId}/resend`, o);
+  }
+  /**
+   * A new link for an open invitation, to hand over yourself. No mail is sent, the old link stops working
+   * and `url` is shown once. Scope: member:admin, never an agent key. The link joins the organization
+   * only for a person signed in with the invited address.
+   */
+  linkInvitation(invitationId: string, o: Mut = {}): Promise<S.InvitationLink> {
+    return this.h.request('POST', `/v1/invitations/${invitationId}/link`, o);
   }
   /** Withdraw an invitation. Scope: member:admin, never an agent key. */
   async revokeInvitation(invitationId: string, o: Mut = {}): Promise<void> {
@@ -788,6 +900,26 @@ const tokenHeader = (orderToken?: string): Record<string, string> | undefined =>
 
 /** The step of a one-time order that is waiting: what `OneTimeOrder.next` says. */
 export type OneTimeNext = S.OneTimeOrder['next'];
+
+/** The multipart form of a one-time document: the text fields and the part `file`. */
+function oneTimeForm(
+  fields: Record<string, unknown>,
+  file: Uint8Array | ArrayBuffer | Blob,
+  filename: string | undefined,
+  contentType: string | undefined,
+): FormData {
+  const name = filename ?? 'document.pdf';
+  const dot = name.lastIndexOf('.');
+  const suffix = dot >= 0 ? name.slice(dot).toLowerCase() : '';
+  const type = contentType ?? ONE_TIME_CONTENT_TYPES[suffix] ?? 'application/pdf';
+  const form = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    if (value !== undefined && value !== null) form.set(key, String(value));
+  }
+  const part = file instanceof Blob ? file : new Blob([file as BlobPart], { type });
+  form.set('file', part.type === type ? part : new Blob([part], { type }), name);
+  return form;
+}
 
 /** What `oneTimeSends.create` takes: the fields of the order and exactly one of `file` or `text`. */
 export interface OneTimeCreate {
@@ -830,6 +962,26 @@ export class OneTimeSends extends Resource {
     return this.h.request('GET', '/v1/one-time-sends/config');
   }
   /**
+   * Count the pages of a document before an order is made. Nothing is stored. It works without an API
+   * key. Pass exactly one of `file` or `text`, as for `create`. The answer has `document_pages` and the
+   * first page as a small PNG in `thumbnail_png_base64`. A file the create would refuse throws the same
+   * error here, such as too_many_pages or encrypted_pdf. With a key: fax:send.
+   */
+  preview(
+    body: Pick<OneTimeCreate, 'file' | 'filename' | 'content_type' | 'text' | 'text_format'>,
+  ): Promise<S.OneTimeInspection> {
+    const { file, filename, content_type, ...fields } = body;
+    if ((file === undefined) === (fields.text === undefined)) {
+      throw new Error('pass exactly one of file or text');
+    }
+    if (file === undefined) {
+      return this.h.request('POST', '/v1/one-time-sends/preview', { json: fields });
+    }
+    return this.h.request('POST', '/v1/one-time-sends/preview', {
+      body: oneTimeForm(fields, file, filename, content_type),
+    });
+  }
+  /**
    * Create an order from exactly one of `file` or `text`. Nothing is charged or sent. `email` is required
    * without a key. A test key is refused: an order is always live. Scope with a key: fax:send.
    */
@@ -841,17 +993,10 @@ export class OneTimeSends extends Resource {
     if (file === undefined) {
       return this.h.request('POST', '/v1/one-time-sends', { json: fields, ...o });
     }
-    const name = filename ?? 'document.pdf';
-    const dot = name.lastIndexOf('.');
-    const suffix = dot >= 0 ? name.slice(dot).toLowerCase() : '';
-    const type = content_type ?? ONE_TIME_CONTENT_TYPES[suffix] ?? 'application/pdf';
-    const form = new FormData();
-    for (const [key, value] of Object.entries(fields)) {
-      if (value !== undefined && value !== null) form.set(key, String(value));
-    }
-    const part = file instanceof Blob ? file : new Blob([file as BlobPart], { type });
-    form.set('file', part.type === type ? part : new Blob([part], { type }), name);
-    return this.h.request('POST', '/v1/one-time-sends', { body: form, ...o });
+    return this.h.request('POST', '/v1/one-time-sends', {
+      body: oneTimeForm(fields, file, filename, content_type),
+      ...o,
+    });
   }
   /**
    * Turn a live quote the wallet does not cover into an order. Scope: fax:send, a live key. The price
@@ -881,6 +1026,16 @@ export class OneTimeSends extends Resource {
    */
   get(orderId: string, o: Tok = {}): Promise<S.OneTimeOrder> {
     return this.h.request('GET', `/v1/one-time-sends/${orderId}`, { headers: tokenHeader(o.orderToken) });
+  }
+  /**
+   * One page of the order as PNG bytes. Page 1 is the cover sheet, then the document follows.
+   * `preview.pages` on the order says how many pages there are. A page that is not held any more throws
+   * NotFoundError. Read it with a key of the order's organization (scope fax:read) or with `orderToken`.
+   */
+  getPage(orderId: string, pageNumber: number, o: Tok = {}): Promise<Uint8Array> {
+    return this.h.bytes('GET', `/v1/one-time-sends/${orderId}/pages/${pageNumber}`, {
+      headers: tokenHeader(o.orderToken),
+    });
   }
   /**
    * Poll until `next` is `until` (done by default), or the order is done. Returns the last order read,

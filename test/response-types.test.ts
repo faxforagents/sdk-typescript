@@ -90,3 +90,18 @@ it("declares every property in the saved serializer shapes", () => {
   const uploadSession = ["completed_at", "content_type", "created_at", "declared_size", "expires_at", "filename", "id", "received_size", "sha256", "status"] satisfies Array<keyof Declared<S.UploadSession>>;
   expectTypeOf(uploadSession).toExtend<Array<keyof Declared<S.UploadSession>>>();
 });
+
+it('keeps the response fields of API 1.20.6 optional', () => {
+  // The server gives these a default. The saved spec leaves the default out, so older payloads still fit.
+  expectTypeOf<S.Balance['held_jobs']>().toEqualTypeOf<number | undefined>();
+  expectTypeOf<S.InboxPage['unread']>().toEqualTypeOf<number | undefined>();
+  expectTypeOf<S.Quote['route_paused']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.InventoryNumber['owned']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.OneTimeQueue['paused']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.AgentActivity['actor_label']>().toEqualTypeOf<string | undefined>();
+  expectTypeOf<S.Webhook['failing']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.WebhookWithSecret['failing']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.DocumentPage['total']>().toEqualTypeOf<number | null | undefined>();
+  expectTypeOf<S.Receipt['seller']>().toEqualTypeOf<S.Seller | null | undefined>();
+  expectTypeOf<S.PolicyEvaluation['subject']>().toEqualTypeOf<string | null | undefined>();
+});

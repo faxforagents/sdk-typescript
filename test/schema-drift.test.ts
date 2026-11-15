@@ -4,6 +4,8 @@ import ts from 'typescript';
 import { expect, it } from 'vitest';
 import { parse } from 'yaml';
 
+// The check compiles src/schema.d.ts with the TypeScript API. At 161 operations that takes about five
+// seconds, the default limit of vitest, so the test sets its own.
 it('declares every schema property and route in the saved live OpenAPI document', () => {
   const spec = parse(readFileSync(new URL('../spec/openapi.yaml', import.meta.url), 'utf8')) as {
     components: { schemas: Record<string, { properties?: Record<string, unknown> }> };
@@ -59,4 +61,4 @@ it('declares every schema property and route in the saved live OpenAPI document'
       expect(checker.typeToString(declaredType)).toBe(checker.typeToString(operationType));
     }
   }
-});
+}, 30_000);

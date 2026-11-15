@@ -18,6 +18,7 @@ const COVERED: Record<string, string> = {
   create_document: 'documents.create',
   list_documents: 'documents.list',
   get_document: 'documents.get',
+  rename_document: 'documents.rename',
   delete_document: 'documents.delete',
   get_document_validation: 'documents.getValidation',
   get_document_download: 'documents.getDownload',
@@ -41,10 +42,13 @@ const COVERED: Record<string, string> = {
   rotate_webhook_secret: 'webhooks.rotateSecret',
   test_webhook: 'webhooks.test',
   list_webhook_deliveries: 'webhooks.listDeliveries',
+  get_webhook_delivery: 'webhooks.getDelivery',
   replay_webhook_delivery: 'webhooks.replayDelivery',
   list_events: 'events.list',
   get_balance: 'billing.balance',
   list_ledger: 'billing.listLedger',
+  get_statement: 'billing.statement',
+  get_statement_csv: 'billing.statementCsv',
   get_billing_settings: 'billing.getSettings',
   patch_billing_settings: 'billing.patchSettings',
   create_topup_session: 'billing.createTopupSession',
@@ -57,6 +61,7 @@ const COVERED: Record<string, string> = {
   list_budgets: 'billing.listBudgets',
   create_budget: 'billing.createBudget',
   patch_budget: 'billing.patchBudget',
+  delete_budget: 'billing.deleteBudget',
   get_usage: 'billing.usage',
   create_usage_export: 'billing.createUsageExport',
   get_usage_export: 'billing.getUsageExport',
@@ -88,10 +93,12 @@ const COVERED: Record<string, string> = {
   update_policy: 'policies.update',
   list_policy_versions: 'policies.listVersions',
   create_policy_evaluation: 'policies.evaluate',
+  create_policy_rule_check: 'policies.checkRules',
   list_agents: 'agents.list',
   create_agent: 'agents.create',
   get_agent: 'agents.get',
   update_agent: 'agents.update',
+  archive_agent: 'agents.archive',
   create_agent_key: 'agents.createKey',
   get_agent_activity: 'agents.activity',
   list_inbox: 'inbox.list',
@@ -105,6 +112,7 @@ const COVERED: Record<string, string> = {
   create_number_order: 'numbers.createOrder',
   list_number_orders: 'numbers.listOrders',
   get_number_order: 'numbers.getOrder',
+  dismiss_number_order: 'numbers.dismissOrder',
   list_numbers: 'numbers.list',
   get_number: 'numbers.get',
   update_number: 'numbers.update',
@@ -133,20 +141,26 @@ const COVERED: Record<string, string> = {
   update_current_organization: 'organizations.updateCurrent',
   request_data_export: 'organizations.requestDataExport',
   request_data_deletion: 'organizations.requestDataDeletion',
+  list_data_requests: 'organizations.listDataRequests',
+  withdraw_data_deletion: 'organizations.withdrawDataDeletion',
   download_export_archive: 'organizations.downloadExportArchive',
   list_members: 'members.list',
   update_member: 'members.update',
   remove_member: 'members.remove',
   list_invitations: 'members.listInvitations',
   create_invitation: 'members.invite',
+  resend_invitation: 'members.resendInvitation',
+  link_invitation: 'members.linkInvitation',
   revoke_invitation: 'members.revokeInvitation',
   list_oauth_grants: 'oauth.listGrants',
   revoke_oauth_grant: 'oauth.revokeGrant',
   get_one_time_config: 'oneTimeSends.config',
+  preview_one_time_document: 'oneTimeSends.preview',
   create_one_time_order: 'oneTimeSends.create',
   create_one_time_order_from_quote: 'oneTimeSends.createFromQuote',
   list_one_time_orders: 'oneTimeSends.list',
   get_one_time_order: 'oneTimeSends.get',
+  get_one_time_order_page: 'oneTimeSends.getPage',
   get_one_time_order_by_token: 'oneTimeSends.getByToken',
   read_one_time_order_by_token: 'oneTimeSends.readByToken',
   create_one_time_checkout: 'oneTimeSends.checkout',
@@ -162,9 +176,9 @@ const GENERATED_ONLY: string[] = [];
 it('accounts for every operationId and retains every existing client method', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const ids = new Set([...yaml.matchAll(/^\s+operationId: (\w+)$/gm)].map((m) => m[1]!));
-  expect(Object.keys(COVERED)).toHaveLength(147);
+  expect(Object.keys(COVERED)).toHaveLength(161);
   expect(GENERATED_ONLY).toHaveLength(0);
-  expect(ids.size).toBe(147);
+  expect(ids.size).toBe(161);
   expect([...ids].sort()).toEqual([...Object.keys(COVERED), ...GENERATED_ONLY].sort());
   const c = new FaxForAgents({ apiKey: 'ffa_test_x' }) as unknown as Record<string, Record<string, unknown>>;
   for (const target of Object.values(COVERED)) {
@@ -176,7 +190,7 @@ it('accounts for every operationId and retains every existing client method', ()
 it('saves only the paths of the public document', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const paths = [...yaml.matchAll(/^  (\/[^\s:]+):$/gm)].map((m) => m[1]!);
-  expect(paths).toHaveLength(117);
+  expect(paths).toHaveLength(128);
   const internal = paths.filter(
     (p) =>
       !p.startsWith('/v1/') ||

@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.7.0 (2026-11-15)
+
+Follows API 1.20.6. The saved spec has 161 operations and the types are regenerated from it.
+Every operation has a client method.
+
+New: `billing.statement({ kind, from, to })` reads the wallet statement, one line per event with the balance after it.
+`billing.iterStatement` follows `next_cursor`, and `billing.statementCsv` returns the same lines as CSV text. Scope `billing:read`.
+New: `documents.rename(documentId, { filename })`. A name without `.pdf` gets it added. Scope `document:write`.
+New: `webhooks.getDelivery(deliveryId)` returns `DeliveryDetail`, with the headers and the JSON body that were sent.
+New: `billing.deleteBudget(budgetId)`. A budget that never charged a hold is deleted, and one with history is archived.
+New: `agents.archive(agentId)` revokes the agent's keys and takes it out of the list. Its name is free again.
+New: `numbers.dismissOrder(orderId)` puts a failed number order away. Any other order throws `ConflictError`.
+New: `policies.checkRules(body)` names the numbers of a draft's `allowed_destinations` that a listed country or prefix already allows. It writes nothing.
+New: `members.resendInvitation` mails an open invitation again. `members.linkInvitation` answers a new link once, for you to hand over. Both stop the old link.
+New: `organizations.listDataRequests()` and `organizations.withdrawDataDeletion(requestId)`.
+New: `oneTimeSends.preview({ file })` or `preview({ text })` counts the pages of a document before any order exists, with no key.
+New: `oneTimeSends.getPage(orderId, pageNumber)` returns one page of an order as PNG bytes. Page 1 is the cover sheet.
+
+New parameters: `faxes.list` and `faxes.iter` take `q`, a fax number or the start of a job id.
+`documents.list` and `documents.iter` take `source`, `exclude_source` and `q`. `inbox.list` and `inbox.iter` take `archived`.
+`agents.list` and `billing.listBudgets` take `include_archived`. `PolicyEvaluationCreate` has `key_id`, `agent_id` and `connection_id`.
+
+Changed: the body of `approvals.reject` is optional. A help request closes without a reason. A send request still needs one, and the API answers 422 without it.
+`approvals.list({ status: 'used' })` finds the approvals a send consumed. They read `approved`, and `consumed_by_job_id` names the fax.
+Before API 1.20.6 such an approval read `expired` once its time had passed.
+
+New fields, among them `DocumentPage.total`, `InboxPage.unread`, `Balance.held_jobs`, `Quote.route_paused` and `Document.converted_from`.
+`Receipt` has `seller`, `provider_ref` and `sender_name`. `ApprovalRequest` has `document`, `requested_by_name` and `decided_by_name`.
+18 new types, among them `StatementPage`, `StatementLine`, `PolicyRuleCheck`, `DeliveryDetail` and `OneTimeInspection`.
+Eight of the new response fields have a server default: `held_jobs`, `unread`, `route_paused`, `owned`, `paused`, `actor_label` and `failing` twice. The saved spec leaves the default out, so they stay optional.
+
+The API now refuses an organization name over 80 characters with 422. It took 200 before.
+Nothing is removed. Other type names, fields and optionality are kept.
+
 ## 0.6.1 (2026-11-15)
 
 Follows API 1.20.5. The saved spec has 147 operations and the types are regenerated from it.
