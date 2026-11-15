@@ -88,6 +88,9 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
   finds a document by file name, or a received fax's file by the sender's number.
 - `oneTimeSends.preview({ file })` counts the pages of a document before any order exists, with no key.
   `oneTimeSends.checkCover({ message })` says whether a cover message fits on its page.
+- `billing.getTopupSession(id, { check_checkout: true })` asks Stripe about the hosted Checkout of an
+  open top-up. `checkout_status` reads `open`, `complete`, `processing` or `expired` while the wallet
+  waits for Stripe's event.
 - `faxes.wait(faxId)` and `approvals.wait(approvalId)` poll with a timeout.
 - `verifyWebhook(secret, headers, body)` checks the Standard Webhooks signature on a delivery.
 - Types are generated from the public OpenAPI document with openapi-typescript. Money is an integer
@@ -295,12 +298,13 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.20.9.
+`spec/openapi.yaml` follows the public document at API version 1.20.10.
 It holds the paths and schemas of that document and nothing else: 163 operations in 130 paths.
 Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
 A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
 0.8.0 replaced five of them with the public declarations, such as `Quote.policy_evaluation`.
 Fields the server gives a default stay optional in the types.
+0.9.0 leaves `Delivery.webhook_deleted` optional, where the public document requires it.
 To refresh it, take the public document, keep those fields, then run `npm run gen:types`.
 Every operation has a client method. `test/surface.test.ts` lists them and fails on an internal path.
 Keep new response fields optional so older payloads and existing callers remain valid.

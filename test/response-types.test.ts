@@ -118,3 +118,15 @@ it('keeps the response fields of API 1.20.8 optional', () => {
   expectTypeOf<S.OneTimeCoverRoom['lines_left']>().toEqualTypeOf<number | null | undefined>();
   expectTypeOf<S.OneTimeCoverRoom['fits']>().toEqualTypeOf<boolean>();
 });
+
+it('keeps the response fields of API 1.20.10 optional', () => {
+  // The public document requires Delivery.webhook_deleted. The saved spec leaves it out of required.
+  expectTypeOf<S.Delivery['webhook_deleted']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.DeliveryDetail['webhook_deleted']>().toEqualTypeOf<boolean>();
+  expectTypeOf<S.TopupSession['checkout_status']>().toEqualTypeOf<
+    'open' | 'complete' | 'processing' | 'expired' | null | undefined
+  >();
+  expectTypeOf<NonNullable<S.operations['get_topup_session']['parameters']['query']>>().toEqualTypeOf<{
+    check_checkout?: boolean;
+  }>();
+});

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { FaxForAgents, NotFoundError, ORDER_TOKEN_HEADER, PaymentRequiredError, ServerError } from '../src/index.js';
+import { FaxForAgents, InvalidRequestError, NotFoundError, ORDER_TOKEN_HEADER, PaymentRequiredError, ServerError } from '../src/index.js';
 import type { OneTimeOrder, OneTimeOrderCreated } from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, http, sequence, server } from './helpers.js';
 
@@ -480,5 +480,23 @@ describe('one-time cover check (API 1.20.8)', () => {
       .catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ServerError);
     expect(err).toMatchObject({ status: 503, code: 'one_time_unavailable' });
+  });
+});
+
+describe('one-time cover check limits (API 1.20.10)', () => {
+  it('throws InvalidRequestError for a field over the limit of the create', async () => {
+    const seen: unknown[] = [];
+    server.use(
+      http.post(`${ROOT}/cover-checks`, async ({ request }) => {
+        seen.push(await request.json());
+        return HttpResponse.json(apiError('invalid_request', 'cover.message is longer than 2000 characters', { field: 'cover' }), { status: 422 });
+      }),
+    );
+    const err = await keyless()
+      .oneTimeSends.checkCover({ message: 'x'.repeat(2001) })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(InvalidRequestError);
+    expect(err).toMatchObject({ status: 422, code: 'invalid_request', details: { field: 'cover' } });
+    expect(seen).toEqual([{ message: 'x'.repeat(2001) }]);
   });
 });
