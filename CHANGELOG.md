@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.1 (2026-11-16)
+
+Follows API 1.20.11. The saved spec has 163 operations and the types are regenerated from it.
+Only descriptions changed. Nothing is added or removed.
+
+The doc comment of `TopupSession.checkout_status` says it is also null for a top-up that is not open.
+Stripe is asked about an open top-up only, as the doc comment of `billing.getTopupSession` already said.
+The 409 of `replay_webhook_delivery` has a description of its own, which names `details.reason` `webhook_deleted`.
+Its type has the same shape as before, the error envelope.
+`webhooks.replayDelivery` already throws `ConflictError` with `details.reason` `webhook_deleted` there, as 0.9.0 documented.
+
 ## 0.9.0 (2026-11-15)
 
 Follows API 1.20.10. The saved spec has 163 operations and the types are regenerated from it.
