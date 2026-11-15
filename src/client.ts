@@ -1089,8 +1089,9 @@ export class OneTimeSends extends Resource {
   }
   /**
    * Open the hosted card payment and return its `checkout_url`. Scope with a key: fax:send. The card is
-   * held on that page and charged only for the pages the carrier confirms. The rest of the hold is
-   * released. A second call answers the same page while it can still be paid.
+   * held on that page, not charged. A failed fax costs nothing. A fax that stops part way is charged the
+   * price of the pages the carrier confirms, and the rest of the hold is released. A second call answers
+   * the same page while it can still be paid.
    *
    * An order whose `aup_accepted` is false needs `acceptAup: true` once: the person who pays accepts
    * the acceptable use policy and the terms. The server takes it with `orderToken` or a session, never

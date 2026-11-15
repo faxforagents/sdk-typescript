@@ -1304,7 +1304,7 @@ export interface paths {
         put?: never;
         /**
          * Open the card payment of a one-time order
-         * @description Answers the hosted payment page of the order. The card is held there, not charged. It is charged only for the pages the carrier confirms, and the rest of the hold is released. A second call answers the same page while it can still be paid, and a new one after it expired. An order whose aup_accepted is false needs {"accept_aup": true} in the body once, from the status token or a session: the person who pays accepts the policy, never a key.
+         * @description Answers the hosted payment page of the order. The card is held there, not charged. A failed fax costs nothing. A fax that stops part way is charged the price of the pages the carrier confirms, and the rest of the hold is released. A second call answers the same page while it can still be paid, and a new one after it expired. An order whose aup_accepted is false needs {"accept_aup": true} in the body once, from the status token or a session: the person who pays accepts the policy, never a key.
          */
         post: operations["create_one_time_checkout"];
         delete?: never;
