@@ -54,6 +54,7 @@ const COVERED: Record<string, string> = {
   create_topup_session: 'billing.createTopupSession',
   list_topup_sessions: 'billing.listTopupSessions',
   get_topup_session: 'billing.getTopupSession',
+  cancel_topup_session: 'billing.cancelTopupSession',
   get_topup_receipt: 'billing.getTopupReceipt',
   list_auto_topups: 'billing.listAutoTopups',
   create_auto_topup: 'billing.createAutoTopup',
@@ -156,6 +157,7 @@ const COVERED: Record<string, string> = {
   revoke_oauth_grant: 'oauth.revokeGrant',
   get_one_time_config: 'oneTimeSends.config',
   preview_one_time_document: 'oneTimeSends.preview',
+  create_one_time_cover_check: 'oneTimeSends.checkCover',
   create_one_time_order: 'oneTimeSends.create',
   create_one_time_order_from_quote: 'oneTimeSends.createFromQuote',
   list_one_time_orders: 'oneTimeSends.list',
@@ -176,9 +178,9 @@ const GENERATED_ONLY: string[] = [];
 it('accounts for every operationId and retains every existing client method', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const ids = new Set([...yaml.matchAll(/^\s+operationId: (\w+)$/gm)].map((m) => m[1]!));
-  expect(Object.keys(COVERED)).toHaveLength(161);
+  expect(Object.keys(COVERED)).toHaveLength(163);
   expect(GENERATED_ONLY).toHaveLength(0);
-  expect(ids.size).toBe(161);
+  expect(ids.size).toBe(163);
   expect([...ids].sort()).toEqual([...Object.keys(COVERED), ...GENERATED_ONLY].sort());
   const c = new FaxForAgents({ apiKey: 'ffa_test_x' }) as unknown as Record<string, Record<string, unknown>>;
   for (const target of Object.values(COVERED)) {
@@ -190,7 +192,7 @@ it('accounts for every operationId and retains every existing client method', ()
 it('saves only the paths of the public document', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const paths = [...yaml.matchAll(/^  (\/[^\s:]+):$/gm)].map((m) => m[1]!);
-  expect(paths).toHaveLength(128);
+  expect(paths).toHaveLength(130);
   const internal = paths.filter(
     (p) =>
       !p.startsWith('/v1/') ||

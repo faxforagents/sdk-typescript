@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.8.0 (2026-11-15)
+
+Follows API 1.20.8. The saved spec has 163 operations and the types are regenerated from it.
+Every operation has a client method.
+
+New: `billing.cancelTopupSession(topupSessionId)` closes the hosted Checkout of an open top-up and returns it with status `canceled`.
+Canceling a setup payment also turns off the auto top-up that waited on it. Scope `billing:write`, never an agent key.
+A top-up that was paid, declined or charged off session throws `ConflictError`, with its status in `details.status`.
+New: `oneTimeSends.checkCover(body)` takes the cover fields typed so far and says whether the message fits on the cover page. It needs no key.
+It returns the new type `OneTimeCoverRoom` with `fits`, `message_chars`, `lines_left` and `fits_chars`. Nothing is stored.
+
+New parameter: `billing.statement`, `billing.iterStatement` and `billing.statementCsv` take `type`, the type each line shows.
+`kind` still works. It is the same filter by its older name, and two different types in both throw `InvalidRequestError`.
+
+Changed: five fields that the saved spec declared itself now follow the public document.
+`Quote.policy_evaluation` is a `PolicyVerdict` and `PolicyEvaluation.usage` a `PolicyUsage`. Both were plain records, and both still take other keys.
+`Quote.pricing` is `'per_page' | 'one_time'`, where it was a string. `PolicyEvaluation.decision` is `'allow' | 'deny'`.
+`FaxJob.approval_id` and `FaxJob.policy_version_id` keep their type. `FaxJob.route_paused` is new.
+The server gives `route_paused` and `pricing` a default. The saved spec leaves it out, so both stay optional.
+
+`identity.rotateApiKey` on a key that expired throws `ConflictError` with `details.reason` set to `key_expired`. Create a new key to replace it.
+`PaymentReceipt.pdf_url` is null for an automatic top-up, which has no invoice. Its `url` still opens the receipt.
+A statement line of a hold or a release names what it was for in `ref_type`: `fax_job`, `extraction` or `number_order`.
+The card of a one-time order is held, not authorized, in the doc comments and the type descriptions.
+New types `OneTimeCoverCheck`, `OneTimeCoverRoom`, `PolicyVerdict` and `PolicyUsage`. Other type names, fields and optionality are kept.
+
 ## 0.7.0 (2026-11-15)
 
 Follows API 1.20.6. The saved spec has 161 operations and the types are regenerated from it.

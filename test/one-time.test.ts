@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { FaxForAgents, NotFoundError, ORDER_TOKEN_HEADER, PaymentRequiredError } from '../src/index.js';
+import { FaxForAgents, NotFoundError, ORDER_TOKEN_HEADER, PaymentRequiredError, ServerError } from '../src/index.js';
 import type { OneTimeOrder, OneTimeOrderCreated } from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, http, sequence, server } from './helpers.js';
 
@@ -440,5 +440,45 @@ describe('one-time preview and pages (API 1.20.6)', () => {
       .oneTimeSends.getPage(ORDER, 9, { orderToken: TOKEN })
       .catch((e: unknown) => e);
     expect(err).toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe('one-time cover check (API 1.20.8)', () => {
+  it('measures the room for the message with no key and stores nothing', async () => {
+    const seen: Array<{ auth: string | null; body: unknown }> = [];
+    const answers = [
+      { fits: true, message_chars: 11, lines_left: 24, fits_chars: null },
+      { fits: false, message_chars: 2400, lines_left: null, fits_chars: 1980 },
+      { fits: true, message_chars: 0, lines_left: null, fits_chars: null },
+    ];
+    server.use(
+      http.post(`${ROOT}/cover-checks`, async ({ request }) => {
+        seen.push({ auth: request.headers.get('authorization'), body: await request.json() });
+        return HttpResponse.json(answers[seen.length - 1]);
+      }),
+    );
+    const room = await keyless().oneTimeSends.checkCover({ sender_name: 'Dana Example', to: '+12025550123', message: 'Hello there' });
+    expect(room).toEqual(answers[0]);
+    const over = await keyless().oneTimeSends.checkCover({ message: 'x'.repeat(2400) });
+    expect(over).toMatchObject({ fits: false, lines_left: null, fits_chars: 1980 });
+    expect((await keyless().oneTimeSends.checkCover()).message_chars).toBe(0);
+    expect(seen).toEqual([
+      { auth: null, body: { sender_name: 'Dana Example', to: '+12025550123', message: 'Hello there' } },
+      { auth: null, body: { message: 'x'.repeat(2400) } },
+      { auth: null, body: {} },
+    ]);
+  });
+
+  it('throws ServerError while one-time sends are switched off', async () => {
+    server.use(
+      http.post(`${ROOT}/cover-checks`, () =>
+        HttpResponse.json(apiError('one_time_unavailable', 'one-time sends are switched off on this server'), { status: 503 }),
+      ),
+    );
+    const err = await keyless()
+      .oneTimeSends.checkCover({ message: 'hi' })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ServerError);
+    expect(err).toMatchObject({ status: 503, code: 'one_time_unavailable' });
   });
 });

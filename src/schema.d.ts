@@ -121,7 +121,7 @@ export interface paths {
         put?: never;
         /**
          * Rotate an API key and preserve its expiry
-         * @description The replacement keeps the original expires_at, including no expiry. The old secret works for up to 24 hours, capped by its existing expiry.
+         * @description The replacement keeps the original expires_at, including no expiry. The old secret works for up to 24 hours, capped by its existing expiry. Once a key expired, rotation answers 409: create a new one to replace it.
          */
         post: operations["rotate_api_key"];
         delete?: never;
@@ -1304,7 +1304,7 @@ export interface paths {
         put?: never;
         /**
          * Open the card payment of a one-time order
-         * @description Answers the hosted payment page of the order. The card is authorized there, not charged: it is charged when the carrier confirms delivery. A second call answers the same page while it can still be paid, and a new one after it expired. An order whose aup_accepted is false needs {"accept_aup": true} in the body once, from the status token or a session: the person who pays accepts the policy, never a key.
+         * @description Answers the hosted payment page of the order. The card is held there, not charged. It is charged only for the pages the carrier confirms, and the rest of the hold is released. A second call answers the same page while it can still be paid, and a new one after it expired. An order whose aup_accepted is false needs {"accept_aup": true} in the body once, from the status token or a session: the person who pays accepts the policy, never a key.
          */
         post: operations["create_one_time_checkout"];
         delete?: never;
@@ -1460,6 +1460,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/one-time-sends/cover-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Measure the room the cover sheet leaves for its message, before an order is made
+         * @description Lays out the cover sheet exactly as the create would, with the fields given so far, and answers whether the message fits on its one page and how many more lines fit, or how much of it fits when it runs over. The create refuses a cover that does not fit with invalid_request on cover. This call says so while the message is written. Every field may be empty. Nothing is stored and no credential is needed. Idempotency-Key is accepted but ignored: the call changes nothing.
+         *
+         *     No API key is needed.
+         */
+        post: operations["create_one_time_cover_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/one-time-sends/from-quote": {
         parameters: {
             query?: never;
@@ -1491,7 +1513,7 @@ export interface paths {
         put?: never;
         /**
          * Count the pages of a document before an order is made
-         * @description Reads a file (or text) exactly as the create would and answers its page count and its first page as a small picture, or the create's own refusal: too_many_pages, encrypted_pdf, unsupported_format, document_too_large and the other document codes. The price of the document follows from the count and the route of GET /one-time-sends/config. Nothing is stored: no order, no account, no file. No credential is needed. Idempotency-Key is accepted but ignored: the call changes nothing, so a repeat reads the file again.
+         * @description Reads a file (or text) exactly as the create would and answers its page count and its first page as a small picture, or the create's own refusal: too_many_pages, encrypted_pdf, unsupported_format, document_too_large and the other document codes. The price of the document follows from the count and the route of GET /v1/one-time-sends/config. Nothing is stored: no order, no account, no file. No credential is needed. Idempotency-Key is accepted but ignored: the call changes nothing, so a repeat reads the file again.
          */
         post: operations["preview_one_time_document"];
         delete?: never;
@@ -1925,7 +1947,7 @@ export interface paths {
         };
         /**
          * The wallet statement: one line per event with the balance after it, newest first
-         * @description The customer's reading of the wallet. ``GET /v1/ledger`` stays the double-entry record.
+         * @description One line per event on the wallet, signed the way the balance moved. type filters the lines by the type they carry. kind is the same filter by its older name, and both at once answer 422 unless they agree. A hold and its release name what they were for in ref_type: fax_job, extraction or number_order. GET /v1/ledger keeps the reference as it was booked, fax_job for every hold.
          */
         get: operations["get_statement"];
         put?: never;
@@ -1943,7 +1965,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The wallet statement as CSV: every line the filters select */
+        /**
+         * The wallet statement as CSV: every line the filters select
+         * @description One line per event on the wallet, signed the way the balance moved. type filters the lines by the type they carry. kind is the same filter by its older name, and both at once answer 422 unless they agree. A hold and its release name what they were for in ref_type: fax_job, extraction or number_order. GET /v1/ledger keeps the reference as it was booked, fax_job for every hold. The file's columns for them are reference_type and reference_id.
+         */
         get: operations["get_statement_csv"];
         put?: never;
         post?: never;
@@ -2016,6 +2041,26 @@ export interface paths {
         get: operations["get_topup_session"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/topup-sessions/{topup_session_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel an open top-up, so its hosted Checkout can no longer be paid
+         * @description Closes the Checkout of a manual or setup top-up that is still open and answers the session with status canceled. Canceling a setup payment also turns off the auto top-up that waited on it. A top-up already canceled or expired is answered as it is. One that was paid, declined or charged off session answers 409.
+         */
+        post: operations["cancel_topup_session"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2385,7 +2430,10 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** AgentArchived */
+        /**
+         * AgentArchived
+         * @description What archiving an agent did: it is disabled for good and out of the list, and its keys are revoked.
+         */
         AgentArchived: {
             /** Archived */
             archived: boolean;
@@ -2462,7 +2510,10 @@ export interface components {
             /** Purpose */
             purpose?: string | null;
         };
-        /** AlreadyAllowed */
+        /**
+         * AlreadyAllowed
+         * @description A number of a draft's allowed_destinations that one of its countries or prefixes already allows.
+         */
         AlreadyAllowed: {
             /**
              * Countries
@@ -2593,7 +2644,10 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
-        /** ApprovalDocument */
+        /**
+         * ApprovalDocument
+         * @description The document a send request binds, as it is now: its name, its pages and whether a send can use it.
+         */
         ApprovalDocument: {
             /**
              * Filename
@@ -2994,7 +3048,10 @@ export interface components {
             /** Status */
             status?: ("active" | "disabled") | null;
         };
-        /** BudgetRemoved */
+        /**
+         * BudgetRemoved
+         * @description What removing a budget did: deleted when it never charged a hold, archived when it has history.
+         */
         BudgetRemoved: {
             /**
              * Archived
@@ -3051,7 +3108,10 @@ export interface components {
             max_upload_bytes: number;
             /** Numbers */
             numbers: boolean;
-            /** One Time */
+            /**
+             * One Time
+             * @description One fax paid by card on this server. enabled: orders are taken here. published: the price card offers the product. routes: the routes sold one fax at a time, empty while not enabled. max_document_pages: the most document pages one order takes. Prices are in GET /v1/one-time-sends/config.
+             */
             one_time?: {
                 [key: string]: unknown;
             };
@@ -3187,7 +3247,10 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** DataRequestList */
+        /**
+         * DataRequestList
+         * @description The organization's export and deletion requests, each with where it stands.
+         */
         DataRequestList: {
             /** Items */
             items: components["schemas"]["DataRequest"][];
@@ -3206,35 +3269,74 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** Delivery */
+        /**
+         * Delivery
+         * @description One delivery of an event to a webhook destination: its attempts so far and the last answer.
+         */
         Delivery: {
-            /** Attempt */
+            /**
+             * Attempt
+             * @description How many attempts were made so far.
+             */
             attempt: number;
             /** Created At */
             created_at: string;
-            /** Delivered At */
+            /**
+             * Delivered At
+             * @description When the destination answered 2xx. Null until then.
+             */
             delivered_at: string | null;
-            /** Duration Ms */
+            /**
+             * Duration Ms
+             * @description How long the last attempt took, in milliseconds.
+             */
             duration_ms: number | null;
-            /** Error */
+            /**
+             * Error
+             * @description Why the last attempt failed, in words. Null once delivered.
+             */
             error: string | null;
-            /** Event Id */
+            /**
+             * Event Id
+             * @description The event sent. The webhook-id header carries the same id.
+             */
             event_id: string;
-            /** Event Type */
+            /**
+             * Event Type
+             * @description The event's type, such as fax.delivered.
+             */
             event_type: string;
             /** Id */
             id: string;
-            /** Next Attempt At */
+            /**
+             * Next Attempt At
+             * @description When the next attempt is due. Null once the delivery has ended.
+             */
             next_attempt_at: string | null;
-            /** Replay Of */
+            /**
+             * Replay Of
+             * @description The delivery this one sends again (POST /v1/webhook-deliveries/{delivery_id}/replay). Null for a first delivery.
+             */
             replay_of: string | null;
-            /** Response Status */
+            /**
+             * Response Status
+             * @description The HTTP status of the last attempt's answer. Null before an attempt, or when none came.
+             */
             response_status: number | null;
-            /** Schedule S */
+            /**
+             * Schedule S
+             * @description The wait before each attempt, in seconds after the one before. The first attempt waits 0 seconds.
+             */
             schedule_s: number[];
-            /** Status */
+            /**
+             * Status
+             * @description pending: an attempt is due or waits for its time. delivered: the destination answered 2xx. exhausted: every attempt of the schedule failed. failed: it stopped early, because the destination was deleted or paused, or its address was refused.
+             */
             status: string;
-            /** Webhook Id */
+            /**
+             * Webhook Id
+             * @description The destination the event is sent to.
+             */
             webhook_id: string;
             /**
              * Webhook Url
@@ -3244,25 +3346,49 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** DeliveryDetail */
+        /**
+         * DeliveryDetail
+         * @description One delivery with the headers and the body that every attempt sends.
+         */
         DeliveryDetail: {
-            /** Attempt */
+            /**
+             * Attempt
+             * @description How many attempts were made so far.
+             */
             attempt: number;
             /** Created At */
             created_at: string;
-            /** Delivered At */
+            /**
+             * Delivered At
+             * @description When the destination answered 2xx. Null until then.
+             */
             delivered_at: string | null;
-            /** Duration Ms */
+            /**
+             * Duration Ms
+             * @description How long the last attempt took, in milliseconds.
+             */
             duration_ms: number | null;
-            /** Error */
+            /**
+             * Error
+             * @description Why the last attempt failed, in words. Null once delivered.
+             */
             error: string | null;
-            /** Event Id */
+            /**
+             * Event Id
+             * @description The event sent. The webhook-id header carries the same id.
+             */
             event_id: string;
-            /** Event Type */
+            /**
+             * Event Type
+             * @description The event's type, such as fax.delivered.
+             */
             event_type: string;
             /** Id */
             id: string;
-            /** Next Attempt At */
+            /**
+             * Next Attempt At
+             * @description When the next attempt is due. Null once the delivery has ended.
+             */
             next_attempt_at: string | null;
             /**
              * Payload
@@ -3271,7 +3397,10 @@ export interface components {
             payload: {
                 [key: string]: unknown;
             };
-            /** Replay Of */
+            /**
+             * Replay Of
+             * @description The delivery this one sends again (POST /v1/webhook-deliveries/{delivery_id}/replay). Null for a first delivery.
+             */
             replay_of: string | null;
             /**
              * Request Headers
@@ -3280,18 +3409,30 @@ export interface components {
             request_headers: {
                 [key: string]: string;
             };
-            /** Response Status */
+            /**
+             * Response Status
+             * @description The HTTP status of the last attempt's answer. Null before an attempt, or when none came.
+             */
             response_status: number | null;
-            /** Schedule S */
+            /**
+             * Schedule S
+             * @description The wait before each attempt, in seconds after the one before. The first attempt waits 0 seconds.
+             */
             schedule_s: number[];
-            /** Status */
+            /**
+             * Status
+             * @description pending: an attempt is due or waits for its time. delivered: the destination answered 2xx. exhausted: every attempt of the schedule failed. failed: it stopped early, because the destination was deleted or paused, or its address was refused.
+             */
             status: string;
             /**
              * Webhook Deleted
              * @description True when the destination was deleted since.
              */
             webhook_deleted: boolean;
-            /** Webhook Id */
+            /**
+             * Webhook Id
+             * @description The destination the event is sent to.
+             */
             webhook_id: string;
             /**
              * Webhook Url
@@ -3338,7 +3479,10 @@ export interface components {
         Document: {
             /** Content Type */
             content_type: string;
-            /** Converted From */
+            /**
+             * Converted From
+             * @description The name of the image this PDF was converted from, as the person gave it. filename is the PDF's own name. Null for a document that was not an image.
+             */
             converted_from?: string | null;
             /** Created At */
             created_at: string;
@@ -3357,6 +3501,7 @@ export interface components {
             id: string;
             /** Page Count */
             page_count: number;
+            /** @description Set in the list (GET /v1/documents) on the file of a received fax, source inbound. It names the inbox item, the sender as the sending machine gave it, and the time. Null everywhere else. */
             received?: components["schemas"]["DocumentReceived"] | null;
             /** Render Reason */
             render_reason: string | null;
@@ -3414,7 +3559,10 @@ export interface components {
             items: components["schemas"]["Document"][];
             /** Next Cursor */
             next_cursor?: string | null;
-            /** Total */
+            /**
+             * Total
+             * @description How many documents the filters match in all, across every page.
+             */
             total?: number | null;
         } & {
             [key: string]: unknown;
@@ -3448,7 +3596,10 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** DocumentUpdate */
+        /**
+         * DocumentUpdate
+         * @description A new file name for a document.
+         */
         DocumentUpdate: {
             /**
              * Filename
@@ -3522,7 +3673,10 @@ export interface components {
              * @description One sentence a person can act on.
              */
             message: string;
-            /** Retryable */
+            /**
+             * Retryable
+             * @description True when the failure passes on its own: the same call, sent again unchanged after a short wait, is expected to work. False when the same call gets the same answer until the request or the resource changes.
+             */
             retryable: boolean;
         } & {
             [key: string]: unknown;
@@ -3800,6 +3954,8 @@ export interface components {
          *       "provider": "sandbox",
          *       "provider_ref": "sbx_311dd5d5bc5dfd76",
          *       "client_reference": null,
+         *       "approval_id": null,
+         *       "policy_version_id": null,
          *       "attempt_count": 1,
          *       "created_at": "2026-11-14T19:58:38.794Z",
          *       "updated_at": "2026-11-14T19:58:38.910Z",
@@ -3817,13 +3973,17 @@ export interface components {
          *         "remote_station_id": "SBX-OK"
          *       },
          *       "one_time_order_id": null,
-         *       "one_time": null
+         *       "one_time": null,
+         *       "route_paused": false
          *     }
          */
         FaxJob: {
             /** Amount Micro */
             amount_micro: number;
-            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
+            /**
+             * Approval Id
+             * @description The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.
+             */
             approval_id?: string | null;
             /** Attempt Count */
             attempt_count: number;
@@ -3877,7 +4037,10 @@ export interface components {
             one_time_order_id?: string | null;
             /** Pages Sent */
             pages_sent: number;
-            /** @description Returned by GET /v1/faxes/{fax_id}. Declared here until the public schema includes it. */
+            /**
+             * Policy Version Id
+             * @description The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.
+             */
             policy_version_id?: string | null;
             /** Provider */
             provider: string;
@@ -3889,6 +4052,11 @@ export interface components {
             quote_id: string | null;
             /** Route */
             route: string;
+            /**
+             * Route Paused
+             * @description An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.
+             */
+            route_paused?: boolean;
             /** Sender Name */
             sender_name?: string | null;
             /**
@@ -3959,6 +4127,7 @@ export interface components {
         InboxItem: {
             /**
              * Amount Micro
+             * @description What the received pages were charged, in micro-USD. 0 on the sandbox.
              * @default 0
              */
             amount_micro: number;
@@ -3974,7 +4143,10 @@ export interface components {
             environment: "live" | "test";
             /** Expires At */
             expires_at?: string | null;
-            /** File Deleted At */
+            /**
+             * File Deleted At
+             * @description When the file of this fax was deleted. media_status is then deleted and there is no download. Null while the file is kept.
+             */
             file_deleted_at?: string | null;
             /** From */
             from?: string | null;
@@ -4050,6 +4222,7 @@ export interface components {
         InboxItemDetail: {
             /**
              * Amount Micro
+             * @description What the received pages were charged, in micro-USD. 0 on the sandbox.
              * @default 0
              */
             amount_micro: number;
@@ -4071,7 +4244,10 @@ export interface components {
             expires_at?: string | null;
             /** Extraction Id */
             extraction_id?: string | null;
-            /** File Deleted At */
+            /**
+             * File Deleted At
+             * @description When the file of this fax was deleted. media_status is then deleted and there is no download. Null while the file is kept.
+             */
             file_deleted_at?: string | null;
             /** From */
             from?: string | null;
@@ -4117,6 +4293,7 @@ export interface components {
         InboxItemSummary: {
             /**
              * Amount Micro
+             * @description What the received pages were charged, in micro-USD. 0 on the sandbox.
              * @default 0
              */
             amount_micro: number;
@@ -4220,7 +4397,10 @@ export interface components {
             items: components["schemas"]["InboxItem"][];
             /** Next Cursor */
             next_cursor?: string | null;
-            /** Unread */
+            /**
+             * Unread
+             * @description The faxes nobody has opened yet in this environment, whatever the filters.
+             */
             unread?: number;
         } & {
             [key: string]: unknown;
@@ -4345,7 +4525,10 @@ export interface components {
              */
             role: "owner" | "admin" | "member" | "viewer";
         };
-        /** InvitationLink */
+        /**
+         * InvitationLink
+         * @description A new link for an open invitation, shown once, which replaces the old link.
+         */
         InvitationLink: {
             /** Expires At */
             expires_at: string;
@@ -4641,8 +4824,9 @@ export interface components {
         /**
          * OneTimeAttempts
          * @description The tries of an order's fax while it is still going out. A busy line or one that does not answer
-         *     is dialed again (``max`` tries in all, about ``retry_delay_seconds`` apart). ``last_failure_code`` is
-         *     why the last finished try did not get through, null when no try has ended.
+         *     is dialed again, up to ``max`` tries in all, about ``retry_delay_seconds`` apart. The field
+         *     ``last_failure_code`` says why the last finished try did not get through. It is null when no try has
+         *     ended.
          */
         OneTimeAttempts: {
             /** Last Failure Code */
@@ -4684,9 +4868,10 @@ export interface components {
         };
         /**
          * OneTimeConfig
-         * @description What the public send page and an agent read before an order: whether the product is open here, the
-         *     card the order will be priced from (present only while open), the document limits and the policy the
-         *     sender accepts. Prices are integer micro-USD; the dollar figure is the client's to format.
+         * @description What the public send page and an agent read before an order. It says whether the product is open
+         *     here, and while it is open it gives the card the order will be priced from. It also gives the document
+         *     limits and the policy the sender accepts. Prices are integer micro-USD, and the client formats the
+         *     dollar figure.
          */
         OneTimeConfig: {
             /** Aup Url */
@@ -4781,6 +4966,64 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * OneTimeCoverCheck
+         * @description The fields a one-time order prints on its cover sheet, as a form holds them before the order exists.
+         *     Every field may be empty. The limits of the create apply (cover.to_name 120 characters, cover.subject
+         *     200, cover.message 2,000).
+         */
+        OneTimeCoverCheck: {
+            /**
+             * Email
+             * @description Printed in the From line.
+             */
+            email?: string | null;
+            /** Message */
+            message?: string | null;
+            /**
+             * Sender Name
+             * @description Printed in the From line.
+             */
+            sender_name?: string | null;
+            /** Subject */
+            subject?: string | null;
+            /**
+             * To
+             * @description The destination, when one is typed.
+             */
+            to?: string | null;
+            /** To Name */
+            to_name?: string | null;
+        };
+        /**
+         * OneTimeCoverRoom
+         * @description How the message sits on the one cover page, measured as the create measures it. Nothing is stored
+         *     and no order is made.
+         */
+        OneTimeCoverRoom: {
+            /**
+             * Fits
+             * @description The cover with this message fits on its one page.
+             */
+            fits: boolean;
+            /**
+             * Fits Chars
+             * @description When the message runs over: how much of its start fits with the same line breaks. Null when it fits, and when the page is full without any message.
+             */
+            fits_chars?: number | null;
+            /**
+             * Lines Left
+             * @description How many more lines of message text fit on the page. Null when the message is empty, since the first line also brings its heading, and when it does not fit.
+             */
+            lines_left?: number | null;
+            /**
+             * Message Chars
+             * @description The length of the message as it will be printed.
+             */
+            message_chars: number;
+        } & {
+            [key: string]: unknown;
+        };
         /** OneTimeFromQuote */
         OneTimeFromQuote: {
             /**
@@ -4812,8 +5055,9 @@ export interface components {
         };
         /**
          * OneTimeInspection
-         * @description What a file would be as a one-time order's document: its page count, and its first page as a small
-         *     PNG (base64, null when this server cannot draw one). Nothing is stored and no order is made.
+         * @description What a file would be as a one-time order's document: its page count and its first page as a small
+         *     PNG. The PNG is base64, or null when this server cannot draw one. Nothing is stored and no order is
+         *     made.
          */
         OneTimeInspection: {
             /** Document Pages */
@@ -4829,7 +5073,7 @@ export interface components {
         };
         /**
          * OneTimeJob
-         * @description The order behind a fax job that a one-time send made: what was authorized, what was charged.
+         * @description The order behind a fax job that a one-time send made: what was held on the card, what was charged.
          */
         OneTimeJob: {
             /** Amount Micro */
@@ -4888,16 +5132,16 @@ export interface components {
         };
         /**
          * OneTimeOrder
-         * @description One order of the one-time send. ``next`` is what the caller does now: ``checkout`` (open the
-         *     payment), ``confirm`` (the payer clicks the link in the mail), ``wait`` (nothing to do; read again) or
-         *     ``done``. Money is integer micro-USD. ``captured_micro`` is what the card was charged, written only
-         *     once the payment provider confirmed it. ``fax`` is the fax job once the order was released, with the
+         * @description One order of the one-time send. The field ``next`` is what the caller does now: ``checkout`` (pay),
+         *     ``confirm`` (click the mailed link), ``wait`` (read again later) or ``done``. Money is integer
+         *     micro-USD. The field ``captured_micro`` is what the card was charged, written only once the payment
+         *     provider confirmed it. The field ``fax`` is the fax job once the order was released, with the
          *     carrier's evidence once it has any.
          */
         OneTimeOrder: {
             /** Amount Micro */
             amount_micro: number;
-            /** @description The tries of the order's fax while it has not ended: how many were made, of how many, and why the last one did not get through. Null before the fax exists and once it ended. */
+            /** @description The tries of the order's fax while it has not ended. It says how many were made, of how many, and why the last one did not get through. Null before the fax exists and once it ended. */
             attempts?: components["schemas"]["OneTimeAttempts"] | null;
             /**
              * Aup Accepted
@@ -4934,7 +5178,7 @@ export interface components {
             delete_after_send?: boolean;
             /**
              * Document Deleted
-             * @description True once no copy of the document is held: it was deleted after the send, by the retention period or by its owner, or the order ended before it was released and the uploaded file was removed. The order, the fax and the carrier evidence stay; they hold no document content.
+             * @description True once no copy of the document is held. It was deleted after the send, by the retention period or by its owner. Or the order ended before its release and the uploaded file was removed. The order, the fax and the carrier evidence stay, and they hold no document content.
              */
             document_deleted?: boolean;
             /**
@@ -5035,7 +5279,7 @@ export interface components {
         OneTimeOrderCreated: {
             /** Amount Micro */
             amount_micro: number;
-            /** @description The tries of the order's fax while it has not ended: how many were made, of how many, and why the last one did not get through. Null before the fax exists and once it ended. */
+            /** @description The tries of the order's fax while it has not ended. It says how many were made, of how many, and why the last one did not get through. Null before the fax exists and once it ended. */
             attempts?: components["schemas"]["OneTimeAttempts"] | null;
             /**
              * Aup Accepted
@@ -5072,7 +5316,7 @@ export interface components {
             delete_after_send?: boolean;
             /**
              * Document Deleted
-             * @description True once no copy of the document is held: it was deleted after the send, by the retention period or by its owner, or the order ended before it was released and the uploaded file was removed. The order, the fax and the carrier evidence stay; they hold no document content.
+             * @description True once no copy of the document is held. It was deleted after the send, by the retention period or by its owner. Or the order ended before its release and the uploaded file was removed. The order, the fax and the carrier evidence stay, and they hold no document content.
              */
             document_deleted?: boolean;
             /**
@@ -5212,9 +5456,10 @@ export interface components {
         };
         /**
          * OneTimeQueue
-         * @description The wait for a carrier line. ``queued`` is true when a fax sent now, or this order's waiting fax,
-         *     is estimated to wait more than ten minutes for a line: the order is kept and sent in turn, never
-         *     dropped. The minutes are an estimate from the number of faxes ahead and the carrier's line count.
+         * @description The wait for a carrier line. The field ``queued`` is true when a fax sent now, or this order's
+         *     waiting fax, is estimated to wait over ten minutes for a line. The order is kept and sent in turn,
+         *     never dropped. The minutes are an estimate from the number of faxes ahead and the carrier's line
+         *     count.
          */
         OneTimeQueue: {
             /** Estimated Wait Minutes */
@@ -5321,7 +5566,7 @@ export interface components {
             payment_intent_id: string;
             /**
              * Pdf Url
-             * @description The same receipt as a PDF.
+             * @description The same receipt as a PDF, where Stripe has one: the receipt of a paid invoice, which a top-up paid in Checkout has. Null for a charge without an invoice, such as an automatic top-up: its receipt is the page at url.
              */
             pdf_url?: string | null;
             /** Topup Session Id */
@@ -5388,16 +5633,26 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        /** PolicyEvaluation */
+        /**
+         * PolicyEvaluation
+         * @description A dry run: the verdict for one planned send, the plan as the server read it, and what a send of it
+         *     would need. Nothing is sent.
+         */
         PolicyEvaluation: {
             /**
              * Approval Required
              * @description What a send of this plan by that caller would need: true when a person has to approve it. false when a policy allows it, and for a test send by a caller no policy binds.
              */
             approval_required?: boolean | null;
-            /** Decision */
-            decision: string;
-            /** Denials */
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "allow" | "deny";
+            /**
+             * Denials
+             * @description Every policy that denied the plan, each with its policy_id, policy_version_id, decision, rule and reason. Empty on allow.
+             */
             denials: {
                 [key: string]: unknown;
             }[];
@@ -5406,19 +5661,36 @@ export interface components {
              * @default false
              */
             executed: boolean;
+            /**
+             * Managed
+             * @description connected_apps when the organization's auto-send setting decided, else null.
+             */
+            managed?: string | null;
             /** Plan */
             plan: {
                 [key: string]: unknown;
             };
-            /** Policy Id */
+            /**
+             * Policy Id
+             * @description The policy that allowed the plan, or the first one that denied it. Null when none binds.
+             */
             policy_id: string | null;
             /** Policy Name */
             policy_name: string | null;
-            /** Policy Version Id */
+            /**
+             * Policy Version Id
+             * @description The version of that policy that decided.
+             */
             policy_version_id: string | null;
-            /** Reason */
+            /**
+             * Reason
+             * @description Why, in one sentence.
+             */
             reason: string;
-            /** Rule */
+            /**
+             * Rule
+             * @description The rule that failed first when a policy denied the plan. Null on allow, and when no policy binds the caller.
+             */
             rule: string | null;
             /**
              * Subject
@@ -5430,10 +5702,8 @@ export interface components {
              * @description Whether any policy binds that caller. false with decision deny means no policy applies, not that a policy refused the plan.
              */
             under_policy?: boolean | null;
-            /** @description Returned by POST /v1/policy-evaluations when a bound policy has usage. */
-            usage?: {
-                [key: string]: number;
-            } | null;
+            /** @description On allow: the deciding policy's counters for the day and the month before this send. */
+            usage?: components["schemas"]["PolicyUsage"] | null;
             /** Version */
             version: number | null;
         } & {
@@ -5481,7 +5751,10 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** PolicyRuleCheck */
+        /**
+         * PolicyRuleCheck
+         * @description Which of a draft's numbers its countries or prefixes already allow.
+         */
         PolicyRuleCheck: {
             /**
              * Already Allowed
@@ -5491,13 +5764,25 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** PolicyRuleCheckCreate */
+        /**
+         * PolicyRuleCheckCreate
+         * @description The three destination lists of a draft policy, to check against each other.
+         */
         PolicyRuleCheckCreate: {
-            /** Allowed Countries */
+            /**
+             * Allowed Countries
+             * @description The draft's ISO 3166-1 alpha-2 country codes, such as US or GB.
+             */
             allowed_countries?: string[];
-            /** Allowed Country Prefixes */
+            /**
+             * Allowed Country Prefixes
+             * @description The draft's dialing prefixes, written as the rate card routes on them, such as +44.
+             */
             allowed_country_prefixes?: string[];
-            /** Allowed Destinations */
+            /**
+             * Allowed Destinations
+             * @description The draft's exact E.164 numbers.
+             */
             allowed_destinations?: string[];
         };
         /** PolicyUpdate */
@@ -5512,6 +5797,74 @@ export interface components {
             rules?: {
                 [key: string]: unknown;
             } | null;
+        };
+        /**
+         * PolicyUsage
+         * @description What the deciding policy had counted before the send it was asked about, in UTC periods.
+         */
+        PolicyUsage: {
+            /** Day Amount Micro */
+            day_amount_micro: number;
+            /** Day Jobs */
+            day_jobs: number;
+            /** Month Amount Micro */
+            month_amount_micro: number;
+            /** Month Jobs */
+            month_jobs: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * PolicyVerdict
+         * @description One evaluation of the delegated policies that bind a caller: the first policy that allows the plan,
+         *     or every policy that denies it.
+         */
+        PolicyVerdict: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "allow" | "deny";
+            /**
+             * Denials
+             * @description Every policy that denied the plan, each with its policy_id, policy_version_id, decision, rule and reason. Empty on allow.
+             */
+            denials: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Managed
+             * @description connected_apps when the organization's auto-send setting decided, else null.
+             */
+            managed?: string | null;
+            /**
+             * Policy Id
+             * @description The policy that allowed the plan, or the first one that denied it. Null when none binds.
+             */
+            policy_id: string | null;
+            /** Policy Name */
+            policy_name: string | null;
+            /**
+             * Policy Version Id
+             * @description The version of that policy that decided.
+             */
+            policy_version_id: string | null;
+            /**
+             * Reason
+             * @description Why, in one sentence.
+             */
+            reason: string;
+            /**
+             * Rule
+             * @description The rule that failed first when a policy denied the plan. Null on allow, and when no policy binds the caller.
+             */
+            rule: string | null;
+            /** @description On allow: the deciding policy's counters for the day and the month before this send. */
+            usage?: components["schemas"]["PolicyUsage"] | null;
+            /** Version */
+            version: number | null;
+        } & {
+            [key: string]: unknown;
         };
         /** PolicyVersion */
         PolicyVersion: {
@@ -5645,12 +5998,14 @@ export interface components {
          *       "currency": "USD",
          *       "price_version": "launch-v3",
          *       "per_page_micro": 0,
+         *       "pricing": "per_page",
          *       "route_label": "United States and Canada",
          *       "cover": null,
          *       "quality": "fine",
          *       "sender_name": null,
          *       "delete_after_send": false,
          *       "authorization_required": false,
+         *       "policy_evaluation": null,
          *       "route_paused": false,
          *       "warnings": [
          *         {
@@ -5709,14 +6064,16 @@ export interface components {
              * @default 0
              */
             per_page_micro: number;
-            /** @description Returned by GET /v1/fax-quotes/{quote_id}. Declared here until the public schema includes it. */
-            policy_evaluation?: {
-                [key: string]: unknown;
-            } | null;
+            /** @description The dry run of the delegated policies that bind the caller, made with the quote. Null when no policy binds the caller. The send evaluates the policies again, with their counters locked. */
+            policy_evaluation?: components["schemas"]["PolicyVerdict"] | null;
             /** Price Version */
             price_version: string;
-            /** @description Returned by POST /v1/fax-quotes. Declared here until the public schema includes it. */
-            pricing?: string;
+            /**
+             * Pricing
+             * @description per_page: priced from the rate card, paid from the wallet and sent with POST /v1/faxes. one_time: the quote of a one-time order, priced at the card's price for the order. Only the order sends it, and POST /v1/faxes refuses it with quote_pricing_mismatch.
+             * @enum {string}
+             */
+            pricing?: "per_page" | "one_time";
             /** Quality */
             quality?: string;
             /** Route */
@@ -5891,7 +6248,7 @@ export interface components {
             generated_at: string;
             /** Note */
             note: string;
-            /** @description Set on the receipt of a fax that a one-time order paid for. It names the order, its status, the card and the amount the card was authorized for. captured_micro in it is the amount charged, written once the payment provider confirmed the capture. For a card order read the money here. Null for a fax paid from the wallet. */
+            /** @description Set on the receipt of a fax that a one-time order paid for. It names the order, its status, the card and the amount held on the card. captured_micro in it is the amount charged, written once the payment provider confirmed the capture. For a card order read the money here. Null for a fax paid from the wallet. */
             one_time?: components["schemas"]["OneTimeJob"] | null;
             /** Pages Sent */
             pages_sent: number;
@@ -6120,7 +6477,10 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** StatementLine */
+        /**
+         * StatementLine
+         * @description One event on the wallet, signed the way the balance moved, with the balance after it.
+         */
         StatementLine: {
             /**
              * Amount Micro
@@ -6141,19 +6501,29 @@ export interface components {
             description: string;
             /** Id */
             id: string;
-            /** Ref Id */
+            /**
+             * Ref Id
+             * @description The id of that object, such as fax_..., ext_..., nord_... or inb_..., or the payment's id at the card processor. Null when the line names none.
+             */
             ref_id: string | null;
-            /** Ref Type */
+            /**
+             * Ref Type
+             * @description What ref_id is. A hold or its release names what it was for: fax_job, extraction or number_order. Other lines name what they were booked against, such as stripe_payment_intent for a top-up or inbox_item for a received fax.
+             */
             ref_type: string | null;
             /**
              * Type
+             * @description What the line is, in one word. The type filter of the statement takes these values.
              * @enum {string}
              */
             type: "topup" | "fax" | "received_fax" | "number" | "extraction" | "release" | "refund" | "dispute" | "credit" | "adjustment" | "other";
         } & {
             [key: string]: unknown;
         };
-        /** StatementPage */
+        /**
+         * StatementPage
+         * @description A page of the wallet statement, newest line first.
+         */
         StatementPage: {
             /** Items */
             items: components["schemas"]["StatementLine"][];
@@ -6786,6 +7156,8 @@ export type OneTimeConfig = components['schemas']['OneTimeConfig'];
 export type OneTimeConfirm = components['schemas']['OneTimeConfirm'];
 export type OneTimeConfirmed = components['schemas']['OneTimeConfirmed'];
 export type OneTimeConfirmSummary = components['schemas']['OneTimeConfirmSummary'];
+export type OneTimeCoverCheck = components['schemas']['OneTimeCoverCheck'];
+export type OneTimeCoverRoom = components['schemas']['OneTimeCoverRoom'];
 export type OneTimeFromQuote = components['schemas']['OneTimeFromQuote'];
 export type OneTimeInspection = components['schemas']['OneTimeInspection'];
 export type OneTimeJob = components['schemas']['OneTimeJob'];
@@ -6810,6 +7182,8 @@ export type PolicyList = components['schemas']['PolicyList'];
 export type PolicyRuleCheck = components['schemas']['PolicyRuleCheck'];
 export type PolicyRuleCheckCreate = components['schemas']['PolicyRuleCheckCreate'];
 export type PolicyUpdate = components['schemas']['PolicyUpdate'];
+export type PolicyUsage = components['schemas']['PolicyUsage'];
+export type PolicyVerdict = components['schemas']['PolicyVerdict'];
 export type PolicyVersion = components['schemas']['PolicyVersion'];
 export type PolicyVersionList = components['schemas']['PolicyVersionList'];
 export type PortabilityCheck = components['schemas']['PortabilityCheck'];
@@ -7239,7 +7613,15 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
+            /** @description The key expired, so it cannot be rotated (conflict, with details.reason key_expired and details.expires_at). Create a new key to replace it. Also idempotency_key_conflict: the Idempotency-Key was used with a different body. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
@@ -10615,6 +10997,34 @@ export interface operations {
             429: components["responses"]["TooManyRequests"];
         };
     };
+    create_one_time_cover_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OneTimeCoverCheck"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OneTimeCoverRoom"];
+                };
+            };
+            413: components["responses"]["PayloadTooLarge"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
     create_one_time_order_from_quote: {
         parameters: {
             query?: never;
@@ -11728,11 +12138,13 @@ export interface operations {
                 cursor?: string | null;
                 /** @description First UTC day, YYYY-MM-DD, included. */
                 from?: string | null;
-                /** @description One kind of line: topup, fax, received_fax, number, extraction, release, refund, dispute, credit, adjustment, other. */
+                /** @description The same filter as type, by the name it had before 2026-11-15. Sent with type, it has to name the same type. */
                 kind?: string | null;
                 limit?: number;
                 /** @description Last UTC day, YYYY-MM-DD, included. */
                 to?: string | null;
+                /** @description Only the lines whose type is this one: topup, fax, received_fax, number, extraction, release, refund, dispute, credit, adjustment, other. */
+                type?: string | null;
             };
             header?: never;
             path?: never;
@@ -11770,10 +12182,12 @@ export interface operations {
             query?: {
                 /** @description First UTC day, YYYY-MM-DD, included. */
                 from?: string | null;
-                /** @description One kind of line: topup, fax, received_fax, number, extraction, release, refund, dispute, credit, adjustment, other. */
+                /** @description The same filter as type, by the name it had before 2026-11-15. Sent with type, it has to name the same type. */
                 kind?: string | null;
                 /** @description Last UTC day, YYYY-MM-DD, included. */
                 to?: string | null;
+                /** @description Only the lines whose type is this one: topup, fax, received_fax, number, extraction, release, refund, dispute, credit, adjustment, other. */
+                type?: string | null;
             };
             header?: never;
             path?: never;
@@ -11963,6 +12377,47 @@ export interface operations {
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    cancel_topup_session: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Replay the first successful response for the same request within 24 hours. Reusing the idempotency header with a different request returns 409 idempotency_key_conflict. Responses include Idempotent-Replayed: true on replay. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                topup_session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopupSession"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description The top-up has no open Checkout to cancel: it was paid, declined or charged off session (conflict, with details.status). details.reason is paid when it was paid before the cancel. Also idempotency_key_conflict: the Idempotency-Key was used with a different body. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+            503: components["responses"]["ServiceUnavailable"];
         };
     };
     get_topup_receipt: {

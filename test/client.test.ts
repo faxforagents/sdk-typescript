@@ -13,7 +13,15 @@ import {
   ScopeError,
   ServerError,
 } from '../src/index.js';
-import type { DataRequest, DeliveryDetail, Invitation, NumberOrder, StatementLine } from '../src/index.js';
+import type {
+  DataRequest,
+  DeliveryDetail,
+  Invitation,
+  NumberOrder,
+  PolicyVerdict,
+  StatementLine,
+  TopupSession,
+} from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, document, faxJob, http, quote, sequence, server } from './helpers.js';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -944,5 +952,154 @@ describe('API 1.20.6', () => {
     expect((await client().approvals.reject('apr_1')).status).toBe('rejected');
     await client().approvals.reject('apr_1', { reason: 'wrong number' });
     expect(bodies).toEqual([{}, { reason: 'wrong number' }]);
+  });
+});
+
+describe('API 1.20.8', () => {
+  const session: TopupSession = {
+    id: 'tus_' + '8'.repeat(32),
+    environment: 'live',
+    kind: 'manual',
+    amount_micro: 25_000_000,
+    currency: 'USD',
+    status: 'open',
+    url: 'https://checkout.example.test/c/pay_1',
+    stripe_session_id: 'cs_test_1',
+    stripe_payment_intent_id: null,
+    auto_topup_id: null,
+    error: null,
+    created_at: '2026-11-15T09:00:00Z',
+    expires_at: '2026-11-16T09:00:00Z',
+    completed_at: null,
+  };
+
+  it('cancels an open top-up, and a conflict for one that was paid', async () => {
+    const seen: Array<{ key: string | null; body: string }> = [];
+    server.use(
+      http.post(
+        `${BASE}/v1/topup-sessions/${session.id}/cancel`,
+        sequence(
+          () => HttpResponse.json({ ...session, status: 'canceled' }),
+          () => HttpResponse.json(apiError('conflict', 'this top-up has no open Checkout to cancel', { status: 'completed' }), { status: 409 }),
+        ),
+      ),
+      http.post(`${BASE}/v1/topup-sessions/tus_2/cancel`, async ({ request }) => {
+        seen.push({ key: request.headers.get('idempotency-key'), body: await request.text() });
+        return HttpResponse.json({ ...session, id: 'tus_2', kind: 'setup', status: 'canceled' });
+      }),
+    );
+    expect((await client().billing.cancelTopupSession(session.id)).status).toBe('canceled');
+    const err = await client()
+      .billing.cancelTopupSession(session.id)
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect((err as ConflictError).details).toEqual({ status: 'completed' });
+    expect((await client().billing.cancelTopupSession('tus_2', { idempotencyKey: 'k-cancel' })).kind).toBe('setup');
+    expect(seen).toEqual([{ key: 'k-cancel', body: '' }]);
+  });
+
+  it('filters the statement by type, keeps kind, and refuses two different types', async () => {
+    const queries: string[] = [];
+    const hold: StatementLine = {
+      id: 'led_3',
+      created_at: '2026-11-15T09:00:00Z',
+      type: 'release',
+      description: 'Hold released',
+      amount_micro: 30_000,
+      balance_after_micro: 100_000_000,
+      ref_type: 'extraction',
+      ref_id: 'ext_1',
+    };
+    server.use(
+      http.get(`${BASE}/v1/statement`, ({ request }) => {
+        const url = new URL(request.url);
+        queries.push(url.search);
+        if (url.searchParams.get('type') && url.searchParams.get('kind') && url.searchParams.get('type') !== url.searchParams.get('kind')) {
+          return HttpResponse.json(apiError('invalid_request', 'type and kind are one filter: send one of them, or the same type in both', { fields: ['type', 'kind'] }), { status: 422 });
+        }
+        return HttpResponse.json({ items: [hold], next_cursor: null });
+      }),
+      http.get(`${BASE}/v1/statement.csv`, ({ request }) => {
+        queries.push(new URL(request.url).search);
+        return new HttpResponse('date,type\n', { headers: { 'content-type': 'text/csv; charset=utf-8' } });
+      }),
+    );
+    const page = await client().billing.statement({ type: 'release' });
+    expect(page.items[0]).toMatchObject({ ref_type: 'extraction', ref_id: 'ext_1' });
+    const ids: string[] = [];
+    for await (const item of client().billing.iterStatement({ type: 'release', limit: 5 })) ids.push(item.id);
+    expect(ids).toEqual(['led_3']);
+    await client().billing.statement({ kind: 'release' });
+    const err = await client()
+      .billing.statement({ type: 'fax', kind: 'topup' })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(InvalidRequestError);
+    expect((err as InvalidRequestError).details).toEqual({ fields: ['type', 'kind'] });
+    expect(await client().billing.statementCsv({ type: 'refund', from: '2026-11-01' })).toBe('date,type\n');
+    expect(queries).toEqual(['?type=release', '?type=release&limit=5', '?kind=release', '?type=fax&kind=topup', '?type=refund&from=2026-11-01']);
+  });
+
+  it('refuses to rotate a key that expired', async () => {
+    const details = { reason: 'key_expired', expires_at: '2026-11-01T00:00:00Z' };
+    server.use(
+      http.post(`${BASE}/v1/api-keys/key_1/rotate`, () =>
+        HttpResponse.json(apiError('conflict', 'this key expired, so it cannot be rotated', details), { status: 409 }),
+      ),
+    );
+    const err = await client()
+      .identity.rotateApiKey('key_1')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect(err).toMatchObject({ status: 409, code: 'conflict', details });
+  });
+
+  it('reads the pricing and policy verdict of a quote and what authorized a fax', async () => {
+    const verdict: PolicyVerdict = {
+      decision: 'allow',
+      rule: null,
+      reason: 'allowed by policy',
+      policy_id: 'pol_1',
+      policy_version_id: 'polv_2',
+      policy_name: 'US only',
+      version: 2,
+      managed: null,
+      denials: [],
+      usage: { day_jobs: 3, day_amount_micro: 117_000, month_jobs: 40, month_amount_micro: 1_560_000 },
+    };
+    server.use(
+      http.post(
+        `${BASE}/v1/fax-quotes`,
+        sequence(
+          () => HttpResponse.json(quote({ pricing: 'one_time', policy_evaluation: verdict }), { status: 201 }),
+          () => HttpResponse.json(quote(), { status: 201 }),
+        ),
+      ),
+      http.get(`${BASE}/v1/faxes/${faxJob().id}`, () =>
+        HttpResponse.json(faxJob({ approval_id: null, policy_version_id: 'polv_2', route_paused: true })),
+      ),
+      http.get(`${BASE}/v1/topup-sessions/tus_auto/receipt`, () =>
+        HttpResponse.json({
+          url: 'https://pay.example.test/receipts/payment/1',
+          pdf_url: null,
+          amount_micro: 25_000_000,
+          amount_refunded_micro: 0,
+          currency: 'USD',
+          payment_intent_id: 'pi_1',
+          paid_at: '2026-11-15T09:00:00Z',
+          topup_session_id: 'tus_auto',
+        }),
+      ),
+    );
+    const priced = await client().quotes.create({ document_id: 'doc_' + '2'.repeat(32), to: '+15550000001' });
+    expect(priced.pricing).toBe('one_time');
+    expect(priced.policy_evaluation?.usage?.day_jobs).toBe(3);
+    const older = await client().quotes.create({ document_id: 'doc_' + '2'.repeat(32), to: '+15550000001' });
+    expect(older.pricing).toBeUndefined();
+    expect(older.policy_evaluation).toBeUndefined();
+    const job = await client().faxes.get(faxJob().id);
+    expect(job).toMatchObject({ approval_id: null, policy_version_id: 'polv_2', route_paused: true });
+    const receipt = await client().billing.getTopupReceipt('tus_auto');
+    expect(receipt.pdf_url).toBeNull();
+    expect(receipt.url).toMatch(/\/receipts\/payment\/1$/);
   });
 });

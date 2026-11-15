@@ -11,6 +11,8 @@ import type {
   NumberUpdate,
   OneTimeJob,
   PolicyEvaluation,
+  PolicyUsage,
+  PolicyVerdict,
   Quote,
 } from '../src/index.js';
 
@@ -19,11 +21,12 @@ it('declares the fax and quote fields with their wire types', () => {
   expectTypeOf<FaxJob['policy_version_id']>().toEqualTypeOf<string | null | undefined>();
   expectTypeOf<FaxJob['one_time_order_id']>().toEqualTypeOf<string | null | undefined>();
   expectTypeOf<FaxJob['one_time']>().toEqualTypeOf<OneTimeJob | null | undefined>();
-  expectTypeOf<Quote['pricing']>().toEqualTypeOf<string | undefined>();
-  expectTypeOf<Quote['policy_evaluation']>().toEqualTypeOf<Record<string, unknown> | null | undefined>();
+  expectTypeOf<Quote['pricing']>().toEqualTypeOf<'per_page' | 'one_time' | undefined>();
+  expectTypeOf<Quote['policy_evaluation']>().toEqualTypeOf<PolicyVerdict | null | undefined>();
   expectTypeOf<Capabilities['one_time']>().toEqualTypeOf<Record<string, unknown> | undefined>();
   expectTypeOf<Capabilities['extraction']>().toEqualTypeOf<boolean | undefined>();
-  expectTypeOf<PolicyEvaluation['usage']>().toEqualTypeOf<Record<string, number> | null | undefined>();
+  expectTypeOf<PolicyEvaluation['usage']>().toEqualTypeOf<PolicyUsage | null | undefined>();
+  expectTypeOf<PolicyUsage['day_jobs']>().toEqualTypeOf<number>();
 });
 
 it('declares email_pdf on a number and on its update body', () => {
@@ -104,4 +107,14 @@ it('keeps the response fields of API 1.20.6 optional', () => {
   expectTypeOf<S.DocumentPage['total']>().toEqualTypeOf<number | null | undefined>();
   expectTypeOf<S.Receipt['seller']>().toEqualTypeOf<S.Seller | null | undefined>();
   expectTypeOf<S.PolicyEvaluation['subject']>().toEqualTypeOf<string | null | undefined>();
+});
+
+it('keeps the response fields of API 1.20.8 optional', () => {
+  // The server gives route_paused and pricing a default. The saved spec leaves it out, as for 1.20.6.
+  expectTypeOf<S.FaxJob['route_paused']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.Quote['pricing']>().toEqualTypeOf<'per_page' | 'one_time' | undefined>();
+  expectTypeOf<S.PolicyEvaluation['managed']>().toEqualTypeOf<string | null | undefined>();
+  expectTypeOf<S.PolicyVerdict['usage']>().toEqualTypeOf<S.PolicyUsage | null | undefined>();
+  expectTypeOf<S.OneTimeCoverRoom['lines_left']>().toEqualTypeOf<number | null | undefined>();
+  expectTypeOf<S.OneTimeCoverRoom['fits']>().toEqualTypeOf<boolean>();
 });
