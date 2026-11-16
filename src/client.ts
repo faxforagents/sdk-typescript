@@ -34,6 +34,13 @@ type StatementFilter = {
   from?: string;
   to?: string;
 };
+/**
+ * The filters of the fax list. `created_after` is included and `created_before` is left out. Both are
+ * ISO 8601, and a time without an offset is read as UTC.
+ */
+type FaxFilter = { state?: string; q?: string; created_after?: string; created_before?: string };
+/** The UTC days of a records export, YYYY-MM-DD, both included. */
+type RecordsRange = { from?: string; to?: string };
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -178,7 +185,12 @@ export class Documents extends Resource {
 }
 
 export class Quotes extends Resource {
-  /** The exact price of one document to one E.164 destination, valid ten minutes. Scope: fax:quote. */
+  /**
+   * The exact price of one document to one E.164 destination, valid ten minutes. Scope: fax:quote.
+   *
+   * A test quote is free, and `live_amount_micro` says what the same fax costs with a live key. It is
+   * null when the rate card changed since the quote, and absent from a server older than API 1.21.0.
+   */
   create(body: S.QuoteCreate, o: Mut = {}): Promise<S.Quote> {
     return this.h.request('POST', '/v1/fax-quotes', { json: body, ...o });
   }
@@ -200,12 +212,16 @@ export class Faxes extends Resource {
    *
    * `idempotency_key` finds the send made with that Idempotency-Key. It is a filter here, not a header.
    * An empty result does not prove no fax was sent.
+   *
+   * `created_after` and `created_before` keep the jobs created in a time range, such as
+   * `2026-11-16T00:00:00Z`. The start is included and the end is left out. A start after the end throws
+   * InvalidRequestError. Every filter combines with the others. Needs API 1.21.0.
    */
-  list(p: Page & { state?: string; q?: string; idempotency_key?: string } = {}): Promise<S.FaxJobPage> {
+  list(p: Page & FaxFilter & { idempotency_key?: string } = {}): Promise<S.FaxJobPage> {
     return this.h.request('GET', '/v1/faxes', { params: p });
   }
   /** Every fax job that matches, following next_cursor. */
-  iter(p: Omit<Page, 'cursor'> & { state?: string; q?: string } = {}): AsyncGenerator<S.FaxJob, void, undefined> {
+  iter(p: Omit<Page, 'cursor'> & FaxFilter = {}): AsyncGenerator<S.FaxJob, void, undefined> {
     return paginate((cursor) => this.list({ ...p, cursor }));
   }
   /** The job with its evidence once delivered or partial. Scope: fax:read. */
@@ -455,7 +471,13 @@ export class Billing extends Resource {
   createSubscriptionCheckout(o: Mut = {}): Promise<S.SubscriptionCheckout> {
     return this.h.request('POST', '/v1/subscriptions/checkout', { json: {}, ...o });
   }
-  /** Subscriptions and the workspace entitlement. Scope: billing:read. */
+  /**
+   * Subscriptions and the workspace entitlement. Scope: billing:read.
+   *
+   * `plan` says what the Agent workspace gives and where the organization stands with it. It names the
+   * request limit, the included number, how long records are kept and whether the records export is
+   * open. A server older than API 1.21.0 does not send it.
+   */
   listSubscriptions(): Promise<S.SubscriptionList> {
     return this.h.request('GET', '/v1/subscriptions');
   }
@@ -865,6 +887,32 @@ export class Organizations extends Resource {
   downloadExportArchive(token: string, p: { exp: string; sig: string }): Promise<Uint8Array> {
     return this.h.bytes('GET', `/v1/organization/export-archives/${token}`, { params: p });
   }
+  /**
+   * The fax history as CSV text: one line per fax of this key's environment, sent and received, oldest
+   * first. Each line says what the fax cost, never what the document says. Scope: fax:read and inbox:read.
+   *
+   * `from` and `to` are UTC days, YYYY-MM-DD, both included. A range of more than 20000 lines throws
+   * InvalidRequestError: ask for fewer days. The export comes with the Agent workspace plan. Without the
+   * plan, or more than 30 days after it ended, it throws ScopeError with the code `workspace_required`.
+   * Needs API 1.21.0.
+   */
+  async faxHistoryCsv(p: RecordsRange = {}): Promise<string> {
+    const resp = await this.h.send('GET', '/v1/records/faxes.csv', { params: p });
+    return resp.text();
+  }
+  /**
+   * The audit trail as CSV text: one line per audit row of the organization, oldest first. It names who
+   * did what to which resource, never a document's content. Scope: org:admin, never an agent key.
+   *
+   * `from` and `to` are UTC days, YYYY-MM-DD, both included. A range of more than 20000 lines throws
+   * InvalidRequestError: ask for fewer days. The export comes with the Agent workspace plan. Without the
+   * plan, or more than 30 days after it ended, it throws ScopeError with the code `workspace_required`.
+   * Needs API 1.21.0.
+   */
+  async auditCsv(p: RecordsRange = {}): Promise<string> {
+    const resp = await this.h.send('GET', '/v1/records/audit.csv', { params: p });
+    return resp.text();
+  }
 }
 
 export class Members extends Resource {
@@ -1074,6 +1122,11 @@ export class OneTimeSends extends Resource {
   /**
    * The order: its status, the step that is waiting in `next`, and the fax once released. Read it with
    * a key of the order's organization (scope fax:read) or with `orderToken`.
+   *
+   * A person at Fax for Agents can refund an order or release the hold on its card. The order then reads
+   * `refunding` with `next` `wait`, and `refunded` once the whole charge went back. It reads `canceled`
+   * when the hold was released and nothing was charged. `refund_pending_micro` is a refund the payment
+   * provider has not confirmed yet. These statuses need API 1.21.0.
    */
   get(orderId: string, o: Tok = {}): Promise<S.OneTimeOrder> {
     return this.h.request('GET', `/v1/one-time-sends/${orderId}`, { headers: tokenHeader(o.orderToken) });

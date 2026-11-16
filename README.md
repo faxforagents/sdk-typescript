@@ -86,6 +86,12 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
   returns the same lines as CSV text.
 - `faxes.list({ q })` finds a fax by its number or by the start of its id. `documents.list({ q })`
   finds a document by file name, or a received fax's file by the sender's number.
+- `faxes.list({ created_after, created_before })` keeps the jobs created in a time range, given in
+  ISO 8601. The start is included and the end is left out.
+- `organizations.faxHistoryCsv()` and `organizations.auditCsv()` return the records export of the
+  Agent workspace plan as CSV text, for a range of UTC days. Without the plan they throw `ScopeError`
+  with the code `workspace_required`.
+- A test quote is free. Its `live_amount_micro` says what the same fax costs with a live key.
 - `oneTimeSends.preview({ file })` counts the pages of a document before any order exists, with no key.
   `oneTimeSends.checkCover({ message })` says whether a cover message fits on its page.
 - `billing.getTopupSession(id, { check_checkout: true })` asks Stripe about the hosted Checkout of an
@@ -127,7 +133,7 @@ names the scope each call needs.
 | `ffa.inbox` | `list`, `iter`, `get`, `update`, `delete`, `getDownload`, `download` |
 | `ffa.numbers` | `coverage`, `inventory`, `createOrder`, `listOrders`, `getOrder`, `dismissOrder`, `list`, `get`, `update`, `release`, `checkPortability`, `listPortOrders`, `createPortOrder`, `getPortOrder`, `createPortOutRequest`, `verifySender` |
 | `ffa.extractions` | `create`, `list`, `iter`, `get`, `correct`, `classify`, `listClassifications`, `iterClassifications`, `getClassification`, `summarize`, `listSummaries`, `iterSummaries`, `getSummary`, `listSchemas`, `createSchema`, `getSchema` |
-| `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `listDataRequests`, `withdrawDataDeletion`, `downloadExportArchive` |
+| `ffa.organizations` | `list`, `current`, `updateCurrent`, `requestDataExport`, `requestDataDeletion`, `listDataRequests`, `withdrawDataDeletion`, `downloadExportArchive`, `faxHistoryCsv`, `auditCsv` |
 | `ffa.members` | `list`, `update`, `remove`, `listInvitations`, `invite`, `resendInvitation`, `linkInvitation`, `revokeInvitation` |
 | `ffa.oauth` | `listGrants`, `iterGrants`, `revokeGrant` |
 | `ffa.oneTimeSends` | `config`, `preview`, `checkCover`, `create`, `createFromQuote`, `list`, `iter`, `get`, `getPage`, `wait`, `checkout`, `readByToken`, `confirm`, `resendConfirmation`, `getReceiptPdf` |
@@ -217,6 +223,11 @@ const pdf = await ffa.oneTimeSends.getReceiptPdf(order.id, { orderToken });
 `done`, or until the step you pass as `until`. The card is held at checkout. A failed fax costs nothing,
 and a fax that stops part way costs the price of the pages the carrier confirms.
 
+A person at Fax for Agents can refund an order or release the hold on its card. The order then reads
+`refunding` until the refund is confirmed and `refunded` after. It reads `canceled` when the hold was
+released and nothing was charged. `refund_pending_micro` is a refund the payment provider has not
+confirmed yet.
+
 The status token goes in the `X-FFA-Order-Token` header. It reads the order, opens its checkout, mails
 the confirmation again and downloads the receipt. A client with a live key of the order's organization
 needs no token. A test key is refused: an order is always live.
@@ -283,7 +294,7 @@ either one verifies.
 ## Prices
 
 Price card launch-v3 is effective from 2026-11-12. $0.039 per page sent, $0.019 per page received.
-$2 per number per month, $19 per month for the Agent workspace. Sandbox pages cost 0.
+$2 per number per month, $19 per month for the Agent workspace. With a test key, every page costs 0.
 `ffa.platform.capabilities()` returns the card in force. One fax by card has its own price:
 `ffa.oneTimeSends.config()` returns it.
 
@@ -298,13 +309,14 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.20.11.
-It holds the paths and schemas of that document and nothing else: 163 operations in 130 paths.
+`spec/openapi.yaml` follows the public document at API version 1.21.0.
+It holds the paths and schemas of that document and nothing else: 165 operations in 132 paths.
 Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
 A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
 0.8.0 replaced five of them with the public declarations, such as `Quote.policy_evaluation`.
 Fields the server gives a default stay optional in the types.
 0.9.0 leaves `Delivery.webhook_deleted` optional, where the public document requires it.
+0.11.0 leaves `SubscriptionList.plan` optional, where the public document requires it.
 To refresh it, take the public document, keep those fields, then run `npm run gen:types`.
 Every operation has a client method. `test/surface.test.ts` lists them and fails on an internal path.
 Keep new response fields optional so older payloads and existing callers remain valid.

@@ -145,6 +145,8 @@ const COVERED: Record<string, string> = {
   list_data_requests: 'organizations.listDataRequests',
   withdraw_data_deletion: 'organizations.withdrawDataDeletion',
   download_export_archive: 'organizations.downloadExportArchive',
+  get_fax_history_csv: 'organizations.faxHistoryCsv',
+  get_audit_csv: 'organizations.auditCsv',
   list_members: 'members.list',
   update_member: 'members.update',
   remove_member: 'members.remove',
@@ -178,9 +180,9 @@ const GENERATED_ONLY: string[] = [];
 it('accounts for every operationId and retains every existing client method', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const ids = new Set([...yaml.matchAll(/^\s+operationId: (\w+)$/gm)].map((m) => m[1]!));
-  expect(Object.keys(COVERED)).toHaveLength(163);
+  expect(Object.keys(COVERED)).toHaveLength(165);
   expect(GENERATED_ONLY).toHaveLength(0);
-  expect(ids.size).toBe(163);
+  expect(ids.size).toBe(165);
   expect([...ids].sort()).toEqual([...Object.keys(COVERED), ...GENERATED_ONLY].sort());
   const c = new FaxForAgents({ apiKey: 'ffa_test_x' }) as unknown as Record<string, Record<string, unknown>>;
   for (const target of Object.values(COVERED)) {
@@ -192,7 +194,7 @@ it('accounts for every operationId and retains every existing client method', ()
 it('saves only the paths of the public document', () => {
   const yaml = readFileSync('spec/openapi.yaml', 'utf8');
   const paths = [...yaml.matchAll(/^  (\/[^\s:]+):$/gm)].map((m) => m[1]!);
-  expect(paths).toHaveLength(130);
+  expect(paths).toHaveLength(132);
   const internal = paths.filter(
     (p) =>
       !p.startsWith('/v1/') ||

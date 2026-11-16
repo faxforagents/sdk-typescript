@@ -80,13 +80,13 @@ it("declares every property in the saved serializer shapes", () => {
   expectTypeOf(invoice).toExtend<Array<keyof Declared<S.Invoice>>>();
   const ledgerEntry = ["account", "amount_micro", "created_at", "id", "kind", "memo", "ref_id", "ref_type", "txn_id"] satisfies Array<keyof Declared<S.LedgerEntry>>;
   expectTypeOf(ledgerEntry).toExtend<Array<keyof Declared<S.LedgerEntry>>>();
-  const number = ["activated_at", "country", "created_at", "currency", "e164", "email_pdf", "environment", "id", "inbound_status", "inbound_webhook_id", "label", "locality", "monthly_micro", "number_type", "order_id", "project_id", "provider", "released_at", "renews_at", "status"] satisfies Array<keyof Declared<S.Number>>;
+  const number = ["activated_at", "country", "created_at", "currency", "e164", "email_pdf", "environment", "id", "inbound_status", "inbound_webhook_id", "included_with_workspace", "label", "locality", "monthly_micro", "number_type", "order_id", "project_id", "provider", "released_at", "renews_at", "status"] satisfies Array<keyof Declared<S.Number>>;
   expectTypeOf(number).toExtend<Array<keyof Declared<S.Number>>>();
   const policy = ["created_at", "created_by", "current_version_id", "enabled", "id", "name", "purpose", "rules", "updated_at", "version"] satisfies Array<keyof Declared<S.Policy>>;
   expectTypeOf(policy).toExtend<Array<keyof Declared<S.Policy>>>();
   const policyEvaluation = ["decision", "denials", "executed", "plan", "policy_id", "policy_name", "policy_version_id", "reason", "rule", "usage", "version"] satisfies Array<keyof Declared<S.PolicyEvaluation>>;
   expectTypeOf(policyEvaluation).toExtend<Array<keyof Declared<S.PolicyEvaluation>>>();
-  const quote = ["amount_micro", "authorization_required", "billable_pages", "consumed_by_job_id", "cover", "cover_pages", "created_at", "currency", "document_id", "document_pages", "document_sha256", "environment", "expired", "expires_at", "from", "id", "policy_evaluation", "price_version", "pricing", "route", "to", "warnings"] satisfies Array<keyof Declared<S.Quote>>;
+  const quote = ["amount_micro", "authorization_required", "billable_pages", "consumed_by_job_id", "cover", "cover_pages", "created_at", "currency", "document_id", "document_pages", "document_sha256", "environment", "expired", "expires_at", "from", "id", "live_amount_micro", "policy_evaluation", "price_version", "pricing", "route", "to", "warnings"] satisfies Array<keyof Declared<S.Quote>>;
   expectTypeOf(quote).toExtend<Array<keyof Declared<S.Quote>>>();
   const topupSession = ["amount_micro", "auto_topup_id", "completed_at", "created_at", "currency", "environment", "error", "expires_at", "id", "kind", "status", "stripe_payment_intent_id", "stripe_session_id", "url"] satisfies Array<keyof Declared<S.TopupSession>>;
   expectTypeOf(topupSession).toExtend<Array<keyof Declared<S.TopupSession>>>();
@@ -129,4 +129,23 @@ it('keeps the response fields of API 1.20.10 optional', () => {
   expectTypeOf<NonNullable<S.operations['get_topup_session']['parameters']['query']>>().toEqualTypeOf<{
     check_checkout?: boolean;
   }>();
+});
+
+it('keeps the response fields of API 1.21.0 optional', () => {
+  // The public document requires SubscriptionList.plan. The saved spec leaves it out of required, and
+  // the new fields with a server default have no default declared, so older payloads still fit.
+  expectTypeOf<S.SubscriptionList['plan']>().toEqualTypeOf<S.WorkspacePlan | undefined>();
+  expectTypeOf<S.WorkspacePlan['export_open']>().toEqualTypeOf<boolean>();
+  expectTypeOf<S.WorkspacePlan['ended_at']>().toEqualTypeOf<string | null>();
+  expectTypeOf<S.Number['included_with_workspace']>().toEqualTypeOf<boolean | undefined>();
+  expectTypeOf<S.OneTimeOrder['refund_pending_micro']>().toEqualTypeOf<number | undefined>();
+  expectTypeOf<S.OneTimeOrderCreated['refund_pending_micro']>().toEqualTypeOf<number | undefined>();
+  expectTypeOf<S.Quote['live_amount_micro']>().toEqualTypeOf<number | null | undefined>();
+  expectTypeOf<Extract<S.OneTimeOrder['status'], 'refunding' | 'refunded' | 'canceled'>>().toEqualTypeOf<
+    'refunding' | 'refunded' | 'canceled'
+  >();
+  type FaxQuery = NonNullable<S.operations['list_faxes']['parameters']['query']>;
+  expectTypeOf<FaxQuery['created_after']>().toEqualTypeOf<string | null | undefined>();
+  expectTypeOf<FaxQuery['created_before']>().toEqualTypeOf<string | null | undefined>();
+  expectTypeOf<S.operations['get_fax_history_csv']['responses'][200]['content']['text/csv']>().toEqualTypeOf<string>();
 });

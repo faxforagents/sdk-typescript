@@ -22,6 +22,7 @@ import type {
   PolicyVerdict,
   StatementLine,
   TopupSession,
+  WorkspacePlan,
 } from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, document, faxJob, http, quote, sequence, server } from './helpers.js';
 
@@ -1177,5 +1178,139 @@ describe('API 1.20.10', () => {
     expect(err).toBeInstanceOf(ConflictError);
     expect(err).toMatchObject({ status: 409, code: 'conflict', details: { reason: 'webhook_deleted' } });
     expect(replays).toEqual(['dlv_1']);
+  });
+});
+
+describe('API 1.21.0', () => {
+  const plan: WorkspacePlan = {
+    active: true,
+    credit_micro: 10_000_000,
+    records_keep_days: 365,
+    document_keep_days: 30,
+    inbox_keep_days: 90,
+    requests_per_minute: 3000,
+    plan_requests_per_minute: 3000,
+    standard_requests_per_minute: 600,
+    included_numbers: 1,
+    included_number_id: 'num_1',
+    included_number: '+15550001001',
+    ended_at: null,
+    cleanup_at: null,
+    export_open: true,
+  };
+
+  it('narrows the fax list to a created range, and refuses a reversed one', async () => {
+    const queries: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/faxes`, ({ request }) => {
+        const url = new URL(request.url);
+        queries.push(url.search);
+        if (url.searchParams.get('created_after') === '2026-11-17T00:00:00Z') {
+          return HttpResponse.json(apiError('invalid_request', 'created_after is after created_before'), { status: 422 });
+        }
+        const cursor = url.searchParams.get('cursor');
+        return HttpResponse.json({
+          items: [faxJob({ id: cursor ? 'fax_b' : 'fax_a' })],
+          next_cursor: cursor ? null : 'c2',
+        });
+      }),
+    );
+    const page = await client().faxes.list({
+      state: 'delivered',
+      created_after: '2026-11-16T00:00:00Z',
+      created_before: '2026-11-17T00:00:00Z',
+    });
+    expect(page.next_cursor).toBe('c2');
+    const ids: string[] = [];
+    for await (const job of client().faxes.iter({ created_after: '2026-11-16T00:00:00Z' })) ids.push(job.id);
+    expect(ids).toEqual(['fax_a', 'fax_b']);
+    const err = await client()
+      .faxes.list({ created_after: '2026-11-17T00:00:00Z', created_before: '2026-11-16T00:00:00Z' })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(InvalidRequestError);
+    expect(err).toMatchObject({ status: 422, code: 'invalid_request' });
+    expect(queries).toEqual([
+      '?state=delivered&created_after=2026-11-16T00%3A00%3A00Z&created_before=2026-11-17T00%3A00%3A00Z',
+      '?created_after=2026-11-16T00%3A00%3A00Z',
+      '?created_after=2026-11-16T00%3A00%3A00Z&cursor=c2',
+      '?created_after=2026-11-17T00%3A00%3A00Z&created_before=2026-11-16T00%3A00%3A00Z',
+    ]);
+  });
+
+  it('reads what a test quote would cost live', async () => {
+    server.use(
+      http.post(
+        `${BASE}/v1/fax-quotes`,
+        sequence(
+          () => HttpResponse.json(quote({ price_version: 'launch-v3', billable_pages: 2, live_amount_micro: 78_000 }), { status: 201 }),
+          () => HttpResponse.json(quote({ live_amount_micro: null }), { status: 201 }),
+          () => HttpResponse.json(quote(), { status: 201 }),
+        ),
+      ),
+    );
+    const body = { document_id: 'doc_' + '2'.repeat(32), to: '+15550000001' };
+    const priced = await client().quotes.create(body);
+    expect(priced).toMatchObject({ amount_micro: 0, live_amount_micro: 78_000 });
+    expect((await client().quotes.create(body)).live_amount_micro).toBeNull();
+    expect((await client().quotes.create(body)).live_amount_micro).toBeUndefined();
+  });
+
+  it('returns the records export as CSV text', async () => {
+    const seen: Array<{ path: string; search: string; idempotency: string | null }> = [];
+    server.use(
+      http.get(`${BASE}/v1/records/:file`, ({ request, params }) => {
+        const url = new URL(request.url);
+        seen.push({ path: String(params.file), search: url.search, idempotency: request.headers.get('idempotency-key') });
+        const text =
+          params.file === 'faxes.csv'
+            ? 'direction,id,created_at\noutbound,fax_1,2026-11-16T09:00:00Z\n'
+            : 'created_at,actor_label\n2026-11-16,Dana Ö\n';
+        return new HttpResponse(text, { headers: { 'content-type': 'text/csv; charset=utf-8' } });
+      }),
+    );
+    const history = await client().organizations.faxHistoryCsv({ from: '2026-11-01', to: '2026-11-16' });
+    expect(history.split('\n')).toEqual(['direction,id,created_at', 'outbound,fax_1,2026-11-16T09:00:00Z', '']);
+    expect(await client().organizations.auditCsv()).toBe('created_at,actor_label\n2026-11-16,Dana Ö\n');
+    expect(seen).toEqual([
+      { path: 'faxes.csv', search: '?from=2026-11-01&to=2026-11-16', idempotency: null },
+      { path: 'audit.csv', search: '', idempotency: null },
+    ]);
+  });
+
+  it('refuses the records export without the workspace plan', async () => {
+    const details = { ended_at: '2026-10-01T00:00:00Z', closed_at: '2026-10-31T00:00:00Z' };
+    server.use(
+      http.get(`${BASE}/v1/records/faxes.csv`, () =>
+        HttpResponse.json(apiError('workspace_required', 'the records export comes with the plan', details), { status: 403 }),
+      ),
+      http.get(`${BASE}/v1/records/audit.csv`, () =>
+        HttpResponse.json(apiError('scope_missing', 'this key lacks org:admin', { scope: 'org:admin' }), { status: 403 }),
+      ),
+    );
+    const err = await client()
+      .organizations.faxHistoryCsv({ from: '2026-09-01' })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ScopeError);
+    expect(err).toMatchObject({ status: 403, code: 'workspace_required', details });
+    const missing = await client()
+      .organizations.auditCsv({ to: '2026-11-16' })
+      .catch((e: unknown) => e);
+    expect(missing).toBeInstanceOf(ScopeError);
+    expect(missing).toMatchObject({ code: 'scope_missing', details: { scope: 'org:admin' } });
+  });
+
+  it('reads the workspace plan of the subscription list, absent from an older server', async () => {
+    server.use(
+      http.get(
+        `${BASE}/v1/subscriptions`,
+        sequence(
+          () => HttpResponse.json({ items: [], workspace: true, plan }),
+          () => HttpResponse.json({ items: [], workspace: false }),
+        ),
+      ),
+    );
+    const listed = await client().billing.listSubscriptions();
+    expect(listed.plan).toMatchObject({ export_open: true, requests_per_minute: 3000, standard_requests_per_minute: 600 });
+    expect((await client().billing.listSubscriptions()).plan).toBeUndefined();
   });
 });
