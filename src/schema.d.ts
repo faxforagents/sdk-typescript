@@ -11103,7 +11103,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The link was already used (link_used), expired (link_expired), or the browser is signed in as someone else (link_other_session). */
+            /** @description The link was already used (link_used), its order was canceled and the hold released (link_canceled), it expired (link_expired), or the browser is signed in as someone else (link_other_session). */
             409: {
                 headers: {
                     [name: string]: unknown;

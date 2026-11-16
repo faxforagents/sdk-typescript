@@ -1204,8 +1204,9 @@ export class OneTimeSends extends Resource {
     return this.h.request('GET', `/v1/one-time-sends/by-token/${encodeURIComponent(token)}`);
   }
   /**
-   * Confirm the order with the token of the mailed link. The fax is released. No key needed. The link
-   * works once. A repeat answers 409 link_used and sends nothing.
+   * Confirm the order with the token of the mailed link. The fax is released. It takes no API key. The
+   * link works once. A repeat answers 409 link_used and sends nothing. The link of an order that was
+   * canceled answers 409 link_canceled, since API 1.21.2.
    */
   confirm(orderId: string, token: string): Promise<S.OneTimeConfirmed> {
     return this.h.request('POST', `/v1/one-time-sends/${orderId}/confirm`, { json: { token } });

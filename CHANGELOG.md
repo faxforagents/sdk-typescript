@@ -12,6 +12,7 @@ New fields, optional as other new response fields are:
 - The public document requires both. The saved spec leaves them out of `required`, so a subscription from an older server still fits.
 
 `OneTimeConfirmSummary['state']` gains `'link_canceled'`, the confirm link of an order that was canceled.
+`oneTimeSends.confirm` on that link throws `ConflictError` with the code `link_canceled`, and its doc comment says so.
 
 `ConflictError.reason` reads `details.reason`, or null when the API sent none.
 A second `billing.createSubscriptionCheckout` throws `ConflictError` with the reason `plan_active` while the plan is active.

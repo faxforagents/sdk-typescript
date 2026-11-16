@@ -3,7 +3,15 @@ import { readFileSync } from 'node:fs';
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { FaxForAgents, InvalidRequestError, NotFoundError, ORDER_TOKEN_HEADER, PaymentRequiredError, ServerError } from '../src/index.js';
+import {
+  ConflictError,
+  FaxForAgents,
+  InvalidRequestError,
+  NotFoundError,
+  ORDER_TOKEN_HEADER,
+  PaymentRequiredError,
+  ServerError,
+} from '../src/index.js';
 import type { OneTimeOrder, OneTimeOrderCreated } from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, http, sequence, server } from './helpers.js';
 
@@ -311,6 +319,13 @@ describe('one-time sends', () => {
     const summary = await keyless().oneTimeSends.readByToken('mail-token');
     expect(summary.state).toBe('link_canceled');
     expect(summary.status).toBe('canceled');
+    const refusal = apiError('link_canceled', 'this order was canceled, and the hold on the card is released');
+    server.use(http.post(`${ROOT}/${ORDER}/confirm`, () => HttpResponse.json(refusal, { status: 409 })));
+    const err = await keyless()
+      .oneTimeSends.confirm(summary.order_id, 'mail-token')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect(err).toMatchObject({ status: 409, code: 'link_canceled' });
   });
 
   it('mails the confirmation again', async () => {
