@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.11.0 (2026-11-16)
+
+Follows API 1.21.0. The saved spec has 165 operations in 132 paths and the types are regenerated from it.
+Every operation has a client method. Nothing is removed.
+The version is the same as that of the Python client. There is no 0.10.0 of this package.
+
+New methods: `organizations.faxHistoryCsv` and `organizations.auditCsv`, the records export of the Agent workspace plan.
+Each returns CSV text for a range of UTC days, `{ from, to }`, both included, as `billing.statementCsv` does.
+The fax history needs `fax:read` and `inbox:read`. The audit trail needs `org:admin` and refuses an agent's key.
+Without the plan, or more than 30 days after it ended, both throw `ScopeError` with the code `workspace_required`.
+
+New parameters: `faxes.list` and `faxes.iter` take `created_after` and `created_before`, ISO 8601 times.
+The start is included and the end is left out. A start after the end throws `InvalidRequestError`.
+Left out, no query parameter is sent, so the request is the same as in 0.9.1.
+
+New fields, all optional as other new response fields are:
+
+- `Quote.live_amount_micro` is what the same fax costs with a live key. A test quote is free, so this is its live price.
+  It is null when the rate card changed since the quote.
+- `SubscriptionList.plan` is the new type `WorkspacePlan`: the request limits, the included number, the keep times and whether the export is open.
+  The public document requires it. The saved spec leaves it out of `required`.
+- `Number.included_with_workspace` is true for the number whose monthly charge the Agent workspace pays.
+- `OneTimeOrder.refund_pending_micro` and `OneTimeOrderCreated.refund_pending_micro` hold a refund the payment provider has not confirmed yet.
+  The server gives these two fields and `included_with_workspace` a default. The saved spec leaves it out, so the fields stay optional.
+
+One-time orders have three new statuses, set by a person at Fax for Agents: `refunding`, `refunded` and `canceled`.
+`refunded` and `canceled` read `next` `done`, so `oneTimeSends.wait` returns on them. `refunding` reads `next` `wait`.
+
+Descriptions say test where they said sandbox. `Capabilities.limits` names the request limit, 3000 a minute with the plan and 600 without.
+
 ## 0.9.1 (2026-11-16)
 
 Follows API 1.20.11. The saved spec has 163 operations and the types are regenerated from it.

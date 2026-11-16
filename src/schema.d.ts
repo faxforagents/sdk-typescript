@@ -716,7 +716,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List fax jobs, newest first */
+        /**
+         * List fax jobs, newest first
+         * @description Fax jobs of the credential's organization and environment, newest first, in pages of `limit`. Every filter combines with the others and with `cursor`: pass the same filters with the `next_cursor` of the page before. `created_after` and `created_before` narrow the list to the jobs created in a time range, the start included and the end left out. A range whose start is after its end is refused with 422 invalid_request.
+         */
         get: operations["list_faxes"];
         put?: never;
         /** Send a quoted fax. Pass an Idempotency-Key. */
@@ -1839,6 +1842,46 @@ export interface paths {
         put?: never;
         /** Can these numbers port in */
         post: operations["create_portability_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/records/audit.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The audit trail as CSV: every action on the organization in the range
+         * @description One line per audit row of the organization, oldest first: when, who (actor and a label), what (action), on what (resource_type and resource_id) and the row's data as JSON. Never a document's content. A range of more than 20000 lines answers 422: choose fewer days. Needs the scope org:admin, which an owner has. An agent is refused.
+         */
+        get: operations["get_audit_csv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/records/faxes.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The fax history as CSV: every fax sent and received in the range
+         * @description One line per fax of the key's environment, sent and received, oldest first. A sent fax counts by when it was created and a received one by when it arrived. The lines carry what each fax cost the wallet, never the document or its text. A range of more than 20000 lines answers 422: choose fewer days. Needs the scopes fax:read and inbox:read.
+         */
+        get: operations["get_fax_history_csv"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3091,14 +3134,17 @@ export interface components {
             extraction?: boolean;
             /**
              * Extraction Pricing
-             * @description What POST /v1/extractions charges, in micro-units. page_micro is for every page read. escalated_page_micro is added for a page the stronger model reads again. max_pages is the most pages one extraction reads. Sandbox extractions are free.
+             * @description What POST /v1/extractions charges, in micro-units. page_micro is for every page read. escalated_page_micro is added for a page the stronger model reads again. max_pages is the most pages one extraction reads. With a test key, extractions are free.
              */
             extraction_pricing?: {
                 [key: string]: unknown;
             };
             /** Formats */
             formats: string[];
-            /** Limits */
+            /**
+             * Limits
+             * @description requests_per_minute is the limit of the calling credential: 3000 while the organization's Agent workspace is active, 600 otherwise. The RateLimit-Limit header of every answer says the same. The other keys are the life of a quote and of a download link in seconds, and the largest HTML document in bytes.
+             */
             limits: {
                 [key: string]: number;
             };
@@ -4132,7 +4178,7 @@ export interface components {
         InboxItem: {
             /**
              * Amount Micro
-             * @description What the received pages were charged, in micro-USD. 0 on the sandbox.
+             * @description What the received pages were charged, in micro-USD. 0 in test.
              * @default 0
              */
             amount_micro: number;
@@ -4227,7 +4273,7 @@ export interface components {
         InboxItemDetail: {
             /**
              * Amount Micro
-             * @description What the received pages were charged, in micro-USD. 0 on the sandbox.
+             * @description What the received pages were charged, in micro-USD. 0 in test.
              * @default 0
              */
             amount_micro: number;
@@ -4298,7 +4344,7 @@ export interface components {
         InboxItemSummary: {
             /**
              * Amount Micro
-             * @description What the received pages were charged, in micro-USD. 0 on the sandbox.
+             * @description What the received pages were charged, in micro-USD. 0 in test.
              * @default 0
              */
             amount_micro: number;
@@ -4705,6 +4751,11 @@ export interface components {
             inbound_status: string;
             /** Inbound Webhook Id */
             inbound_webhook_id: string | null;
+            /**
+             * Included With Workspace
+             * @description True while the organization's Agent workspace pays this number's monthly charge: the oldest live local number, pending or active, while the plan is active. Its renewals then take nothing from the wallet. When the plan ends, the next renewal charges monthly_micro.
+             */
+            included_with_workspace?: boolean;
             /** Label */
             label: string | null;
             /** Locality */
@@ -4761,7 +4812,7 @@ export interface components {
             error: string | null;
             /**
              * First Month Hold Micro
-             * @description Held now, captured when the number activates.
+             * @description Held now, captured when the number activates. 0 for a test number, and 0 when the Agent workspace pays the first month: the number's included_with_workspace is then true.
              */
             first_month_hold_micro: number;
             /** Id */
@@ -4965,7 +5016,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed";
+            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed" | "refunding" | "refunded" | "canceled";
             /** To */
             to: string;
         } & {
@@ -5140,7 +5191,7 @@ export interface components {
              */
             settled_at?: string | null;
             /** Status */
-            status?: ("draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed") | null;
+            status?: ("draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed" | "refunding" | "refunded" | "canceled") | null;
         } & {
             [key: string]: unknown;
         };
@@ -5150,7 +5201,9 @@ export interface components {
          *     ``confirm`` (click the mailed link), ``wait`` (read again later) or ``done``. Money is integer
          *     micro-USD. The field ``captured_micro`` is what the card was charged, written only once the payment
          *     provider confirmed it. The field ``fax`` is the fax job once the order was released, with the
-         *     carrier's evidence once it has any.
+         *     carrier's evidence once it has any. Three statuses come from a person at Fax for Agents: ``refunding``
+         *     (a refund is on its way to the card), ``refunded`` (the whole charge went back) and ``canceled`` (the
+         *     order was canceled and the hold on the card released, nothing charged).
          */
         OneTimeOrder: {
             /** Amount Micro */
@@ -5241,6 +5294,11 @@ export interface components {
             /** Quote Id */
             quote_id: string | null;
             /**
+             * Refund Pending Micro
+             * @description A refund on its way to the card that the payment provider has not confirmed yet, in micro-units, while the order is refunding. Zero otherwise.
+             */
+            refund_pending_micro?: number;
+            /**
              * Refunded Micro
              * @description What was refunded to the card after the charge, in micro-units, as the ledger holds it. Zero when nothing was refunded. captured_micro stays what was charged.
              */
@@ -5267,7 +5325,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed";
+            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed" | "refunding" | "refunded" | "canceled";
             /**
              * Status Url
              * @description The order's page for the person who pays or confirms, with a fresh status token. Present on a read by a key or session of the order's organization while the order is not done.
@@ -5379,6 +5437,11 @@ export interface components {
             /** Quote Id */
             quote_id: string | null;
             /**
+             * Refund Pending Micro
+             * @description A refund on its way to the card that the payment provider has not confirmed yet, in micro-units, while the order is refunding. Zero otherwise.
+             */
+            refund_pending_micro?: number;
+            /**
              * Refunded Micro
              * @description What was refunded to the card after the charge, in micro-units, as the ledger holds it. Zero when nothing was refunded. captured_micro stays what was charged.
              */
@@ -5405,7 +5468,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed";
+            status: "draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed" | "refunding" | "refunded" | "canceled";
             /** Status Token */
             status_token: string;
             /** Status Url */
@@ -5655,7 +5718,7 @@ export interface components {
         PolicyEvaluation: {
             /**
              * Approval Required
-             * @description What a send of this plan by that caller would need: true when a person has to approve it. false when a policy allows it, and for a test send by a caller no policy binds.
+             * @description What a send of this plan by that caller would need: true when a person has to approve it. false when a policy allows it, and for a test send by a caller no policy binds. It is false for a signed-in owner's own live send too, which needs no approval.
              */
             approval_required?: boolean | null;
             /**
@@ -6033,6 +6096,7 @@ export interface components {
          *       "cover_pages": 0,
          *       "billable_pages": 2,
          *       "amount_micro": 0,
+         *       "live_amount_micro": 78000,
          *       "currency": "USD",
          *       "price_version": "launch-v3",
          *       "per_page_micro": 0,
@@ -6097,6 +6161,11 @@ export interface components {
             from?: string | null;
             /** Id */
             id: string;
+            /**
+             * Live Amount Micro
+             * @description What the same fax costs with a live key, in micro-units. It is the billable pages at the live rate of the destination, priced by the rule a live quote uses. A test quote is free (amount_micro 0), and this field says what the fax would cost live. On a live quote it equals amount_micro. Null when the rate card in force is not the one the quote was priced on (price_version) or no longer serves the destination.
+             */
+            live_amount_micro?: number | null;
             /**
              * Per Page Micro
              * @default 0
@@ -6614,6 +6683,7 @@ export interface components {
             items: components["schemas"]["Subscription"][];
             /** Next Cursor */
             next_cursor?: string | null;
+            plan?: components["schemas"]["WorkspacePlan"];
             /** Workspace */
             workspace: boolean;
         } & {
@@ -7001,6 +7071,84 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * WorkspacePlan
+         * @description What the Agent workspace gives and where the organization stands with it.
+         */
+        WorkspacePlan: {
+            /**
+             * Active
+             * @description The plan is active: a subscription is active, trialing or past due.
+             */
+            active: boolean;
+            /**
+             * Cleanup At
+             * @description When records older than the standard time (30 days for a document, 90 for a received fax) are deleted after the plan ended. Null while the plan is active.
+             */
+            cleanup_at: string | null;
+            /**
+             * Credit Micro
+             * @description The fax credit each paid invoice of the plan adds to the live wallet.
+             */
+            credit_micro: number;
+            /**
+             * Document Keep Days
+             * @description How long a document is kept without the plan.
+             */
+            document_keep_days: number;
+            /**
+             * Ended At
+             * @description When the plan last ended. Null while it is active or if it never was.
+             */
+            ended_at: string | null;
+            /**
+             * Export Open
+             * @description GET /v1/records/faxes.csv and /v1/records/audit.csv answer: while the plan is active and until cleanup_at.
+             */
+            export_open: boolean;
+            /**
+             * Inbox Keep Days
+             * @description How long a received fax is kept without the plan.
+             */
+            inbox_keep_days: number;
+            /**
+             * Included Number
+             * @description That number, E.164.
+             */
+            included_number: string | null;
+            /**
+             * Included Number Id
+             * @description The number the plan pays for now: the oldest live local number, while the plan is active.
+             */
+            included_number_id: string | null;
+            /**
+             * Included Numbers
+             * @description Local numbers whose monthly charge the plan pays.
+             */
+            included_numbers: number;
+            /**
+             * Plan Requests Per Minute
+             * @description The request limit of each credential while the plan is active.
+             */
+            plan_requests_per_minute: number;
+            /**
+             * Records Keep Days
+             * @description How long live documents and received faxes are kept while the plan is active.
+             */
+            records_keep_days: number;
+            /**
+             * Requests Per Minute
+             * @description The request limit of each credential of the organization now.
+             */
+            requests_per_minute: number;
+            /**
+             * Standard Requests Per Minute
+             * @description The request limit of each credential without it.
+             */
+            standard_requests_per_minute: number;
+        } & {
+            [key: string]: unknown;
+        };
     };
     responses: {
         /** @description The resource is in a state that refuses the call. A state with a code of its own is named by error.code, for example quote_expired. Otherwise error.code is conflict and error.message says what is in the way. idempotency_key_conflict: the Idempotency-Key was used with a different request, or that request is still being processed. */
@@ -7273,6 +7421,7 @@ export type WebhookCreate = components['schemas']['WebhookCreate'];
 export type WebhookList = components['schemas']['WebhookList'];
 export type WebhookUpdate = components['schemas']['WebhookUpdate'];
 export type WebhookWithSecret = components['schemas']['WebhookWithSecret'];
+export type WorkspacePlan = components['schemas']['WorkspacePlan'];
 export type ResponseConflict = components['responses']['Conflict'];
 export type ResponseForbidden = components['responses']['Forbidden'];
 export type ResponseGone = components['responses']['Gone'];
@@ -9263,6 +9412,10 @@ export interface operations {
     list_faxes: {
         parameters: {
             query?: {
+                /** @description Only jobs created at or after this time. ISO 8601, for example 2026-11-16T00:00:00Z. A time without an offset is read as UTC. Combines with created_before, the other filters and cursor. */
+                created_after?: string | null;
+                /** @description Only jobs created before this time, which is left out. ISO 8601, for example 2026-11-17T00:00:00Z. A time without an offset is read as UTC. With created_after, a range that starts after it ends is refused. */
+                created_before?: string | null;
                 cursor?: string | null;
                 /** @description Find the send job using its Idempotency-Key. This lookup requires the stored replay record. An empty result does not prove no fax was sent. */
                 idempotency_key?: string | null;
@@ -10618,7 +10771,7 @@ export interface operations {
             query?: {
                 cursor?: string | null;
                 limit?: number;
-                status?: ("draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed") | null;
+                status?: ("draft" | "checkout_open" | "authorized" | "awaiting_confirmation" | "released" | "capturing" | "canceling" | "captured" | "released_hold" | "expired" | "refused" | "settle_failed" | "refunding" | "refunded" | "canceled") | null;
             };
             header?: never;
             path?: never;
@@ -12070,6 +12223,100 @@ export interface operations {
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];
             503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    get_audit_csv: {
+        parameters: {
+            query?: {
+                /** @description First UTC day, YYYY-MM-DD, included. */
+                from?: string | null;
+                /** @description Last UTC day, YYYY-MM-DD, included. */
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description error.code is workspace_required while the organization's Agent workspace plan is not active and ended more than 30 days ago, or never started. error.details.ended_at is when it ended and error.details.closed_at when the export closed. scope_missing names a scope the credential lacks, and an agent gets agent_forbidden. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    get_fax_history_csv: {
+        parameters: {
+            query?: {
+                /** @description First UTC day, YYYY-MM-DD, included. */
+                from?: string | null;
+                /** @description Last UTC day, YYYY-MM-DD, included. */
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description error.code is workspace_required while the organization's Agent workspace plan is not active and ended more than 30 days ago, or never started. error.details.ended_at is when it ended and error.details.closed_at when the export closed. scope_missing names a scope the credential lacks. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not an id of this organization, or it was deleted (not_found). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableContent"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     reset_sandbox_data: {

@@ -500,3 +500,25 @@ describe('one-time cover check limits (API 1.20.10)', () => {
     expect(seen).toEqual([{ message: 'x'.repeat(2001) }]);
   });
 });
+
+describe('one-time refunds (API 1.21.0)', () => {
+  it('waits while an order is refunding and returns once it is refunded', async () => {
+    const paid = CASES.captured!.captured_micro as number;
+    const refunding = { ...CASES.captured, status: 'refunding', next: 'wait', refund_pending_micro: paid };
+    const refunded = { ...CASES.captured, status: 'refunded', next: 'done', refunded_micro: paid };
+    let calls = 0;
+    server.use(
+      http.get(`${ROOT}/${ORDER}`, () => {
+        calls += 1;
+        return HttpResponse.json(calls === 1 ? refunding : refunded);
+      }),
+    );
+    const order: OneTimeOrder = await keyless().oneTimeSends.wait(ORDER, { orderToken: TOKEN, intervalMs: 0 });
+    expect(order).toMatchObject({ status: 'refunded', next: 'done', refunded_micro: paid, refund_pending_micro: 0 });
+    expect(calls).toBe(2);
+    const canceled = { ...CASES.awaiting_confirmation, status: 'canceled', next: 'done' };
+    server.use(http.get(`${ROOT}/${ORDER}`, () => HttpResponse.json(canceled)));
+    const released = await keyless().oneTimeSends.wait(ORDER, { orderToken: TOKEN, intervalMs: 0 });
+    expect(released).toMatchObject({ status: 'canceled', captured_micro: 0 });
+  });
+});
