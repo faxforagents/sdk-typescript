@@ -21,6 +21,7 @@ import type {
   NumberOrder,
   PolicyVerdict,
   StatementLine,
+  Subscription,
   TopupSession,
   WorkspacePlan,
 } from '../src/index.js';
@@ -1312,5 +1313,90 @@ describe('API 1.21.0', () => {
     const listed = await client().billing.listSubscriptions();
     expect(listed.plan).toMatchObject({ export_open: true, requests_per_minute: 3000, standard_requests_per_minute: 600 });
     expect((await client().billing.listSubscriptions()).plan).toBeUndefined();
+  });
+});
+
+describe('API 1.21.2', () => {
+  const end = '2026-12-16T23:23:27.000Z';
+  /** A subscription as `sub_json` of billing/subscriptions.py writes it at API 1.21.2. */
+  const subscription = (over: Partial<Subscription> = {}): Subscription => ({
+    id: 'sub_1',
+    product: 'workspace_monthly',
+    status: 'active',
+    stripe_subscription_id: 'sub_fixture',
+    stripe_price_id: 'price_workspace_monthly_test',
+    cancel_at_period_end: false,
+    cancel_at: null,
+    ends_at: null,
+    current_period_end: end,
+    entitled: true,
+    created_at: '2026-11-16T23:23:27.000Z',
+    updated_at: '2026-11-16T23:23:27.000Z',
+    canceled_at: null,
+    ...over,
+  });
+
+  it('reads when a subscription ends, absent from an older server', async () => {
+    const renewing: Partial<Subscription> = subscription();
+    delete renewing.cancel_at;
+    delete renewing.ends_at;
+    server.use(
+      http.get(
+        `${BASE}/v1/subscriptions`,
+        sequence(
+          () =>
+            HttpResponse.json({
+              items: [subscription({ cancel_at: end, ends_at: end }), subscription({ id: 'sub_2' })],
+              workspace: true,
+            }),
+          () => HttpResponse.json({ items: [renewing], workspace: true }),
+        ),
+      ),
+    );
+    const [ending, renews] = (await client().billing.listSubscriptions()).items;
+    expect(ending).toMatchObject({ cancel_at_period_end: false, cancel_at: end, ends_at: end });
+    expect(renews).toMatchObject({ cancel_at: null, ends_at: null });
+    const older = (await client().billing.listSubscriptions()).items[0];
+    expect(older?.entitled).toBe(true);
+    expect(older?.cancel_at).toBeUndefined();
+    expect(older?.ends_at).toBeUndefined();
+  });
+
+  it('names the reason a second checkout of the plan is refused', async () => {
+    const page = 'https://checkout.stripe.com/c/pay/cs_test_fixture';
+    const expires = '2026-11-17T23:23:27.000Z';
+    const active = apiError('conflict', 'The Agent workspace is already active for this organization.', {
+      reason: 'plan_active',
+    });
+    const open = apiError('conflict', 'A payment page for the Agent workspace is already open.', {
+      reason: 'checkout_open',
+      url: page,
+      expires_at: expires,
+    });
+    server.use(
+      http.post(
+        `${BASE}/v1/subscriptions/checkout`,
+        sequence(
+          () => HttpResponse.json(active, { status: 409 }),
+          () => HttpResponse.json(open, { status: 409 }),
+          () => HttpResponse.json({ url: page, stripe_session_id: 'cs_test_fixture', product: 'workspace_monthly' }, { status: 201 }),
+        ),
+      ),
+    );
+    const first = await client()
+      .billing.createSubscriptionCheckout()
+      .catch((e: unknown) => e);
+    expect(first).toBeInstanceOf(ConflictError);
+    expect(first).toMatchObject({ code: 'conflict', reason: 'plan_active', state: null, retryable: false });
+    const second = await client()
+      .billing.createSubscriptionCheckout()
+      .catch((e: unknown) => e);
+    expect(second).toBeInstanceOf(ConflictError);
+    expect(second).toMatchObject({ reason: 'checkout_open', details: { url: page, expires_at: expires } });
+    expect((await client().billing.createSubscriptionCheckout()).url).toBe(page);
+    // a refusal with no details, or a reason that is not a string, has no reason
+    expect(new ConflictError({ status: 409, code: 'quote_consumed', message: 'used' }).reason).toBeNull();
+    expect(new ConflictError({ status: 409, code: 'conflict', message: 'x', details: { reason: 7 } }).reason).toBeNull();
+    expect(new ConflictError({ status: 409, code: 'conflict', message: 'x', details: ['plan_active'] }).reason).toBeNull();
   });
 });

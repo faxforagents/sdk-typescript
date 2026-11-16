@@ -304,6 +304,15 @@ describe('one-time sends', () => {
     expect(sent).toEqual({ token: 'mail-token' });
   });
 
+  it('reads the link of an order that was canceled', async () => {
+    // API 1.21.2: the confirm link of an order a person at Fax for Agents canceled reads link_canceled.
+    const canceled = { ...CASES.by_token, state: 'link_canceled', status: 'canceled' };
+    server.use(http.post(`${ROOT}/by-token`, () => HttpResponse.json(canceled)));
+    const summary = await keyless().oneTimeSends.readByToken('mail-token');
+    expect(summary.state).toBe('link_canceled');
+    expect(summary.status).toBe('canceled');
+  });
+
   it('mails the confirmation again', async () => {
     let seen: Headers | undefined;
     server.use(

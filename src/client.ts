@@ -467,7 +467,13 @@ export class Billing extends Resource {
   getInvoiceReceipt(invoiceId: string): Promise<S.PaymentReceipt> {
     return this.h.request('GET', `/v1/invoices/${invoiceId}/receipt`);
   }
-  /** A hosted Checkout for the Agent workspace subscription. Scope: billing:write. */
+  /**
+   * A hosted Checkout for the Agent workspace subscription. Scope: billing:write.
+   *
+   * `url` is Stripe's payment page for the plan. While the plan is active, or a payment page of it is
+   * still open, this throws `ConflictError`, so the plan is never paid twice. Its `reason` is
+   * `plan_active` or `checkout_open`. With `checkout_open`, `details.url` is the open page.
+   */
   createSubscriptionCheckout(o: Mut = {}): Promise<S.SubscriptionCheckout> {
     return this.h.request('POST', '/v1/subscriptions/checkout', { json: {}, ...o });
   }
@@ -477,6 +483,10 @@ export class Billing extends Resource {
    * `plan` says what the Agent workspace gives and where the organization stands with it. It names the
    * request limit, the included number, how long records are kept and whether the records export is
    * open. A server older than API 1.21.0 does not send it.
+   *
+   * Each subscription names `cancel_at`, the end date Stripe holds, and `ends_at`, when the plan ends
+   * without another charge. `ends_at` is null while the plan renews and once it no longer entitles. A
+   * server older than API 1.21.2 sends neither.
    */
   listSubscriptions(): Promise<S.SubscriptionList> {
     return this.h.request('GET', '/v1/subscriptions');

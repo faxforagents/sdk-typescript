@@ -92,6 +92,9 @@ for await (const job of ffa.faxes.iter({ state: 'failed' })) {  // follows next_
   Agent workspace plan as CSV text, for a range of UTC days. Without the plan they throw `ScopeError`
   with the code `workspace_required`.
 - A test quote is free. Its `live_amount_micro` says what the same fax costs with a live key.
+- `billing.listSubscriptions()` names `ends_at` on each subscription, when the Agent workspace ends
+  without another charge. A second `billing.createSubscriptionCheckout()` throws `ConflictError`, whose
+  `reason` is `plan_active` or `checkout_open`.
 - `oneTimeSends.preview({ file })` counts the pages of a document before any order exists, with no key.
   `oneTimeSends.checkCover({ message })` says whether a cover message fits on its page.
 - `billing.getTopupSession(id, { check_checkout: true })` asks Stripe about the hosted Checkout of an
@@ -170,7 +173,8 @@ not reached.
 
 `NotFoundError.field` names the id that was not found when the API says which: on a quote it is
 `document_id` or `from`. `ConflictError.state` is the state of a fax whose receipt was asked for
-before the fax ended. Both are `null` when the API sent no such detail.
+before the fax ended. `ConflictError.reason` says why a call was refused, such as `checkout_open` when a
+payment page of the Agent workspace is still open. Each is `null` when the API sent no such detail.
 
 Every refusal is the same envelope, a 422 for a field that fails validation included. A 413
 `payload_too_large` is a plain `APIError`: the body is over the limit of its route. The published
@@ -309,7 +313,7 @@ npm run typecheck && npm run build
 sh scripts/truthcheck.sh
 ```
 
-`spec/openapi.yaml` follows the public document at API version 1.21.0.
+`spec/openapi.yaml` follows the public document at API version 1.21.2.
 It holds the paths and schemas of that document and nothing else: 165 operations in 132 paths.
 Sign-in, operator and provider webhook routes are not in it, and the generated types do not declare them.
 A few response fields the server sends and the public schema does not list yet are declared with `x-sdk-route`.
@@ -317,6 +321,7 @@ A few response fields the server sends and the public schema does not list yet a
 Fields the server gives a default stay optional in the types.
 0.9.0 leaves `Delivery.webhook_deleted` optional, where the public document requires it.
 0.11.0 leaves `SubscriptionList.plan` optional, where the public document requires it.
+0.11.1 leaves `Subscription.cancel_at` and `Subscription.ends_at` optional, where the public document requires them.
 To refresh it, take the public document, keep those fields, then run `npm run gen:types`.
 Every operation has a client method. `test/surface.test.ts` lists them and fails on an internal path.
 Keep new response fields optional so older payloads and existing callers remain valid.
