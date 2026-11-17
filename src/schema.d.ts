@@ -6660,7 +6660,7 @@ export interface components {
             current_period_end: string | null;
             /**
              * Ends At
-             * @description When the subscription ends without being charged again. That is cancel_at when it comes no later than current_period_end, or current_period_end after a cancel at the period's end. Null while it renews.
+             * @description When the subscription ends without being charged again. That is cancel_at when it comes no later than current_period_end, or current_period_end after a cancel at the period's end. Null while it renews, and whenever entitled is false, as after it ended.
              */
             ends_at?: string | null;
             /** Entitled */
