@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.2 (2026-11-17)
+
+Follows API 1.21.3. The saved spec has 165 operations in 132 paths, as in 0.11.1, and the types are regenerated from it.
+No method, argument or field changed. The version is the same as that of the Python client.
+
+- The generated doc comment of `Subscription.ends_at` says it is null whenever `entitled` is false, as after the plan ended.
+  The server sent that at 1.21.2 already.
+
 ## 0.11.1 (2026-11-17)
 
 Follows API 1.21.2. The saved spec has 165 operations in 132 paths, as in 0.11.0, and the types are regenerated from it.
