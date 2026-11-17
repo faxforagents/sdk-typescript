@@ -112,6 +112,18 @@ export class ConflictError extends APIError {
     const value = details && typeof details === 'object' ? details.state : null;
     return typeof value === 'string' ? value : null;
   }
+  /**
+   * `details.reason`: why the call was refused, else null. `billing.createSubscriptionCheckout` names
+   * `plan_active` while the Agent workspace is active. It names `checkout_open` while a payment page of
+   * the plan is still open. Then `details.url` is that page and `details.expires_at` is when it closes.
+   * The checkout sends a reason since API 1.21.2. Other routes name their own, such as `webhook_deleted`
+   * on a delivery replay.
+   */
+  get reason(): string | null {
+    const details = this.details as { reason?: unknown } | null | undefined;
+    const value = details && typeof details === 'object' ? details.reason : null;
+    return typeof value === 'string' ? value : null;
+  }
 }
 /** 429 rate_limited. retryAfter is the seconds the API asked for. */
 export class RateLimitedError extends APIError {}

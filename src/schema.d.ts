@@ -1877,7 +1877,7 @@ export interface paths {
         };
         /**
          * The fax history as CSV: every fax sent and received in the range
-         * @description One line per fax of the key's environment, sent and received, oldest first. A sent fax counts by when it was created and a received one by when it arrived. The lines carry what each fax cost the wallet, never the document or its text. A range of more than 20000 lines answers 422: choose fewer days. Needs the scopes fax:read and inbox:read.
+         * @description Needs two scopes: fax:read, which x-required-scope names, and inbox:read as well. One line per fax of the key's environment, sent and received, oldest first. A sent fax counts by when it was created and a received one by when it arrived. The lines carry what each fax cost the wallet, never the document or its text. A range of more than 20000 lines answers 422: choose fewer days.
          */
         get: operations["get_fax_history_csv"];
         put?: never;
@@ -2047,7 +2047,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Open a hosted Checkout for the Agent workspace subscription */
+        /**
+         * Open a hosted Checkout for the Agent workspace subscription
+         * @description Answers the address of Stripe's payment page for the plan. It is refused with 409 while the plan is active or a Checkout of it is still open, so the plan is never paid twice.
+         */
         post: operations["create_subscription_checkout"];
         delete?: never;
         options?: never;
@@ -4990,7 +4993,8 @@ export interface components {
         /**
          * OneTimeConfirmSummary
          * @description What the confirm page shows before the click. ``state`` is ``ok`` while the link can still be used,
-         *     else ``link_used`` or ``link_expired``. Reading it consumes nothing.
+         *     else ``link_used``, ``link_canceled`` (the order was canceled and its hold released) or
+         *     ``link_expired``. Reading it consumes nothing.
          */
         OneTimeConfirmSummary: {
             /** Amount Micro */
@@ -5011,7 +5015,7 @@ export interface components {
              * State
              * @enum {string}
              */
-            state: "ok" | "link_used" | "link_expired";
+            state: "ok" | "link_used" | "link_canceled" | "link_expired";
             /**
              * Status
              * @enum {string}
@@ -5201,9 +5205,9 @@ export interface components {
          *     ``confirm`` (click the mailed link), ``wait`` (read again later) or ``done``. Money is integer
          *     micro-USD. The field ``captured_micro`` is what the card was charged, written only once the payment
          *     provider confirmed it. The field ``fax`` is the fax job once the order was released, with the
-         *     carrier's evidence once it has any. Three statuses come from a person at Fax for Agents: ``refunding``
-         *     (a refund is on its way to the card), ``refunded`` (the whole charge went back) and ``canceled`` (the
-         *     order was canceled and the hold on the card released, nothing charged).
+         *     carrier's evidence once it has any. Three statuses come from a person at Fax for Agents. With
+         *     ``refunding`` a refund is on its way to the card, and with ``refunded`` the whole charge went back. With
+         *     ``canceled`` the order was canceled and the hold on the card released, so nothing was charged.
          */
         OneTimeOrder: {
             /** Amount Micro */
@@ -6641,6 +6645,11 @@ export interface components {
         };
         /** Subscription */
         Subscription: {
+            /**
+             * Cancel At
+             * @description When Stripe is set to end the subscription. A cancel in the billing portal sets it to the end of the period and leaves cancel_at_period_end false.
+             */
+            cancel_at?: string | null;
             /** Cancel At Period End */
             cancel_at_period_end: boolean;
             /** Canceled At */
@@ -6649,6 +6658,11 @@ export interface components {
             created_at: string;
             /** Current Period End */
             current_period_end: string | null;
+            /**
+             * Ends At
+             * @description When the subscription ends without being charged again. That is cancel_at when it comes no later than current_period_end, or current_period_end after a cancel at the period's end. Null while it renews.
+             */
+            ends_at?: string | null;
             /** Entitled */
             entitled: boolean;
             /** Id */
@@ -11089,7 +11103,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description The link was already used (link_used), expired (link_expired), or the browser is signed in as someone else (link_other_session). */
+            /** @description The link was already used (link_used), its order was canceled and the hold released (link_canceled), it expired (link_expired), or the browser is signed in as someone else (link_other_session). */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12296,7 +12310,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            /** @description error.code is workspace_required while the organization's Agent workspace plan is not active and ended more than 30 days ago, or never started. error.details.ended_at is when it ended and error.details.closed_at when the export closed. scope_missing names a scope the credential lacks. */
+            /** @description error.code is workspace_required while the organization's Agent workspace plan is not active and ended more than 30 days ago, or never started. error.details.ended_at is when it ended and error.details.closed_at when the export closed. scope_missing names a scope the credential lacks: fax:read, or inbox:read, which this export needs as well. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -12696,7 +12710,15 @@ export interface operations {
                 };
             };
             404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
+            /** @description The plan cannot be bought twice. error.code is conflict and error.details.reason says why. "plan_active": the Agent workspace is active, here or at Stripe after a payment of a moment ago. "checkout_open": a Checkout of the plan is still open, and error.details.url is its page, error.details.expires_at when it closes. idempotency_key_conflict: the Idempotency-Key was used with a different request, or that request is still being processed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             410: components["responses"]["Gone"];
             422: components["responses"]["UnprocessableContent"];
             429: components["responses"]["TooManyRequests"];

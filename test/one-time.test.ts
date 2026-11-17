@@ -3,7 +3,15 @@ import { readFileSync } from 'node:fs';
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { FaxForAgents, InvalidRequestError, NotFoundError, ORDER_TOKEN_HEADER, PaymentRequiredError, ServerError } from '../src/index.js';
+import {
+  ConflictError,
+  FaxForAgents,
+  InvalidRequestError,
+  NotFoundError,
+  ORDER_TOKEN_HEADER,
+  PaymentRequiredError,
+  ServerError,
+} from '../src/index.js';
 import type { OneTimeOrder, OneTimeOrderCreated } from '../src/index.js';
 import { BASE, HttpResponse, KEY, apiError, http, sequence, server } from './helpers.js';
 
@@ -302,6 +310,22 @@ describe('one-time sends', () => {
     expect(done.order.next).toBe('wait');
     expect(done.signed_in).toBe(false);
     expect(sent).toEqual({ token: 'mail-token' });
+  });
+
+  it('reads the link of an order that was canceled', async () => {
+    // API 1.21.2: the confirm link of an order a person at Fax for Agents canceled reads link_canceled.
+    const canceled = { ...CASES.by_token, state: 'link_canceled', status: 'canceled' };
+    server.use(http.post(`${ROOT}/by-token`, () => HttpResponse.json(canceled)));
+    const summary = await keyless().oneTimeSends.readByToken('mail-token');
+    expect(summary.state).toBe('link_canceled');
+    expect(summary.status).toBe('canceled');
+    const refusal = apiError('link_canceled', 'this order was canceled, and the hold on the card is released');
+    server.use(http.post(`${ROOT}/${ORDER}/confirm`, () => HttpResponse.json(refusal, { status: 409 })));
+    const err = await keyless()
+      .oneTimeSends.confirm(summary.order_id, 'mail-token')
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ConflictError);
+    expect(err).toMatchObject({ status: 409, code: 'link_canceled' });
   });
 
   it('mails the confirmation again', async () => {

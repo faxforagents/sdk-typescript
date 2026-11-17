@@ -149,3 +149,15 @@ it('keeps the response fields of API 1.21.0 optional', () => {
   expectTypeOf<FaxQuery['created_before']>().toEqualTypeOf<string | null | undefined>();
   expectTypeOf<S.operations['get_fax_history_csv']['responses'][200]['content']['text/csv']>().toEqualTypeOf<string>();
 });
+
+it('keeps the response fields of API 1.21.2 optional', () => {
+  // The public document requires Subscription.cancel_at and ends_at. The saved spec leaves both out of
+  // required, so a subscription from an older server still fits.
+  expectTypeOf<S.Subscription['cancel_at']>().toEqualTypeOf<string | null | undefined>();
+  expectTypeOf<S.Subscription['ends_at']>().toEqualTypeOf<string | null | undefined>();
+  expectTypeOf<S.Subscription['cancel_at_period_end']>().toEqualTypeOf<boolean>();
+  expectTypeOf<S.OneTimeConfirmSummary['state']>().toEqualTypeOf<'ok' | 'link_used' | 'link_canceled' | 'link_expired'>();
+  expectTypeOf<
+    S.operations['create_subscription_checkout']['responses'][409]['content']['application/json']
+  >().toEqualTypeOf<S.ErrorEnvelope>();
+});
