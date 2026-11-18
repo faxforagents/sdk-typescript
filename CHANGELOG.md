@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.11.3 (2026-11-18)
+
+Follows API 1.21.3, as 0.11.2 does. No method, argument or field changed.
+The Python client stays at 0.11.2. It trims the base URL with `str.rstrip`, which takes linear time.
 
 - The client drops the trailing slashes of `baseUrl` with a scan instead of the regex `/\/+$/`. The regex took quadratic
   time when a long run of slashes did not end the URL: 16 s for 100,000 slashes. Nothing else changes. CodeQL reported it as js/polynomial-redos.
