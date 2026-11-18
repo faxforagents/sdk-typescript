@@ -13,6 +13,7 @@ import {
   ScopeError,
   ServerError,
 } from '../src/index.js';
+import { trimTrailingSlashes } from '../src/http.js';
 import type {
   DataRequest,
   Delivery,
@@ -67,6 +68,25 @@ describe('headers', () => {
     delete process.env.FFA_API_KEY;
     expect(() => new FaxForAgents({ baseUrl: BASE })).toThrow(/FAXFORAGENTS_API_KEY/);
     if (saved) process.env.FAXFORAGENTS_API_KEY = saved;
+  });
+});
+
+describe('base URL', () => {
+  it('drops trailing slashes and nothing else', () => {
+    expect(trimTrailingSlashes('https://api.example.test///')).toBe('https://api.example.test');
+    expect(trimTrailingSlashes('https://api.example.test/v1/')).toBe('https://api.example.test/v1');
+    expect(trimTrailingSlashes('https://api.example.test')).toBe('https://api.example.test');
+    expect(trimTrailingSlashes('///')).toBe('');
+    expect(new FaxForAgents({ apiKey: KEY, baseUrl: `${BASE}//` }).http.baseUrl).toBe(BASE);
+  });
+
+  it('takes linear time on a long run of slashes that does not end the string', () => {
+    // `/\/+$/` took about 16 s on this input (CodeQL js/polynomial-redos)
+    const long = `https://api.example.test${'/'.repeat(100_000)}x`;
+    const started = performance.now();
+    expect(trimTrailingSlashes(long)).toBe(long);
+    expect(trimTrailingSlashes(`${long}${'/'.repeat(100_000)}`)).toBe(long);
+    expect(performance.now() - started).toBeLessThan(1_000);
   });
 });
 

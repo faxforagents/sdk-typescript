@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The client drops the trailing slashes of `baseUrl` with a scan instead of the regex `/\/+$/`. The regex took quadratic
+  time when a long run of slashes did not end the URL: 16 s for 100,000 slashes. Nothing else changes. CodeQL reported it as js/polynomial-redos.
+
 ## 0.11.2 (2026-11-17)
 
 Follows API 1.21.3. The saved spec has 165 operations in 132 paths, as in 0.11.1, and the types are regenerated from it.
