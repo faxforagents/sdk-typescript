@@ -52,6 +52,14 @@ export interface RequestOptions {
   idempotencyKey?: string;
 }
 
+/** The URL without its trailing slashes. A scan, not `/\/+$/`: that regex took 16 s on 100,000 slashes followed
+ * by another character, as it retries from every slash (CodeQL js/polynomial-redos, 2026-11-18). */
+export function trimTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url.charCodeAt(end - 1) === 47) end -= 1;
+  return url.slice(0, end);
+}
+
 function env(name: string): string | undefined {
   const g = globalThis as { process?: { env?: Record<string, string | undefined> } };
   return g.process?.env?.[name];
@@ -109,7 +117,7 @@ export class Http {
 
   constructor(opts: ClientOptions = {}) {
     this.apiKey = opts.keyless ? null : resolveKey(opts.apiKey);
-    this.baseUrl = (opts.baseUrl ?? env('FAXFORAGENTS_API_URL') ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
+    this.baseUrl = trimTrailingSlashes(opts.baseUrl ?? env('FAXFORAGENTS_API_URL') ?? DEFAULT_BASE_URL);
     this.timeoutMs = opts.timeoutMs ?? 60_000;
     this.maxRetries = Math.max(0, opts.maxRetries ?? 3);
     this.backoffBase = opts.backoffBase ?? 0.5;
